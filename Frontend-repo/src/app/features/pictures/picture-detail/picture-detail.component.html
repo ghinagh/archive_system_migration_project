@@ -1,0 +1,197 @@
+<div class="detail-page">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ 'PICTURES.PIC_NO' | translate }}: {{ item()?.picNo }}</h1>
+    <span class="spacer"></span>
+    @if (!isEditing()) {
+      <button mat-raised-button color="primary" (click)="toggleEdit()">
+        <mat-icon>edit</mat-icon>
+        {{ 'APP.EDIT' | translate }}
+      </button>
+      <button mat-raised-button color="warn" (click)="onDelete()">
+        <mat-icon>delete</mat-icon>
+        {{ 'APP.DELETE' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (isEditing()) {
+    <app-picture-form
+      [editData]="item()"
+      (saved)="onSaved()"
+      (cancelled)="toggleEdit()">
+    </app-picture-form>
+  } @else if (item()) {
+    <mat-card>
+      <mat-card-content>
+        <div class="detail-grid">
+
+          <div class="field">
+            <label>{{ 'PICTURES.PIC_NO' | translate }}</label>
+            <span>{{ item()!.picNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.NEGATIVE_NO' | translate }}</label>
+            <span>{{ item()!.picNgNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.POSITION_NO' | translate }}</label>
+            <span>{{ item()!.picPosNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.DOCUMENT' | translate }}</label>
+            <span>{{ item()!.picDoc }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.DOC_DATE' | translate }}</label>
+            <span>{{ item()!.picDocDte | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.ENTITY' | translate }}</label>
+            <span>{{ item()!.picEnt }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.ENTITY_DATE' | translate }}</label>
+            <span>{{ item()!.picEntDte | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.PERSON' | translate }}</label>
+            <span>{{ item()!.picPrs }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.DATE' | translate }}</label>
+            <span>{{ item()!.picDte | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field full-width">
+            <label>{{ 'PICTURES.TITLE_FIELD' | translate }}</label>
+            <span>{{ item()!.picTit }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.COTE' | translate }}</label>
+            <span>{{ item()!.picCot }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.GEOGRAPHIC' | translate }}</label>
+            <span>{{ item()!.picGeo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.TYPE' | translate }}</label>
+            <span>{{ item()!.picTyp }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.FORM' | translate }}</label>
+            <span>{{ item()!.picForm }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.LENGTH' | translate }}</label>
+            <span>{{ item()!.picLen }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.WIDTH' | translate }}</label>
+            <span>{{ item()!.picLarge }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.QUALITY' | translate }}</label>
+            <span>{{ item()!.picQualty }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.SUBJECT' | translate }}</label>
+            <span>{{ item()!.picSub }}</span>
+          </div>
+          <div class="field full-width">
+            <label>{{ 'PICTURES.REMARKS' | translate }}</label>
+            <span>{{ item()!.picRmrk }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.COPIES' | translate }}</label>
+            <span>{{ item()!.picCopy }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.LBN' | translate }}</label>
+            <span>{{ item()!.picLbn }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.PAGE' | translate }}</label>
+            <span>{{ item()!.picPage }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.LINE' | translate }}</label>
+            <span>{{ item()!.picLine }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.TYPE1' | translate }}</label>
+            <span>{{ item()!.picTyp1 }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.BRIND' | translate }}</label>
+            <span>{{ item()!.picBrind }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'PICTURES.CHOICE' | translate }}</label>
+            <span>{{ item()!.picChoice }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Media panel -->
+    <mat-card class="media-card">
+      <mat-card-header>
+        <mat-icon class="media-header-icon">photo_library</mat-icon>
+        <mat-card-title>{{ 'PICTURES.MEDIA' | translate }}</mat-card-title>
+        <mat-card-subtitle>{{ 'PICTURES.NEGATIVE_NO' | translate }}: {{ item()!.picNgNo }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="media-actions">
+          <button mat-stroked-button
+                  color="primary"
+                  (click)="checkMedia()"
+                  [disabled]="mediaLoading() || !item()!.picNgNo">
+            @if (mediaLoading()) {
+              <mat-spinner diameter="18" class="inline-spinner"></mat-spinner>
+            } @else {
+              <mat-icon>search</mat-icon>
+            }
+            {{ 'PICTURES.VIEW_MEDIA' | translate }}
+          </button>
+
+          @if (mediaChecked()) {
+            @if (mediaInfo()?.fileExists) {
+              <div class="media-result media-found">
+                <mat-icon color="primary">check_circle</mat-icon>
+                <span class="media-path" [matTooltip]="mediaInfo()!.resolvedPath">
+                  {{ mediaInfo()!.resolvedPath }}
+                </span>
+                <button mat-flat-button color="primary" (click)="downloadFile()">
+                  <mat-icon>download</mat-icon>
+                  {{ 'PICTURES.DOWNLOAD' | translate }}
+                </button>
+                <button mat-stroked-button (click)="openInTab()">
+                  <mat-icon>open_in_new</mat-icon>
+                  {{ 'PICTURES.OPEN_TAB' | translate }}
+                </button>
+                @if (isVideo()) {
+                  <button mat-flat-button color="accent" (click)="openVideoPreview()">
+                    <mat-icon>play_circle</mat-icon>
+                    {{ 'PICTURES.PREVIEW_VIDEO' | translate }}
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="media-result media-not-found">
+                <mat-icon color="warn">error_outline</mat-icon>
+                <span>{{ 'PICTURES.MEDIA_NOT_FOUND' | translate }}</span>
+                <span class="media-path">{{ mediaInfo()?.resolvedPath }}</span>
+              </div>
+            }
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

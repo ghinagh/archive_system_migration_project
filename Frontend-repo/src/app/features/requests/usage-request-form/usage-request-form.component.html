@@ -1,0 +1,64 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ 'USAGE_REQUESTS.EDIT_TITLE' | translate }}</h1>
+  </div>
+
+  @if (pageLoading()) { <app-loading-spinner></app-loading-spinner> } @else {
+    <mat-card><mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'USAGE_REQUESTS.REQUEST_NO' | translate }}</mat-label>
+            <input matInput formControlName="resultNo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'USAGE_REQUESTS.LINKED_APP_NO' | translate }}</mat-label>
+            <input matInput formControlName="catalogueAppNo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'USAGE_REQUESTS.DIGITIZATION_NO' | translate }}</mat-label>
+            <input matInput formControlName="digitNo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'USAGE_REQUESTS.DIGITIZATION_TYPE' | translate }}</mat-label>
+            <input matInput formControlName="type1">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'USAGE_REQUESTS.REQUESTER' | translate }}</mat-label>
+            <input matInput formControlName="person" maxlength="50">
+            @if (form.get('person')?.hasError('required') && form.get('person')?.touched) {
+              <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'USAGE_REQUESTS.COTE' | translate }}</mat-label>
+            <input matInput formControlName="cote" maxlength="3">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'USAGE_REQUESTS.PERMIT_NO' | translate }}</mat-label>
+            <input matInput formControlName="permit" maxlength="2">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'USAGE_REQUESTS.SUBJECT' | translate }}</mat-label>
+            <input matInput formControlName="subject" maxlength="50">
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+            @if (isLoading()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ 'APP.SAVE' | translate }} }
+          </button>
+          <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+        </div>
+      </form>
+    </mat-card-content></mat-card>
+  }
+</div>

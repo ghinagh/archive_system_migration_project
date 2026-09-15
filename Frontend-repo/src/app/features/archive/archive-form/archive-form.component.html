@@ -1,0 +1,80 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ (isEditMode() ? 'APP.EDIT' : 'ARCHIVE.ADD_NEW') | translate }}</h1>
+  </div>
+
+  @if (pageLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <mat-card>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.CHART_NO' | translate }}</mat-label>
+              <input matInput formControlName="chaNo" maxlength="6">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.SUBJECT' | translate }}</mat-label>
+              <input matInput formControlName="subject" maxlength="2">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'ARCHIVE.CHART_TITLE' | translate }}</mat-label>
+              <input matInput formControlName="title" maxlength="70">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.TYPE' | translate }}</mat-label>
+              <input matInput type="number" formControlName="type">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.DATE' | translate }}</mat-label>
+              <input matInput type="datetime-local" formControlName="date">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.STOCK' | translate }}</mat-label>
+              <input matInput type="number" formControlName="stock">
+              @if (form.get('stock')?.hasError('duplicate')) {
+                <mat-error>{{ 'ARCHIVE.STOCK_NUMBER_DUPLICATE' | translate }}</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.DISTRIBUTED' | translate }}</mat-label>
+              <input matInput type="number" formControlName="nbDis">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.SOURCE' | translate }}</mat-label>
+              <input matInput formControlName="source" maxlength="3">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.SUBJECT_CODE' | translate }}</mat-label>
+              <input matInput formControlName="subjectCode" maxlength="3">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.FROM' | translate }} ({{ 'ARCHIVE.SITE' | translate }})</mat-label>
+              <input matInput formControlName="fromSite" maxlength="3">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.TO' | translate }} ({{ 'ARCHIVE.SITE' | translate }})</mat-label>
+              <input matInput formControlName="toSite" maxlength="3">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.FROM_PERSON' | translate }}</mat-label>
+              <input matInput formControlName="fromPerson" maxlength="3">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARCHIVE.TO_PERSON' | translate }}</mat-label>
+              <input matInput formControlName="toPerson" maxlength="3">
+            </mat-form-field>
+          </div>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+              @if (isLoading()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ 'APP.SAVE' | translate }} }
+            </button>
+            <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

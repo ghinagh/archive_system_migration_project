@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>{{ 'DOC_FORM.ENTER_TITLE' | translate }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'DOC_FORM.MAIN_TITLE' | translate }}</mat-label>
+      <input matInput formControlName="title" maxlength="125" autofocus>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'DOC_FORM.CANCEL_COMMAND' | translate }}</button>
+  <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">{{ 'DOC_FORM.EXECUTE' | translate }}</button>
+</mat-dialog-actions>

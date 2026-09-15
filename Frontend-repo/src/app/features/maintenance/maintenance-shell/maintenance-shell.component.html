@@ -1,0 +1,256 @@
+<div class="maintenance-shell">
+  <h1>{{ 'MAINTENANCE.TITLE' | translate }}</h1>
+
+  <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="onTabChange($event)">
+
+    <!-- Tab 1: Renumber -->
+    <mat-tab [label]="'MAINTENANCE.RENUMBER_TAB' | translate">
+      <mat-card>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'MAINTENANCE.OLD_APP_NO' | translate }}</mat-label>
+              <input matInput maxlength="7" [value]="oldAppNo()" (input)="oldAppNo.set($any($event.target).value)">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'MAINTENANCE.NEW_APP_NO' | translate }}</mat-label>
+              <input matInput maxlength="7" [value]="newAppNo()" (input)="newAppNo.set($any($event.target).value)">
+            </mat-form-field>
+            <button mat-raised-button color="primary" [disabled]="renumberLoading() || !oldAppNo() || !newAppNo()" (click)="submitRenumber()">
+              {{ 'MAINTENANCE.RENUMBER_SUBMIT' | translate }}
+            </button>
+          </div>
+          @if (renumberLoading()) { <app-loading-spinner></app-loading-spinner> }
+          @if (renumberSuccess()) { <p class="success-msg">{{ 'MAINTENANCE.RENUMBER_SUCCESS' | translate }}</p> }
+          @if (renumberError()) { <p class="error-msg">{{ renumberError() }}</p> }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <!-- Tab 2: Copy to Archive -->
+    <mat-tab [label]="'MAINTENANCE.COPY_ARCHIVE_TAB' | translate">
+      <mat-card>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'MAINTENANCE.STOCK_NO' | translate }}</mat-label>
+              <input matInput [value]="stockNo()" (input)="stockNo.set($any($event.target).value)">
+            </mat-form-field>
+            <button mat-raised-button color="primary" [disabled]="copyLoading() || !stockNo()" (click)="submitCopyToArchive()">
+              {{ 'MAINTENANCE.COPY_SUBMIT' | translate }}
+            </button>
+          </div>
+          @if (copyLoading()) { <app-loading-spinner></app-loading-spinner> }
+          @if (copyResult(); as result) {
+            <p class="success-msg">{{ 'MAINTENANCE.COPY_SUCCESS' | translate }}</p>
+            <p><strong>{{ 'MAINTENANCE.SOURCE_PATH' | translate }}:</strong> {{ result.sourcePath }}</p>
+            <p><strong>{{ 'MAINTENANCE.DESTINATION_PATH' | translate }}:</strong> {{ result.destinationPath }}</p>
+          }
+          @if (copyError()) { <p class="error-msg">{{ copyError() }}</p> }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <!-- Tab 3: Link Files -->
+    <mat-tab [label]="'MAINTENANCE.LINK_FILES_TAB' | translate">
+      <mat-card>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'MAINTENANCE.APP_NO' | translate }}</mat-label>
+              <input matInput maxlength="7" [value]="linkAppNo()" (input)="linkAppNo.set($any($event.target).value)">
+            </mat-form-field>
+            <button mat-raised-button [disabled]="linkLoading() || !linkAppNo()" (click)="loadLinks()">
+              {{ 'MAINTENANCE.LOAD_LINKS' | translate }}
+            </button>
+          </div>
+
+          @if (linkLoading()) { <app-loading-spinner></app-loading-spinner> }
+
+          @if (linksLoaded()) {
+            @if (fileLinks().length > 0) {
+              <table mat-table [dataSource]="fileLinks()" class="full-width">
+                <ng-container matColumnDef="filePath">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.FILE_PATH' | translate }}</th>
+                  <td mat-cell *matCellDef="let r">{{ r.filePath }}</td>
+                </ng-container>
+                <ng-container matColumnDef="linkedByUser">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.LINKED_BY' | translate }}</th>
+                  <td mat-cell *matCellDef="let r">{{ r.linkedByUser }}</td>
+                </ng-container>
+                <ng-container matColumnDef="linkedAt">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.LINKED_AT' | translate }}</th>
+                  <td mat-cell *matCellDef="let r">{{ r.linkedAt }}</td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th>
+                  <td mat-cell *matCellDef="let r">
+                    <button mat-icon-button color="warn" (click)="deleteLink(r.id)" [matTooltip]="'APP.DELETE' | translate">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="linkCols"></tr>
+                <tr mat-row *matRowDef="let r; columns: linkCols;"></tr>
+              </table>
+            } @else {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          }
+
+          <div class="form-row link-add-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'MAINTENANCE.FILE_PATH' | translate }}</mat-label>
+              <input matInput [value]="filePath()" (input)="filePath.set($any($event.target).value)">
+            </mat-form-field>
+            <button mat-raised-button color="primary" [disabled]="linkLoading() || !linkAppNo() || !filePath()" (click)="addLink()">
+              {{ 'MAINTENANCE.ADD_LINK' | translate }}
+            </button>
+          </div>
+          @if (linkError()) { <p class="error-msg">{{ linkError() }}</p> }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <!-- Tab 4: Database Backup -->
+    <mat-tab [label]="'MAINTENANCE.BACKUP_TAB' | translate">
+      <mat-card>
+        <mat-card-content>
+          <div class="form-row">
+            <button mat-raised-button color="primary" [disabled]="backupCreating()" (click)="createBackup()">
+              {{ 'MAINTENANCE.CREATE_BACKUP' | translate }}
+            </button>
+          </div>
+          @if (backupsLoading() || backupCreating()) { <app-loading-spinner></app-loading-spinner> }
+          @if (backupError()) { <p class="error-msg">{{ backupError() }}</p> }
+
+          @if (!backupsLoading() && backups().length === 0) {
+            <p class="no-data">{{ 'MAINTENANCE.NO_BACKUPS' | translate }}</p>
+          } @else if (!backupsLoading()) {
+            <table mat-table [dataSource]="backups()" class="full-width">
+              <ng-container matColumnDef="fileName">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.FILE_NAME' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.fileName }}</td>
+              </ng-container>
+              <ng-container matColumnDef="sizeBytes">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.SIZE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.sizeBytes | number }}</td>
+              </ng-container>
+              <ng-container matColumnDef="createdAt">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.CREATED_AT' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="backupCols"></tr>
+              <tr mat-row *matRowDef="let r; columns: backupCols;"></tr>
+            </table>
+          }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <!-- Tab 5: Unlock Documents -->
+    <mat-tab [label]="'MAINTENANCE.UNLOCK_TAB' | translate">
+      <mat-card>
+        <mat-card-content>
+          @if (lockedLoading()) { <app-loading-spinner></app-loading-spinner> }
+          @if (lockedError()) { <p class="error-msg">{{ lockedError() }}</p> }
+
+          @if (!lockedLoading() && lockedDocs().length === 0) {
+            <p class="no-data">{{ 'MAINTENANCE.LOCKED_DOCS_EMPTY' | translate }}</p>
+          } @else if (!lockedLoading()) {
+            <table mat-table [dataSource]="lockedDocs()" class="full-width">
+              <ng-container matColumnDef="appNo">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.APP_NO' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.appNo }}</td>
+              </ng-container>
+              <ng-container matColumnDef="activeTitleAr">
+                <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.ACTIVE_TITLE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.activeTitleAr }}</td>
+              </ng-container>
+              <ng-container matColumnDef="dataEntry">
+                <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.DATA_ENTRY' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.dataEntry }}</td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let r">
+                  <button mat-stroked-button color="accent" (click)="unlockDocument(r.appNo)">
+                    {{ 'MAINTENANCE.UNLOCK' | translate }}
+                  </button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="lockedCols"></tr>
+              <tr mat-row *matRowDef="let r; columns: lockedCols;"></tr>
+            </table>
+            <mat-paginator
+              [length]="lockedTotal()"
+              [pageSize]="lockedPageSize()"
+              [pageIndex]="lockedPageIndex()"
+              [pageSizeOptions]="[10, 25, 50]"
+              (page)="onLockedPageChange($event)">
+            </mat-paginator>
+          }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <!-- Tab 6: Retrieval Fields -->
+    <mat-tab [label]="'MAINTENANCE.RETRIEVAL_FIELDS_TAB' | translate">
+      <mat-card>
+        <mat-card-content>
+          <div class="form-row">
+            <button mat-raised-button color="primary" (click)="openFieldDialog()">
+              <mat-icon>add</mat-icon>
+              {{ 'MAINTENANCE.ADD_FIELD' | translate }}
+            </button>
+          </div>
+          @if (retrievalFieldsLoading()) { <app-loading-spinner></app-loading-spinner> }
+          @if (retrievalFieldsError()) { <p class="error-msg">{{ retrievalFieldsError() }}</p> }
+
+          @if (!retrievalFieldsLoading() && retrievalFields().length === 0) {
+            <p class="no-data">{{ 'MAINTENANCE.NO_FIELDS' | translate }}</p>
+          } @else if (!retrievalFieldsLoading()) {
+            <table mat-table [dataSource]="retrievalFields()" class="full-width">
+              <ng-container matColumnDef="module">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.MODULE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.module }}</td>
+              </ng-container>
+              <ng-container matColumnDef="fieldKey">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.FIELD_KEY' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.fieldKey }}</td>
+              </ng-container>
+              <ng-container matColumnDef="label">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.LABEL' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.label }}</td>
+              </ng-container>
+              <ng-container matColumnDef="fieldType">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.FIELD_TYPE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.fieldType }}</td>
+              </ng-container>
+              <ng-container matColumnDef="enabled">
+                <th mat-header-cell *matHeaderCellDef>{{ 'MAINTENANCE.ENABLED' | translate }}</th>
+                <td mat-cell *matCellDef="let r">
+                  <mat-icon>{{ r.enabled ? 'check' : 'close' }}</mat-icon>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let r">
+                  <button mat-icon-button (click)="openFieldDialog(r)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteField(r.id)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="fieldCols"></tr>
+              <tr mat-row *matRowDef="let r; columns: fieldCols;"></tr>
+            </table>
+          }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>

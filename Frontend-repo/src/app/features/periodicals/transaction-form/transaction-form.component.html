@@ -1,0 +1,52 @@
+<h2 mat-dialog-title>{{ 'TRANSACTIONS.ADD_NEW' | translate }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'TRANSACTIONS.OPERATION_NO' | translate }}</mat-label>
+      <input matInput type="number" formControlName="trsOpno">
+      @if (form.get('trsOpno')?.hasError('required') && form.get('trsOpno')?.touched) {
+        <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'TRANSACTIONS.DATE' | translate }}</mat-label>
+      <input matInput [matDatepicker]="dtePicker" formControlName="trsDte">
+      <mat-datepicker-toggle matIconSuffix [for]="dtePicker"></mat-datepicker-toggle>
+      <mat-datepicker #dtePicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'TRANSACTIONS.NUMBER' | translate }}</mat-label>
+      <input matInput formControlName="trsNum" maxlength="5">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'TRANSACTIONS.COUNT' | translate }}</mat-label>
+      <input matInput type="number" formControlName="trsNb">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'TRANSACTIONS.YEAR' | translate }}</mat-label>
+      <input matInput type="number" formControlName="trsYear">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'TRANSACTIONS.TYPE' | translate }}</mat-label>
+      <input matInput type="number" formControlName="trsTyp">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'TRANSACTIONS.END_DATE' | translate }}</mat-label>
+      <input matInput [matDatepicker]="dte1Picker" formControlName="trsDte1">
+      <mat-datepicker-toggle matIconSuffix [for]="dte1Picker"></mat-datepicker-toggle>
+      <mat-datepicker #dte1Picker></mat-datepicker>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isLoading()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isLoading()">
+    @if (isLoading()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ 'APP.SAVE' | translate }} }
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>
+  {{ (isEdit ? 'MAINTENANCE.EDIT_FIELD' : 'MAINTENANCE.ADD_FIELD') | translate }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'MAINTENANCE.MODULE' | translate }}</mat-label>
+      <input matInput formControlName="module" maxlength="30">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'MAINTENANCE.FIELD_KEY' | translate }}</mat-label>
+      <input matInput formControlName="fieldKey" maxlength="50">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'MAINTENANCE.ENTITY_PATH' | translate }}</mat-label>
+      <input matInput formControlName="entityPath" maxlength="100">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'MAINTENANCE.FIELD_TYPE' | translate }}</mat-label>
+      <mat-select formControlName="fieldType">
+        @for (t of fieldTypes; track t) {
+          <mat-option [value]="t">{{ t }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'MAINTENANCE.LABEL' | translate }}</mat-label>
+      <input matInput formControlName="label" maxlength="100">
+    </mat-form-field>
+    <mat-checkbox formControlName="enabled">{{ 'MAINTENANCE.ENABLED' | translate }}</mat-checkbox>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || isSaving">
+    {{ 'APP.SAVE' | translate }}
+  </button>
+</mat-dialog-actions>

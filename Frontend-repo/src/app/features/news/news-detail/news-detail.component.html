@@ -1,0 +1,126 @@
+<div class="detail-page">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ 'NEWS.NEWS_NO' | translate }}: {{ item()?.newsNo }}</h1>
+    <span class="spacer"></span>
+    @if (!isEditing()) {
+      <button mat-raised-button color="primary" (click)="toggleEdit()">
+        <mat-icon>edit</mat-icon>
+        {{ 'APP.EDIT' | translate }}
+      </button>
+      <button mat-raised-button color="warn" (click)="onDelete()">
+        <mat-icon>delete</mat-icon>
+        {{ 'APP.DELETE' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (isEditing()) {
+    <app-news-form
+      [editData]="item()"
+      (saved)="onSaved()"
+      (cancelled)="toggleEdit()">
+    </app-news-form>
+  } @else if (item()) {
+    <mat-card>
+      <mat-card-content>
+        <div class="detail-grid">
+          <div class="field">
+            <label>{{ 'NEWS.NEWS_NO' | translate }}</label>
+            <span>{{ item()!.newsNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.DOC_TYPE' | translate }}</label>
+            <span>{{ item()!.newsDoc }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.ARABIC_TITLE' | translate }}</label>
+            <span>{{ item()!.newsTit1 }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.SECOND_TITLE' | translate }}</label>
+            <span>{{ item()!.newsTit2 }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.DATE' | translate }}</label>
+            <span>{{ item()!.newsDte | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.DOCUMENT_DATE' | translate }}</label>
+            <span>{{ item()!.newsDteD | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.NUMBER' | translate }}</label>
+            <span>{{ item()!.newsNum }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.PUBLICATION' | translate }}</label>
+            <span>{{ item()!.newsPub }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.DESC_TYPE' | translate }}</label>
+            <span>{{ item()!.newsDesT }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.DESC_DATE' | translate }}</label>
+            <span>{{ item()!.newsDesD | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.DESC_PERSON' | translate }}</label>
+            <span>{{ item()!.newsDesP }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.DESC_NUMBER' | translate }}</label>
+            <span>{{ item()!.newsDesN }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'NEWS.APPENDIX' | translate }}</label>
+            <span>{{ item()!.newsMlh }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Keywords Section -->
+    <mat-card class="keywords-card">
+      <mat-card-header>
+        <mat-card-title>{{ 'NEWS.KEYWORDS' | translate }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-chip-set>
+          @for (keyword of item()!.keywords; track keyword) {
+            <mat-chip [removable]="true" (removed)="onRemoveKeyword(keyword)">
+              {{ keyword }}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+          }
+        </mat-chip-set>
+
+        @if (item()!.keywords.length === 0) {
+          <p class="no-keywords">{{ 'NEWS.NO_KEYWORDS' | translate }}</p>
+        }
+
+        @if (addingKeyword()) {
+          <div class="add-keyword-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'NEWS.NEW_KEYWORD' | translate }}</mat-label>
+              <input matInput [value]="newKeyword()" (input)="newKeyword.set($any($event.target).value)"
+                     (keyup.enter)="onAddKeyword()" maxlength="12">
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="onAddKeyword()">{{ 'APP.SAVE' | translate }}</button>
+            <button mat-button (click)="addingKeyword.set(false)">{{ 'APP.CANCEL' | translate }}</button>
+          </div>
+        } @else {
+          <button mat-stroked-button color="primary" (click)="addingKeyword.set(true)">
+            <mat-icon>add</mat-icon>
+            {{ 'NEWS.ADD_KEYWORD' | translate }}
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

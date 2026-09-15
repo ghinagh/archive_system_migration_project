@@ -1,0 +1,78 @@
+<div class="user-list">
+  <div class="header">
+    <h1>{{ 'USERS.TITLE' | translate }}</h1>
+    <div class="header-actions">
+      @if (isAdmin()) {
+        <button mat-raised-button color="warn" (click)="onMigratePasswords()">
+          <mat-icon>vpn_key</mat-icon> {{ 'USERS.MIGRATE_PASSWORDS' | translate }}
+        </button>
+      }
+      <button mat-raised-button color="primary" *appRequiresPermission="PERM_ADMIN" (click)="addNew()"><mat-icon>person_add</mat-icon> {{ 'USERS.ADD_NEW' | translate }}</button>
+    </div>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'USERS.LEVEL' | translate }}</mat-label>
+          <mat-select [value]="filterLevel()" (selectionChange)="filterLevel.set($event.value)">
+            <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+            <mat-option value="A">{{ 'USERS.LEVEL_ADMIN' | translate }}</mat-option>
+            <mat-option value="U">{{ 'USERS.LEVEL_USER' | translate }}</mat-option>
+            <mat-option value="G">{{ 'USERS.LEVEL_GUEST' | translate }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'USERS.ENTITY' | translate }}</mat-label>
+          <input matInput [value]="filterEntity()" (input)="filterEntity.set($any($event.target).value)" (keyup.enter)="applyFilter()">
+        </mat-form-field>
+        <div class="filter-actions">
+          <button mat-raised-button color="primary" (click)="applyFilter()"><mat-icon>search</mat-icon></button>
+          <button mat-button (click)="clearFilter()"><mat-icon>clear</mat-icon></button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (isLoading()) { <app-loading-spinner></app-loading-spinner> } @else {
+    <table mat-table [dataSource]="items()" class="full-width">
+      <ng-container matColumnDef="userNo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'USERS.USER_NO' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.userNo }}</td>
+      </ng-container>
+      <ng-container matColumnDef="userName">
+        <th mat-header-cell *matHeaderCellDef>{{ 'USERS.USER_NAME' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.userName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="userLevel">
+        <th mat-header-cell *matHeaderCellDef>{{ 'USERS.LEVEL' | translate }}</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="level-badge" [ngClass]="getLevelClass(r.userLevel)">{{ getLevelLabel(r.userLevel) }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="userEnt">
+        <th mat-header-cell *matHeaderCellDef>{{ 'USERS.ENTITY' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.userEnt }}</td>
+      </ng-container>
+      <ng-container matColumnDef="userPermission">
+        <th mat-header-cell *matHeaderCellDef>{{ 'USERS.PERMISSION' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.userPermission }}</td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th>
+        <td mat-cell *matCellDef="let r">
+          <ng-container *appRequiresPermission="PERM_ADMIN">
+            <button mat-icon-button color="primary" (click)="onEdit(r.userNo)" [matTooltip]="'APP.EDIT' | translate"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button color="accent" (click)="onResetPassword(r.userNo)" [matTooltip]="'USERS.RESET_PASSWORD' | translate"><mat-icon>lock_reset</mat-icon></button>
+            <button mat-icon-button color="warn" (click)="onDelete(r.userNo)" [matTooltip]="'APP.DELETE' | translate"><mat-icon>delete</mat-icon></button>
+          </ng-container>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="cols"></tr>
+      <tr mat-row *matRowDef="let r; columns: cols;"></tr>
+    </table>
+    @if (items().length === 0) { <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p> }
+    <mat-paginator [length]="total()" [pageSize]="pageSize()" [pageIndex]="pageIndex()" [pageSizeOptions]="[5,10,25]" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+  }
+</div>

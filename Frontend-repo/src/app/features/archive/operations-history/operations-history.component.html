@@ -1,0 +1,53 @@
+<div class="operations-section">
+  <div class="section-header">
+    <h2>{{ 'ARCHIVE.OPERATIONS' | translate }}</h2>
+    <button mat-mini-fab color="primary" (click)="openAddDialog()" [matTooltip]="'ARCHIVE.ADD_OPERATION' | translate">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (operations().length === 0) {
+    <p class="muted">{{ 'APP.NO_DATA' | translate }}</p>
+  } @else {
+    <table mat-table [dataSource]="operations()" class="full-width">
+      <ng-container matColumnDef="oprNo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.OPR_NO' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.oprNo }}</td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.DATE' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.date | date:'yyyy-MM-dd' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="fromSite">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.FROM' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.fromSite }}</td>
+      </ng-container>
+      <ng-container matColumnDef="toSite">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.TO' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.toSite }}</td>
+      </ng-container>
+      <ng-container matColumnDef="fromPerson">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.FROM_PERSON' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.fromPerson }}</td>
+      </ng-container>
+      <ng-container matColumnDef="toPerson">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.TO_PERSON' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.toPerson }}</td>
+      </ng-container>
+      <ng-container matColumnDef="remark">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.REMARK' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.remark }}</td>
+      </ng-container>
+      <ng-container matColumnDef="transferred">
+        <th mat-header-cell *matHeaderCellDef>{{ 'ARCHIVE.TRANSFERRED' | translate }}</th>
+        <td mat-cell *matCellDef="let row">
+          <mat-icon [color]="row.transferred ? 'primary' : 'warn'">{{ row.transferred ? 'check_circle' : 'cancel' }}</mat-icon>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  }
+</div>

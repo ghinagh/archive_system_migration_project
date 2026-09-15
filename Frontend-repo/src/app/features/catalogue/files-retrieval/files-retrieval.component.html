@@ -1,0 +1,103 @@
+<div class="files-retrieval">
+  <h1>{{ 'CATALOGUE.FILES_RETRIEVAL_TITLE' | translate }}</h1>
+
+  <div class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'CATALOGUE.TMP_FAD_NO' | translate }}</mat-label>
+      <input matInput maxlength="7" [value]="fadNo()" (input)="fadNo.set($any($event.target).value)" (keyup.enter)="search()">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'USERS.USER_NO' | translate }}</mat-label>
+      <input matInput [value]="userNo()" (input)="userNo.set($any($event.target).value)" (keyup.enter)="search()">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'CATALOGUE.TMP_STATUS' | translate }}</mat-label>
+      <mat-select [value]="finalStatus()" (selectionChange)="finalStatus.set($event.value)">
+        <mat-option [value]="null">{{ 'CATALOGUE.STATUS_ALL' | translate }}</mat-option>
+        <mat-option [value]="0">{{ 'CATALOGUE.TMP_PENDING' | translate }}</mat-option>
+        <mat-option [value]="1">{{ 'CATALOGUE.TMP_FINALIZED' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="search()">
+      <mat-icon>search</mat-icon>
+      {{ 'APP.SEARCH' | translate }}
+    </button>
+    <button mat-stroked-button (click)="clearFilters()">
+      {{ 'APP.CLEAR' | translate }}
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (searched() && items().length === 0) {
+    <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+  } @else if (items().length > 0) {
+    <table mat-table [dataSource]="items()" class="full-width">
+
+      <ng-container matColumnDef="tmpFadNo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TMP_FAD_NO' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.tmpFadNo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tmpFileName">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TMP_FILE_NAME' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.tmpFileName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tmpRmrk">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TMP_RMRK' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.tmpRmrk }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tmpMk">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TMP_MK' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.tmpMk }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tmpDate">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TMP_DATE' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.tmpDate | date:'yyyy-MM-dd' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tmpUserNo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TMP_USER' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.userName || r.tmpUserNo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TMP_STATUS' | translate }}</th>
+        <td mat-cell *matCellDef="let r">
+          @if (r.tmpFinal === 1) {
+            <span class="status-badge finalized">{{ 'CATALOGUE.TMP_FINALIZED' | translate }}</span>
+          } @else {
+            <span class="status-badge pending">{{ 'CATALOGUE.TMP_PENDING' | translate }}</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let r">
+          @if (r.tmpFinal === 0) {
+            <button mat-icon-button color="accent"
+                    [matTooltip]="'CATALOGUE.TMP_FINALIZE' | translate"
+                    (click)="finalize(r.tmpFadNo, r.tmpSer)">
+              <mat-icon>check_circle</mat-icon>
+            </button>
+          }
+          <button mat-icon-button color="warn"
+                  [matTooltip]="'APP.DELETE' | translate"
+                  (click)="delete(r.tmpFadNo, r.tmpSer)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let r; columns: displayedColumns"></tr>
+    </table>
+  }
+</div>

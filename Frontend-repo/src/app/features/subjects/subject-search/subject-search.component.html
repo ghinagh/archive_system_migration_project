@@ -1,0 +1,15 @@
+<mat-form-field appearance="outline" class="full-width">
+  <mat-label>{{ 'SUBJECTS.SEARCH' | translate }}</mat-label>
+  <mat-icon matPrefix>search</mat-icon>
+  <input matInput [formControl]="searchControl" [matAutocomplete]="subjectAuto">
+  <mat-autocomplete #subjectAuto="matAutocomplete"
+                    [displayWith]="displaySubject"
+                    (optionSelected)="onSelected($event.option.value)">
+    @for (subject of filteredSubjects$ | async; track subject.code) {
+      <mat-option [value]="subject">
+        <span class="code-badge">{{ subject.code }}</span>
+        {{ subject.description }}
+      </mat-option>
+    }
+  </mat-autocomplete>
+</mat-form-field>

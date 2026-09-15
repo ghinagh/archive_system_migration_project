@@ -1,0 +1,36 @@
+.condition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.condition-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.conjunction-field {
+  width: 5.5rem;
+}
+
+.field-field,
+.operator-field {
+  width: 11rem;
+}
+
+.value-field {
+  width: 11rem;
+}
+
+.condition-actions {
+  margin-top: 0.25rem;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}

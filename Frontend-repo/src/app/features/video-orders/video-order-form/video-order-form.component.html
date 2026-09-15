@@ -1,0 +1,75 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ (isEditMode() ? 'VIDEO_ORDERS.EDIT_TITLE' : 'VIDEO_ORDERS.NEW_ORDER') | translate }}</h1>
+  </div>
+
+  @if (pageLoading()) { <app-loading-spinner></app-loading-spinner> } @else {
+    <mat-card><mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'VIDEO_ORDERS.ORDER_NO' | translate }}</mat-label>
+            <input matInput formControlName="orderNo" maxlength="20">
+            @if (form.get('orderNo')?.hasError('required') && form.get('orderNo')?.touched) {
+              <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'VIDEO_ORDERS.STOCK_NO' | translate }}</mat-label>
+            <input matInput formControlName="stockNo" maxlength="6">
+            @if (form.get('stockNo')?.hasError('required') && form.get('stockNo')?.touched) {
+              <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'VIDEO_ORDERS.CHART' | translate }}</mat-label>
+            <input matInput type="number" formControlName="chartId">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'VIDEO_ORDERS.REQUESTED_BY' | translate }}</mat-label>
+            <input matInput formControlName="requestedBy" maxlength="30">
+            @if (form.get('requestedBy')?.hasError('required') && form.get('requestedBy')?.touched) {
+              <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'VIDEO_ORDERS.REQUEST_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="requestDate">
+            @if (form.get('requestDate')?.hasError('required') && form.get('requestDate')?.touched) {
+              <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+            }
+          </mat-form-field>
+
+          @if (isEditMode()) {
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'VIDEO_ORDERS.STATUS' | translate }}</mat-label>
+              <mat-select formControlName="status">
+                <mat-option value="PENDING">{{ 'VIDEO_ORDERS.STATUS_PENDING' | translate }}</mat-option>
+                <mat-option value="APPROVED">{{ 'VIDEO_ORDERS.STATUS_APPROVED' | translate }}</mat-option>
+                <mat-option value="COMPLETED">{{ 'VIDEO_ORDERS.STATUS_COMPLETED' | translate }}</mat-option>
+                <mat-option value="CANCELLED">{{ 'VIDEO_ORDERS.STATUS_CANCELLED' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          }
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'VIDEO_ORDERS.DESCRIPTION' | translate }}</mat-label>
+            <textarea matInput formControlName="description" rows="2" maxlength="200"></textarea>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+            @if (isLoading()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ 'APP.SAVE' | translate }} }
+          </button>
+          <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+        </div>
+      </form>
+    </mat-card-content></mat-card>
+  }
+</div>

@@ -1,0 +1,23 @@
+<div class="form-page">
+  <div class="header"><button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button><h1>{{ 'DIGITIZATION.ADD_RESULT' | translate }}</h1></div>
+  <mat-card><mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.RESULT_NO' | translate }}</mat-label><input matInput formControlName="resultNo" maxlength="7"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.SERIAL' | translate }}</mat-label><input matInput type="number" formControlName="serial"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.DIGIT_NO' | translate }}</mat-label><input matInput formControlName="digitNo" maxlength="6"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.TYPE' | translate }}</mat-label><input matInput formControlName="type" maxlength="3"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'ARCHIVE.DATE' | translate }}</mat-label><input matInput type="datetime-local" formControlName="date"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.USER' | translate }}</mat-label><input matInput formControlName="userNo" maxlength="3"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.PERSON' | translate }}</mat-label><input matInput formControlName="person" maxlength="50"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.COTE' | translate }}</mat-label><input matInput formControlName="cote" maxlength="3"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.PERMIT' | translate }}</mat-label><input matInput formControlName="permit" maxlength="2"></mat-form-field>
+        <mat-form-field appearance="outline" class="full-width"><mat-label>{{ 'DIGITIZATION.SUBJECT' | translate }}</mat-label><input matInput formControlName="subject" maxlength="50"></mat-form-field>
+      </div>
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">{{ 'APP.SAVE' | translate }}</button>
+        <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+      </div>
+    </form>
+  </mat-card-content></mat-card>
+</div>

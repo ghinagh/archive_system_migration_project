@@ -1,0 +1,291 @@
+<div class="doc-form-page">
+
+  <div class="doc-form-stage">
+
+    <!-- توليتبار: matches Form6's 11-button vertical rail -->
+    <div class="doc-toolbar">
+      <button type="button" mat-raised-button (click)="onNewRecord()">
+        <mat-icon>note_add</mat-icon>
+        {{ 'DOC_FORM.NEW_RECORD' | translate }}
+      </button>
+      <button type="button" mat-raised-button color="primary" (click)="onSave()" [disabled]="isSaving()">
+        <mat-icon>save</mat-icon>
+        {{ 'DOC_FORM.SAVE' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onSearch()">
+        <mat-icon>tag</mat-icon>
+        {{ 'DOC_FORM.SEARCH' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onCancelForm()">
+        <mat-icon>block</mat-icon>
+        {{ 'DOC_FORM.CANCEL' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onPrevious()">
+        <mat-icon>arrow_forward</mat-icon>
+        {{ 'DOC_FORM.PREVIOUS' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onNext()">
+        <mat-icon>arrow_back</mat-icon>
+        {{ 'DOC_FORM.NEXT' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onSearchByTitle()">
+        <mat-icon>title</mat-icon>
+        {{ 'DOC_FORM.SEARCH_BY_TITLE' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onExit()">
+        <mat-icon>logout</mat-icon>
+        {{ 'DOC_FORM.EXIT' | translate }}
+      </button>
+      <button type="button" mat-raised-button class="btn-lock" (click)="onOpenPermission()">
+        <mat-icon>lock_open</mat-icon>
+        {{ 'DOC_FORM.OPEN_PERMISSION' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onAnalysis()">
+        <mat-icon>account_tree</mat-icon>
+        {{ 'DOC_FORM.ANALYSIS' | translate }}
+      </button>
+      <button type="button" mat-raised-button (click)="onLast()">
+        <mat-icon>last_page</mat-icon>
+        {{ 'DOC_FORM.LAST' | translate }}
+      </button>
+    </div>
+
+    <!-- Main canvas -->
+    <div class="doc-canvas">
+
+      @if (isLoading()) {
+        <app-loading-spinner></app-loading-spinner>
+      }
+
+      <form [formGroup]="form">
+
+        <!-- Row A + B Combined -->
+        <div class="doc-panel">
+          <div class="doc-row cols-2">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.APP_NO' | translate }}</mat-label>
+              <input matInput formControlName="appNo" maxlength="7">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.ENTRY_DATE' | translate }}</mat-label>
+              <input matInput type="datetime-local" formControlName="entryDate" #entryDateInput>
+              <button type="button" mat-icon-button matSuffix (click)="entryDateInput.showPicker()">
+                <mat-icon>calendar_today</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+          <div class="doc-row cols-2">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.DATA_ENTRY' | translate }}</mat-label>
+              <mat-select formControlName="dataEntry" panelClass="doc-form-panel">
+                @if (dataEntryOptions().length === 0) {
+                  <mat-option disabled>جاري التحميل...</mat-option>
+                } @else {
+                  @for (opt of dataEntryOptions(); track opt.code) {
+                    <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+                  }
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.DOCUMENTER' | translate }}</mat-label>
+              <mat-select formControlName="appDoc" panelClass="doc-form-panel">
+                @if (appDocOptions().length === 0) {
+                  <mat-option disabled>جاري التحميل...</mat-option>
+                } @else {
+                  @for (opt of appDocOptions(); track opt.code) {
+                    <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+                  }
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Row C / D -->
+        <div class="doc-panel">
+          <div class="doc-row cols-2">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.DOCUMENT_SOURCE' | translate }}</mat-label>
+              <input matInput class="periodical-lookup-input" [formControl]="sourceCtrl" [matAutocomplete]="sourceAuto" #sourceTrigger="matAutocompleteTrigger" #sourceInputEl (mousedown)="onPeriodicalTriggerMouseDown($event, sourceInputEl, sourceTrigger)">
+              <mat-icon matSuffix class="periodical-lookup-suffix" [class.periodical-lookup-suffix-open]="sourceTrigger.panelOpen" (mousedown)="onPeriodicalTriggerMouseDown($event, sourceInputEl, sourceTrigger)">arrow_drop_down</mat-icon>
+              <mat-autocomplete #sourceAuto="matAutocomplete" class="doc-form-panel" autoActiveFirstOption [displayWith]="displayPeriodical" (optionSelected)="onSourceSelected($event)">
+                @for (opt of sourceOptions(); track opt.perNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.DOCUMENT_DATE' | translate }}</mat-label>
+              <input matInput type="datetime-local" formControlName="date" #dateInput>
+              <button type="button" mat-icon-button matSuffix (click)="dateInput.showPicker()">
+                <mat-icon>calendar_today</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+          <div class="doc-row cols-2">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.TRANSLATION_SOURCE' | translate }}</mat-label>
+              <input matInput class="periodical-lookup-input" [formControl]="translationSourceCtrl" [matAutocomplete]="translationAuto" #translationTrigger="matAutocompleteTrigger" #translationInputEl (mousedown)="onPeriodicalTriggerMouseDown($event, translationInputEl, translationTrigger)">
+              <mat-icon matSuffix class="periodical-lookup-suffix" [class.periodical-lookup-suffix-open]="translationTrigger.panelOpen" (mousedown)="onPeriodicalTriggerMouseDown($event, translationInputEl, translationTrigger)">arrow_drop_down</mat-icon>
+              <mat-autocomplete #translationAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayPeriodical" (optionSelected)="onTranslationSourceSelected($event)">
+                @for (opt of translationSourceOptions(); track opt.perNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.TRANSLATION_DATE' | translate }}</mat-label>
+              <input matInput type="datetime-local" formControlName="date1" #date1Input>
+              <button type="button" mat-icon-button matSuffix (click)="date1Input.showPicker()">
+                <mat-icon>calendar_today</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Titles + Small multi-field row (combined, two independently bordered sections side by side) -->
+        <div class="doc-split-row">
+        <div class="doc-panel">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'DOC_FORM.MAIN_TITLE' | translate }}</mat-label>
+            <input matInput formControlName="activeTitleAr" maxlength="125">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'DOC_FORM.SUBTITLE' | translate }}</mat-label>
+            <input matInput formControlName="additionalCatalogueTitle" maxlength="125">
+          </mat-form-field>
+        </div>
+
+        <div class="doc-panel">
+          <div class="doc-row cols-5">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.DOC_TYPE' | translate }}</mat-label>
+              <mat-select formControlName="subjectType" panelClass="doc-form-panel">
+                @for (opt of subjectTypeOptions(); track opt.code) {
+                  <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.LANGUAGE' | translate }}</mat-label>
+              <mat-select formControlName="lang1" panelClass="doc-form-panel">
+                @for (opt of articleLangOptions(); track opt.code) {
+                  <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.PAGE_COUNT' | translate }}</mat-label>
+              <input matInput formControlName="pageNo" maxlength="5">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.ISSUE_NO' | translate }}</mat-label>
+              <input matInput type="number" formControlName="articleNo">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'DOC_FORM.DOC_NATURE' | translate }}</mat-label>
+              <mat-select formControlName="documentNature" panelClass="doc-form-panel">
+                <mat-option value="ع">{{ 'DOC_FORM.DOC_NATURE_PUBLIC' | translate }}</mat-option>
+                <mat-option value="س">{{ 'DOC_FORM.DOC_NATURE_SECRET' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        </div>
+
+      <!-- Authors / responsibility grid -->
+      <div class="doc-panel">
+        <p class="doc-panel-title doc-panel-title-lg">{{ 'DOC_FORM.AUTHORS_GRID' | translate }}</p>
+        @if (!savedAppNo()) {
+          <p class="no-data">{{ 'DOC_FORM.SAVE_FIRST' | translate }}</p>
+        } @else {
+          @if (isAddingAuthor()) {
+            <div [formGroup]="authorRoleForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.AUTHOR_NAME' | translate }}</mat-label>
+                <input matInput [formControl]="authorCtrl" [matAutocomplete]="authorAuto" #authorInputEl>
+                <mat-autocomplete #authorAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayAuthor" (optionSelected)="onAuthorSelected($event)">
+                  @for (opt of authorOptions(); track opt.id) {
+                    <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="add-field-sm">
+                <mat-label>{{ 'CATALOGUE.RESOURCE_TYPE' | translate }}</mat-label>
+                <mat-select formControlName="resourceType" panelClass="doc-form-panel">
+                  @for (opt of resourceTypeOptions(); track opt.code) {
+                    <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddAuthor()">
+                <mat-icon>check</mat-icon>
+              </button>
+              <button type="button" mat-icon-button (click)="onCancelAddAuthor()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="isLocked()" (click)="isAddingAuthor.set(true)">
+              <mat-icon>add</mat-icon>
+              {{ 'DOC_FORM.ADD_AUTHOR' | translate }}
+            </button>
+          }
+
+          <!-- Legacy DataGrid2's column headers (نوع المسؤولية البيانية / المسؤول البياني)
+               are always visible, even with zero rows — the table must render
+               unconditionally with *matNoDataRow instead of being replaced entirely
+               by a text message when linkedAuthors() is empty. -->
+          <table mat-table [dataSource]="linkedAuthors()" class="full-width">
+            <ng-container matColumnDef="authorName">
+              <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.AUTHOR_NAME' | translate }}</th>
+              <td mat-cell *matCellDef="let r">{{ r.authorName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="resourceType">
+              <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.RESOURCE_TYPE' | translate }}</th>
+              <td mat-cell *matCellDef="let r">{{ r.resourceTypeDescription || r.resourceType }}</td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let r">
+                <button type="button" mat-icon-button color="primary" [disabled]="isLocked()" (click)="onEditAuthor(r)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button type="button" mat-icon-button color="warn" [disabled]="isLocked()" (click)="onRemoveAuthor(r.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="['resourceType','authorName','actions']"></tr>
+            <tr mat-row *matRowDef="let r; columns: ['resourceType','authorName','actions']"></tr>
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td class="mat-mdc-cell no-data-cell" colspan="3">{{ 'APP.NO_DATA' | translate }}</td>
+            </tr>
+          </table>
+        }
+      </div>
+
+      <!-- Digital-file linking grid -->
+      <div class="doc-panel">
+        <p class="doc-panel-title doc-panel-title-lg">{{ 'DOC_FORM.FILES_GRID' | translate }}</p>
+        @if (!savedAppNo()) {
+          <p class="no-data">{{ 'DOC_FORM.SAVE_FIRST' | translate }}</p>
+        } @else {
+          <app-digital-files-grid #filesGrid [docNo]="savedAppNo()!"></app-digital-files-grid>
+        }
+      </div>
+
+      <!-- Abstract -->
+      <div class="doc-panel">
+        <p class="doc-panel-title">{{ 'DOC_FORM.ABSTRACT' | translate }}</p>
+        <mat-form-field appearance="outline" class="full-width">
+          <textarea matInput formControlName="result" rows="4" maxlength="1000"></textarea>
+        </mat-form-field>
+      </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>

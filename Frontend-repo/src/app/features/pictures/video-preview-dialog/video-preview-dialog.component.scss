@@ -1,0 +1,31 @@
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon { color: #3f51b5; }
+}
+
+.dialog-content {
+  min-width: 560px;
+  min-height: 120px;
+  padding-top: 8px;
+}
+
+.dialog-loading,
+.dialog-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 0;
+
+  p { margin: 0; color: #666; font-size: 14px; }
+}
+
+.dialog-error mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}

@@ -1,0 +1,215 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="cancel()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ (isEdit() ? 'BOOKS.EDIT_TITLE' : 'BOOKS.ADD_NEW') | translate }}</h1>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <!-- Main Info -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>{{ 'BOOKS.SECTION_MAIN' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.APP_NO' | translate }}</mat-label>
+              <input matInput formControlName="appNo" [readonly]="isEdit()">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.ARABIC_TITLE' | translate }}</mat-label>
+              <input matInput formControlName="activeTitleAr" dir="rtl">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.ADDITIONAL_TITLE' | translate }}</mat-label>
+              <input matInput formControlName="additionalCatalogueTitle">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.DATA_ENTRY_CODE' | translate }}</mat-label>
+              <input matInput formControlName="selectNo">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.DOC_TYPE' | translate }}</mat-label>
+              <input matInput formControlName="documentType">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Publication -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>{{ 'BOOKS.SECTION_PUBLICATION' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PUBLISHER' | translate }}</mat-label>
+              <input matInput [formControl]="publisherCtrl" [matAutocomplete]="publisherAuto">
+              <mat-autocomplete #publisherAuto [displayWith]="displayAuthor" (optionSelected)="onPublisherSelected($event)">
+                @for (opt of publisherOptions(); track opt.id) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PUB_LOCATION' | translate }}</mat-label>
+              <input matInput formControlName="publishLocation">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PUB_TYPE' | translate }}</mat-label>
+              <input matInput formControlName="publishType">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PUB_DATE' | translate }}</mat-label>
+              <input matInput formControlName="publishDate" type="date">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.EDITION' | translate }}</mat-label>
+              <input matInput formControlName="edition" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PAGES' | translate }}</mat-label>
+              <input matInput formControlName="pageCount" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PRINT_NO' | translate }}</mat-label>
+              <input matInput formControlName="materialCount">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.VOLUME' | translate }}</mat-label>
+              <input matInput formControlName="volume" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PRICE' | translate }}</mat-label>
+              <input matInput formControlName="price" type="number">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Classification -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>{{ 'BOOKS.SECTION_CLASSIFICATION' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.LANGUAGE' | translate }}</mat-label>
+              <mat-select formControlName="lang">
+                <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+                <mat-option value="A">{{ 'BOOKS.LANG_AR' | translate }}</mat-option>
+                <mat-option value="F">{{ 'BOOKS.LANG_FR' | translate }}</mat-option>
+                <mat-option value="E">{{ 'BOOKS.LANG_EN' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.LANG1' | translate }}</mat-label>
+              <mat-select formControlName="lang1">
+                <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+                <mat-option value="A">{{ 'BOOKS.LANG_AR' | translate }}</mat-option>
+                <mat-option value="F">{{ 'BOOKS.LANG_FR' | translate }}</mat-option>
+                <mat-option value="E">{{ 'BOOKS.LANG_EN' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.COVER_TYPE' | translate }}</mat-label>
+              <input matInput formControlName="cover">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-checkbox formControlName="isSeries">{{ 'BOOKS.IS_SERIES' | translate }}</mat-checkbox>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.SERIES_TITLE' | translate }}</mat-label>
+              <input matInput formControlName="seriesTitle">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.SERIES_NO' | translate }}</mat-label>
+              <input matInput formControlName="seriesNo" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.PART_NO' | translate }}</mat-label>
+              <input matInput formControlName="partNo" type="number">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Additional -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>{{ 'BOOKS.SECTION_ADDITIONAL' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.KHALIF' | translate }}</mat-label>
+              <input matInput formControlName="khalif">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.WATHIQ_TYPE' | translate }}</mat-label>
+              <input matInput formControlName="rdmk">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.QUARTER' | translate }}</mat-label>
+              <input matInput formControlName="quarter">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.SAVE_FLAG' | translate }}</mat-label>
+              <input matInput formControlName="save" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.FREE_FLAG' | translate }}</mat-label>
+              <input matInput formControlName="free" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.IKTDTE' | translate }}</mat-label>
+              <input matInput formControlName="acquisitionDate" type="date">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.TRANSLATOR' | translate }}</mat-label>
+              <input matInput [formControl]="translatorCtrl" [matAutocomplete]="translatorAuto">
+              <mat-autocomplete #translatorAuto [displayWith]="displayAuthor" (optionSelected)="onTranslatorSelected($event)">
+                @for (opt of translatorOptions(); track opt.id) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'BOOKS.CONTENT' | translate }}</mat-label>
+              <textarea matInput formControlName="content" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'BOOKS.MEMO' | translate }}</mat-label>
+              <textarea matInput formControlName="memo" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'BOOKS.RESULT' | translate }}</mat-label>
+              <input matInput formControlName="result">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="form-actions">
+        <button mat-button type="button" (click)="cancel()">{{ 'APP.CANCEL' | translate }}</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isSaving()">
+          {{ 'APP.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

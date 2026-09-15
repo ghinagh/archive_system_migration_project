@@ -1,0 +1,418 @@
+// Same "engineering schematic" blueprint theme as documentation-form.component.scss,
+// duplicated locally (no shared theme file exists yet) so this screen — the actual
+// replacement for Form2.frm's التحليل button — visually matches the rest of the app's
+// legacy-mirroring screens instead of looking like a generic Material list.
+:host {
+  --bg: #16232f;
+  --panel: #1e3243;
+  --panel-2: #24394b;
+  --line: #4f7691;
+  --line-soft: #33506655;
+  --ink: #e9f1f6;
+  --ink-dim: #9db3c2;
+  --accent: #e0b455;
+  --accent-dim: #e0b45533;
+  --danger: #d98a6b;
+
+  display: block;
+}
+
+.analysis-stage {
+  // Form2.frm's control positions are fixed twip coordinates — VB6's RightToLeft
+  // only affects text reading order inside each control, it never reflows the
+  // form itself. This component must behave the same way: the app sets
+  // <html dir="rtl"> in Arabic mode, and CSS Grid auto-placement is direction-
+  // relative, so without this the toolbar and the two analysis-body columns
+  // silently swap sides in Arabic — forcing ltr here pins the physical layout,
+  // while direction: rtl is restored below on every box that holds actual text.
+  direction: ltr;
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  background:
+    linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/28px 100%,
+    var(--bg);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: "Segoe UI", "Tahoma", sans-serif;
+}
+
+.analysis-toolbar {
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 8px;
+  align-self: start;
+
+  button {
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.doc-identity {
+  direction: rtl;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+
+  .field { display: flex; gap: 6px; }
+  .field label { color: var(--ink-dim); }
+  .field span { color: var(--ink); font-weight: 600; }
+  .text-status { margin-inline-start: auto; font-weight: 700; }
+  .text-status.has-text { color: var(--accent); }
+  .text-status.no-text { color: var(--danger); }
+}
+
+.media-placeholder {
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 140px;
+  background: var(--panel-2);
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  color: var(--ink-dim);
+  font-size: 12.5px;
+  text-align: center;
+
+  mat-icon { font-size: 28px; width: 28px; height: 28px; opacity: .6; }
+}
+
+.analysis-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.search-mode-row {
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+
+  .search-mode-hint {
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    font-style: italic;
+  }
+}
+
+.analysis-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analysis-left,
+.analysis-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.analysis-panel-box {
+  direction: rtl;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.list-box-header {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.list-box-body {
+  max-height: 160px;
+  overflow-y: auto;
+  background: var(--panel-2);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--ink);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.selectable {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--accent-dim);
+    }
+  }
+
+  &.selected {
+    background: var(--accent-dim);
+    border-inline-start: 3px solid var(--accent);
+  }
+}
+
+.no-data {
+  font-style: italic;
+  color: var(--ink-dim);
+  padding: 8px;
+  margin: 0;
+  font-size: 12px;
+}
+
+.hint {
+  direction: rtl;
+  color: var(--ink-dim);
+  font-style: italic;
+  font-size: 13px;
+  margin: 0;
+}
+
+.relation-stepper {
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.relation-no-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+
+  .relation-no-label {
+    font-size: 10px;
+    color: var(--ink-dim);
+  }
+
+  .relation-no-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: "Consolas", "Courier New", monospace;
+  }
+}
+
+.time-date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.time-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .add-field {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .add-field-sm {
+    width: 80px;
+    flex-shrink: 0;
+  }
+}
+
+.add-btn {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .analysis-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+
+    button {
+      width: auto;
+      flex: 1 1 auto;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Material internals: piercing view encapsulation for the same dark theming
+// documentation-form.component.scss already applies to its own Material controls.
+// ---------------------------------------------------------------------------
+:host ::ng-deep {
+  // MDC's button height is a fixed token and its label span is nowrap by default,
+  // so multi-word Arabic labels (فتح النص / اغلاق الصفحة / ملفات اضافية للترميز)
+  // spilled text past the button border instead of wrapping — same bug already
+  // fixed on documentation-form's .doc-toolbar, applied the same way here.
+  .analysis-toolbar button.mat-mdc-raised-button {
+    --mdc-protected-button-container-color: var(--panel-2);
+    --mdc-protected-button-label-text-color: var(--ink);
+    background-color: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: none;
+    border-radius: 4px;
+    height: auto;
+    min-height: 44px;
+    padding: 8px 10px;
+    white-space: normal;
+    line-height: 1.25;
+
+    .mdc-button__label {
+      white-space: normal;
+      overflow-wrap: break-word;
+      text-align: start;
+    }
+
+    .mat-icon {
+      color: var(--ink);
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      border-color: var(--accent);
+    }
+  }
+
+  .analysis-panel-box button.mat-mdc-outlined-button,
+  .relation-stepper button.mat-mdc-outlined-button {
+    color: var(--ink);
+    border-color: var(--line);
+
+    &:hover {
+      border-color: var(--accent);
+    }
+  }
+
+  .analysis-panel-box button.mat-mdc-icon-button .mat-icon,
+  .list-row button.mat-mdc-icon-button .mat-icon {
+    color: var(--danger);
+  }
+
+  .analysis-panel-box .mat-mdc-form-field,
+  .search-mode-row .mat-mdc-form-field {
+    --mdc-outlined-text-field-outline-color: var(--line);
+    --mdc-outlined-text-field-hover-outline-color: var(--accent);
+    --mdc-outlined-text-field-focus-outline-color: var(--accent);
+    --mdc-outlined-text-field-label-text-color: var(--ink-dim);
+    --mdc-outlined-text-field-focus-label-text-color: var(--accent);
+    --mdc-outlined-text-field-input-text-color: var(--ink);
+  }
+
+  .analysis-panel-box .mat-mdc-text-field-wrapper {
+    background-color: var(--panel-2);
+    border-radius: 4px;
+  }
+
+  .analysis-panel-box .mdc-floating-label,
+  .analysis-panel-box .mat-mdc-floating-label {
+    color: var(--ink-dim);
+  }
+
+  .analysis-panel-box input.mat-mdc-input-element,
+  .analysis-panel-box textarea.mat-mdc-input-element {
+    color: var(--ink);
+    caret-color: var(--accent);
+  }
+
+  // Visual "this opens a list" cue on the MACNZ/form pickers — a plain
+  // <input> + hidden mat-autocomplete otherwise looks identical to free text.
+  .analysis-panel-box .mat-mdc-form-field-icon-suffix .mat-icon {
+    color: var(--ink-dim);
+  }
+
+  .analysis-panel-box .mat-mdc-form-field-hint {
+    color: var(--ink-dim);
+    font-size: 10.5px;
+  }
+
+  .search-mode-row .mdc-form-field label {
+    color: var(--ink);
+  }
+
+  .search-mode-row .mdc-radio__outer-circle {
+    border-color: var(--ink-dim);
+  }
+
+  .search-mode-row .mat-mdc-radio-checked .mdc-radio__outer-circle {
+    border-color: var(--accent);
+  }
+
+  .search-mode-row .mdc-radio__inner-circle {
+    border-color: var(--accent);
+  }
+}

@@ -1,0 +1,7 @@
+<h1>{{ 'REPORTS.TITLE' | translate }}</h1>
+<mat-tab-group>
+  <mat-tab [label]="'REPORTS.TEMPLATES' | translate"><app-template-list></app-template-list></mat-tab>
+  <mat-tab [label]="'REPORTS.USER_OUTPUTS' | translate"><app-user-output-list></app-user-output-list></mat-tab>
+  <mat-tab [label]="'REPORTS.VIEWER.TAB' | translate"><app-report-viewer></app-report-viewer></mat-tab>
+  <mat-tab [label]="'REPORTS.EXECUTION.TAB' | translate"><app-report-execution></app-report-execution></mat-tab>
+</mat-tab-group>

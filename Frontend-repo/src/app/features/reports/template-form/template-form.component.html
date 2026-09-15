@@ -1,0 +1,142 @@
+<div class="form-page">
+  <div class="header"><button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button><h1>{{ (isEditMode() ? 'APP.EDIT' : 'REPORTS.ADD_TEMPLATE') | translate }}</h1></div>
+  @if (pageLoading()) { <app-loading-spinner></app-loading-spinner> } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-accordion multi>
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header><mat-panel-title>{{ 'REPORTS.SECTION_BASIC' | translate }}</mat-panel-title></mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.NUM' | translate }}</mat-label><input matInput type="number" formControlName="outputNum"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.NAME' | translate }}</mat-label><input matInput formControlName="name" maxlength="20"></mat-form-field>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>{{ 'REPORTS.DESC' | translate }}</mat-label><input matInput formControlName="description" maxlength="40"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.DISPLAY' | translate }}</mat-label><input matInput formControlName="display"></mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- ── Field Ordering ───────────────────────────────────── -->
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header><mat-panel-title>{{ 'REPORTS.TEMPLATE.FIELD_ORDER_TITLE' | translate }}</mat-panel-title></mat-expansion-panel-header>
+
+          <div class="field-order-section">
+            <p class="section-hint">{{ 'REPORTS.TEMPLATE.FIELD_ORDER_HINT' | translate }}</p>
+
+            <div cdkDropList class="chip-drop-list" (cdkDropListDropped)="onFieldDrop($event)">
+              @for (chip of fieldChips(); track chip; let i = $index) {
+                <div class="draggable-chip" cdkDrag>
+                  <mat-icon class="drag-handle" cdkDragHandle>drag_indicator</mat-icon>
+                  <span class="chip-index">{{ i + 1 }}</span>
+                  <span class="chip-label">{{ chip }}</span>
+                  <button mat-icon-button type="button" class="remove-chip" (click)="removeFieldChip(i)">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              }
+              @if (fieldChips().length === 0) {
+                <p class="empty-hint">{{ 'REPORTS.TEMPLATE.FIELD_ORDER_EMPTY' | translate }}</p>
+              }
+            </div>
+
+            <div class="add-field-row">
+              <mat-form-field appearance="outline" class="add-field-input">
+                <mat-label>{{ 'REPORTS.TEMPLATE.ADD_FIELD' | translate }}</mat-label>
+                <input matInput #newFieldInput
+                  (keydown.enter)="$event.preventDefault(); addFieldChip(newFieldInput)"
+                  maxlength="30">
+              </mat-form-field>
+              <button mat-stroked-button type="button" (click)="addFieldChip(newFieldInput)">
+                <mat-icon>add</mat-icon>{{ 'REPORTS.TEMPLATE.ADD_FIELD_BTN' | translate }}
+              </button>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- ── Condition Builder ─────────────────────────────────── -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header><mat-panel-title>{{ 'REPORTS.SECTION_CONDITIONS' | translate }}</mat-panel-title></mat-expansion-panel-header>
+
+          <div class="condition-builder">
+            @for (row of conditionRows(); track $index; let i = $index; let isFirst = $first) {
+              <div class="condition-row">
+                @if (!isFirst) {
+                  <mat-button-toggle-group
+                    class="junction-toggle"
+                    [value]="conditionRows()[i - 1].junction"
+                    (change)="updateConditionRow(i - 1, { junction: $any($event).value })">
+                    <mat-button-toggle value="AND">AND</mat-button-toggle>
+                    <mat-button-toggle value="OR">OR</mat-button-toggle>
+                  </mat-button-toggle-group>
+                }
+
+                <mat-form-field appearance="outline" class="cond-field">
+                  <mat-label>{{ 'REPORTS.TEMPLATE.COND_FIELD' | translate }}</mat-label>
+                  <input matInput [value]="row.field"
+                    (input)="updateConditionRow(i, { field: $any($event.target).value })">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="cond-op">
+                  <mat-label>{{ 'REPORTS.TEMPLATE.COND_OPERATOR' | translate }}</mat-label>
+                  <mat-select [value]="row.operator"
+                    (selectionChange)="updateConditionRow(i, { operator: $event.value })">
+                    @for (op of operators; track op) {
+                      <mat-option [value]="op">{{ op }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="cond-value">
+                  <mat-label>{{ 'REPORTS.TEMPLATE.COND_VALUE' | translate }}</mat-label>
+                  <input matInput [value]="row.value"
+                    (input)="updateConditionRow(i, { value: $any($event.target).value })">
+                </mat-form-field>
+
+                <button mat-icon-button type="button" color="warn"
+                  [disabled]="conditionRows().length === 1"
+                  (click)="removeConditionRow(i)">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            }
+
+            <button mat-stroked-button type="button" class="add-row-btn" (click)="addConditionRow()">
+              <mat-icon>add</mat-icon>{{ 'REPORTS.TEMPLATE.ADD_CONDITION' | translate }}
+            </button>
+          </div>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel>
+          <mat-expansion-panel-header><mat-panel-title>{{ 'REPORTS.SECTION_SELECTION' | translate }}</mat-panel-title></mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.SELECT' | translate }}</mat-label><input matInput formControlName="selectClause"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.FIELD_SELECT' | translate }}</mat-label><input matInput formControlName="fieldSelect"></mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel>
+          <mat-expansion-panel-header><mat-panel-title>{{ 'REPORTS.SECTION_CONFIG' | translate }}</mat-panel-title></mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.LENGTH' | translate }}</mat-label><input matInput type="number" formControlName="length"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.LENGTH1' | translate }}</mat-label><input matInput type="number" formControlName="length1"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.NATURE' | translate }}</mat-label><input matInput formControlName="nature" maxlength="1"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.TYPE' | translate }}</mat-label><input matInput formControlName="type" maxlength="1"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.SEEK' | translate }}</mat-label><input matInput formControlName="seek" maxlength="1"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.IF_FLAG' | translate }}</mat-label><input matInput formControlName="ifCondition" maxlength="1"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.CHOICE' | translate }}</mat-label><input matInput type="number" formControlName="choice"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.EXTENSION' | translate }}</mat-label><input matInput formControlName="extension" maxlength="5"></mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel>
+          <mat-expansion-panel-header><mat-panel-title>{{ 'REPORTS.SECTION_CATEGORY' | translate }}</mat-panel-title></mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.CATEGORY' | translate }}</mat-label><input matInput formControlName="category" maxlength="2"></mat-form-field>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">{{ 'APP.SAVE' | translate }}</button>
+        <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+      </div>
+    </form>
+  }
+</div>

@@ -1,0 +1,131 @@
+<div class="retrieval-page">
+
+  <div class="retrieval-toolbar">
+    <button mat-stroked-button (click)="close()">
+      <mat-icon>close</mat-icon>
+      {{ 'RETRIEVAL.CLOSE' | translate }}
+    </button>
+    <h1 class="retrieval-title">{{ 'RETRIEVAL.TITLE' | translate }}</h1>
+    <button mat-raised-button color="primary" (click)="runSearch()">
+      <mat-icon>search</mat-icon>
+      {{ 'RETRIEVAL.RUN_SEARCH' | translate }}
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="accumulator">
+    <mat-label>{{ 'RETRIEVAL.ACCUMULATED_QUESTIONS' | translate }}</mat-label>
+    <textarea matInput [value]="accumulatorText()" readonly rows="3"></textarea>
+  </mat-form-field>
+
+  <div class="logic-toolbar">
+    <button mat-flat-button color="primary" (click)="addCondition()">
+      <mat-icon>add</mat-icon>{{ 'RETRIEVAL.ADD_CONDITION' | translate }}
+    </button>
+    <button mat-stroked-button (click)="clearAll()">
+      <mat-icon>block</mat-icon>{{ 'RETRIEVAL.CLEAR' | translate }}
+    </button>
+    <button mat-stroked-button [disabled]="!canOpenGroup()" (click)="addLeftParen()">(</button>
+    <button mat-stroked-button [disabled]="!canCloseGroup()" (click)="addRightParen()">)</button>
+    <button mat-stroked-button [disabled]="!canAddConjunction()" (click)="addAnd()">{{ 'RETRIEVAL.AND_TOKEN' | translate }}</button>
+    <button mat-stroked-button [disabled]="!canAddConjunction()" (click)="addOr()">{{ 'RETRIEVAL.OR_TOKEN' | translate }}</button>
+  </div>
+
+  <div class="condition-row">
+    @if (selectedField(); as field) {
+      <span class="selected-field-label">{{ field.label }}</span>
+
+      @if (field.fieldType !== 'STRING') {
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'RETRIEVAL.OPERATOR_LABEL' | translate }}</mat-label>
+          <mat-select [value]="operator()" (selectionChange)="operator.set($event.value)">
+            @for (op of numberOperators; track op) {
+              <mat-option [value]="op">{{ 'RETRIEVAL.OPERATOR.' + op | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      } @else {
+        <mat-radio-group class="search-mode" [value]="searchMode()" (change)="onSearchModeChange($event.value)">
+          <mat-radio-button value="STARTS_WITH">{{ 'RETRIEVAL.MODE_STARTS_WITH' | translate }} (F8)</mat-radio-button>
+          <mat-radio-button value="CONTAINS">{{ 'RETRIEVAL.MODE_CONTAINS' | translate }} (F9)</mat-radio-button>
+        </mat-radio-group>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'RETRIEVAL.VALUE' | translate }}</mat-label>
+        <input matInput [value]="value()" (input)="value.set($any($event.target).value)">
+      </mat-form-field>
+
+      @if (operator() === 'BETWEEN') {
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'RETRIEVAL.VALUE_TO' | translate }}</mat-label>
+          <input matInput [value]="value2()" (input)="value2.set($any($event.target).value)">
+        </mat-form-field>
+      }
+    } @else {
+      <p class="no-field-hint">{{ 'RETRIEVAL.PICK_FIELD_HINT' | translate }}</p>
+    }
+  </div>
+
+  <div class="picker-columns">
+
+    <div class="picker-col">
+      <p class="picker-title">{{ 'RETRIEVAL.VALUE_PICKER' | translate }}</p>
+      @if (selectedField()?.lookupEnabled) {
+        <mat-form-field appearance="outline" class="full-width">
+          <input matInput [formControl]="lookupControl" [placeholder]="'RETRIEVAL.TYPE_TO_FILTER' | translate">
+        </mat-form-field>
+        <ul class="picker-list">
+          @for (v of lookupResults(); track v) {
+            <li (click)="pickLookupValue(v)">{{ v }}</li>
+          } @empty {
+            <li class="no-data">{{ 'APP.NO_DATA' | translate }}</li>
+          }
+        </ul>
+      } @else {
+        <p class="no-data">{{ 'RETRIEVAL.NO_LOOKUP_FOR_FIELD' | translate }}</p>
+      }
+    </div>
+
+    <div class="picker-col">
+      <p class="picker-title">{{ 'RETRIEVAL.DISPLAY_FIELDS' | translate }}</p>
+      <ul class="picker-list">
+        @for (f of displayFields(); track f.fieldKey) {
+          <li (dblclick)="toggleDisplayField(f)">{{ f.label }}</li>
+        } @empty {
+          <li class="no-data">{{ 'RETRIEVAL.NO_DISPLAY_FIELDS' | translate }}</li>
+        }
+      </ul>
+    </div>
+
+    <div class="picker-col">
+      <div class="picker-title-row">
+        <p class="picker-title">{{ 'RETRIEVAL.ALL_FIELDS' | translate }}</p>
+        <button mat-stroked-button [disabled]="!selectedCategory()" (click)="markCategoryForDisplay()">
+          {{ 'RETRIEVAL.MARK_CATEGORY' | translate }}
+        </button>
+      </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'RETRIEVAL.CATEGORY' | translate }}</mat-label>
+        <mat-select [value]="selectedCategory()" (selectionChange)="onSelectCategory($event.value)">
+          <mat-option [value]="null">{{ 'RETRIEVAL.ALL_CATEGORIES' | translate }}</mat-option>
+          @for (c of categories(); track c) {
+            <mat-option [value]="c">{{ c }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <ul class="picker-list">
+        @for (f of fieldsInCategory(); track f.fieldKey) {
+          <li
+            [class.selected]="selectedField()?.fieldKey === f.fieldKey"
+            [class.marked]="isDisplayField(f)"
+            (click)="onSelectField(f)"
+            (dblclick)="toggleDisplayField(f)">
+            {{ f.label }}
+          </li>
+        }
+      </ul>
+    </div>
+
+  </div>
+
+</div>

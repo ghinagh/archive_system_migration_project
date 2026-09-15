@@ -1,0 +1,5 @@
+.form-page { .header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; h1 { margin: 0; font-size: 20px; } } }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.timecode-row { display: flex; gap: 12px; margin-bottom: 8px; mat-form-field { width: 100px; } }
+h3 { margin: 8px 0; color: #666; font-size: 14px; }
+.form-actions { display: flex; gap: 12px; justify-content: flex-end; padding-top: 8px; }

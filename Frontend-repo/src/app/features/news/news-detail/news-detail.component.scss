@@ -1,0 +1,66 @@
+.detail-page {
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    h1 { margin: 0; font-size: 20px; }
+    .spacer { flex: 1; }
+    button + button { margin-inline-start: 8px; }
+  }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    span {
+      font-size: 15px;
+      color: #333;
+    }
+
+    &.full-width {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.keywords-card {
+  margin-top: 16px;
+
+  mat-chip-set {
+    margin-bottom: 16px;
+  }
+
+  .no-keywords {
+    color: #999;
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+
+  .add-keyword-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 8px;
+
+    mat-form-field {
+      flex: 1;
+      max-width: 300px;
+    }
+  }
+}

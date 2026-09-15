@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>
+  {{ (isEditMode ? 'SUBJECTS.FORM.EDIT_TITLE' : (data.parent ? 'SUBJECTS.FORM.ADD_CHILD_TITLE' : 'SUBJECTS.FORM.ADD_ROOT_TITLE')) | translate }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="subject-form-grid">
+
+    @if (data.parent && !isEditMode) {
+      <div class="parent-hint">
+        {{ 'SUBJECTS.FORM.PARENT' | translate }}:
+        <span class="code-chip">{{ data.parent.code }}</span> {{ data.parent.description }}
+      </div>
+    }
+
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="level-field">
+        <mat-label>{{ 'SUBJECTS.LEVEL' | translate }}</mat-label>
+        <input matInput [value]="level" disabled />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="code-field">
+        <mat-label>{{ 'SUBJECTS.CODE' | translate }}</mat-label>
+        <input matInput formControlName="code" maxlength="9" />
+        <mat-hint *ngIf="!isEditMode">{{ 'SUBJECTS.FORM.CODE_HINT' | translate }}</mat-hint>
+        <mat-error *ngIf="form.get('code')?.hasError('required')">
+          {{ 'APP.REQUIRED' | translate }}
+        </mat-error>
+        <mat-error *ngIf="form.get('code')?.hasError('maxlength')">
+          {{ 'APP.MAX_LENGTH' | translate: { max: 9 } }}
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'SUBJECTS.DESCRIPTION' | translate }}</mat-label>
+      <input matInput formControlName="description" maxlength="40" />
+      <mat-error *ngIf="form.get('description')?.hasError('required')">
+        {{ 'APP.REQUIRED' | translate }}
+      </mat-error>
+      <mat-error *ngIf="form.get('description')?.hasError('maxlength')">
+        {{ 'APP.MAX_LENGTH' | translate: { max: 40 } }}
+      </mat-error>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    {{ 'SUBJECTS.FORM.CANCEL' | translate }}
+  </button>
+  <div class="submit-wrapper">
+    <button mat-raised-button color="primary"
+            [disabled]="isLoading() || form.invalid"
+            (click)="onSubmit()">
+      {{ (isEditMode ? 'SUBJECTS.FORM.UPDATE' : 'SUBJECTS.FORM.CREATE') | translate }}
+    </button>
+    @if (isLoading()) {
+      <mat-progress-spinner diameter="20" mode="indeterminate"
+                            class="btn-spinner"></mat-progress-spinner>
+    }
+  </div>
+</mat-dialog-actions>

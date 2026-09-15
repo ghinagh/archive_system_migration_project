@@ -1,0 +1,82 @@
+<mat-expansion-panel [expanded]="expanded()" (opened)="expanded.set(true)" (closed)="expanded.set(false)">
+  <mat-expansion-panel-header>
+    <mat-panel-title>{{ 'ADVANCED_SEARCH.TITLE' | translate }}</mat-panel-title>
+  </mat-expansion-panel-header>
+
+  <div class="condition-list">
+    @for (row of rows(); track $index) {
+      <div class="condition-row">
+        @if ($index > 0) {
+          <mat-form-field appearance="outline" class="conjunction-field">
+            <mat-select [value]="row.conjunction" (selectionChange)="updateRow($index, { conjunction: $event.value })">
+              <mat-option value="AND">{{ 'ADVANCED_SEARCH.AND' | translate }}</mat-option>
+              <mat-option value="OR">{{ 'ADVANCED_SEARCH.OR' | translate }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="field-field">
+          <mat-label>{{ 'ADVANCED_SEARCH.FIELD' | translate }}</mat-label>
+          <mat-select [value]="row.field" (selectionChange)="onFieldChange($index, $event.value)">
+            @for (f of fields; track f.value) {
+              <mat-option [value]="f.value">{{ f.labelKey | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="operator-field">
+          <mat-label>{{ 'ADVANCED_SEARCH.OPERATOR' | translate }}</mat-label>
+          <mat-select [value]="row.operator" (selectionChange)="updateRow($index, { operator: $event.value })">
+            @for (op of operatorsFor(row.field); track op.value) {
+              <mat-option [value]="op.value">{{ op.labelKey | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="value-field">
+          <mat-label>{{ 'ADVANCED_SEARCH.VALUE' | translate }}</mat-label>
+          @if (isDate(row)) {
+            <input matInput type="date" [value]="row.value" (change)="updateRow($index, { value: $any($event.target).value })">
+          } @else if (isNumber(row)) {
+            <input matInput type="number" [value]="row.value" (input)="updateRow($index, { value: $any($event.target).value })">
+          } @else {
+            <input matInput [value]="row.value" (input)="updateRow($index, { value: $any($event.target).value })">
+          }
+        </mat-form-field>
+
+        @if (isBetween(row)) {
+          <mat-form-field appearance="outline" class="value-field">
+            <mat-label>{{ 'ADVANCED_SEARCH.VALUE_TO' | translate }}</mat-label>
+            @if (isDate(row)) {
+              <input matInput type="date" [value]="row.value2" (change)="updateRow($index, { value2: $any($event.target).value })">
+            } @else {
+              <input matInput type="number" [value]="row.value2" (input)="updateRow($index, { value2: $any($event.target).value })">
+            }
+          </mat-form-field>
+        }
+
+        <button mat-icon-button [matTooltip]="'ADVANCED_SEARCH.REMOVE_CONDITION' | translate" (click)="removeRow($index)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="condition-actions">
+    <button mat-button (click)="addRow()">
+      <mat-icon>add</mat-icon>
+      {{ 'ADVANCED_SEARCH.ADD_CONDITION' | translate }}
+    </button>
+  </div>
+
+  <div class="filter-actions">
+    <button mat-raised-button color="primary" (click)="onSearch()">
+      <mat-icon>search</mat-icon>
+      {{ 'APP.SEARCH' | translate }}
+    </button>
+    <button mat-button (click)="onClear()">
+      <mat-icon>clear</mat-icon>
+      {{ 'ADVANCED_SEARCH.CLEAR' | translate }}
+    </button>
+  </div>
+</mat-expansion-panel>

@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/macnz_manar
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  flyway:
+    enabled: false
+
+app:
+  jwt:
+    secret: dev-only-secret-key-that-is-at-least-32-bytes-long
+    expiration-ms: 86400000
+  media:
+    base-path: C:/media
+    extension: ""
+    archive-path: ./data/archive
+    volumes:
+      - from: 1
+        to: 5000
+        path: C:/media/vol1
+      - from: 5001
+        to: 10000
+        path: C:/media/vol2

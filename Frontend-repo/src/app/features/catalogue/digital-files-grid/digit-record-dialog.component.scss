@@ -1,0 +1,27 @@
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 420px;
+}
+
+.dialog-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  &.timecode {
+    grid-template-columns: repeat(3, 80px);
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Color comes from the global .doc-form-dialog rule (styles.scss), applied via
+// panelClass on dialog.open() — this stylesheet only owns layout.
+h4 {
+  margin: 4px 0;
+  font-weight: 500;
+}

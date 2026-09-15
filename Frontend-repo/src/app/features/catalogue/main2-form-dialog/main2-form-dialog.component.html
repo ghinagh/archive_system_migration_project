@@ -1,0 +1,95 @@
+<h2 mat-dialog-title>
+  {{ (isEditMode ? 'CATALOGUE.EXT_EDIT_TITLE' : 'CATALOGUE.EXT_ADD_TITLE') | translate }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="ext-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'CATALOGUE.EXT_CHART_NO' | translate }}</mat-label>
+      <input matInput formControlName="chartNo" maxlength="6">
+    </mat-form-field>
+
+    <div class="timecode-row">
+      <span class="tc-label">{{ 'CATALOGUE.EXT_START_TC' | translate }}</span>
+      <mat-form-field appearance="outline" class="tc-field">
+        <mat-label>{{ 'CATALOGUE.EXT_HOURS' | translate }}</mat-label>
+        <input matInput type="number" formControlName="startHours" min="0">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="tc-field">
+        <mat-label>{{ 'CATALOGUE.EXT_MINUTES' | translate }}</mat-label>
+        <input matInput type="number" formControlName="startMinutes" min="0" max="59">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="tc-field">
+        <mat-label>{{ 'CATALOGUE.EXT_SECONDS' | translate }}</mat-label>
+        <input matInput type="number" formControlName="startSeconds" min="0" max="59">
+      </mat-form-field>
+    </div>
+
+    <div class="timecode-row">
+      <span class="tc-label">{{ 'CATALOGUE.EXT_END_TC' | translate }}</span>
+      <mat-form-field appearance="outline" class="tc-field">
+        <mat-label>{{ 'CATALOGUE.EXT_HOURS' | translate }}</mat-label>
+        <input matInput type="number" formControlName="endHours" min="0">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="tc-field">
+        <mat-label>{{ 'CATALOGUE.EXT_MINUTES' | translate }}</mat-label>
+        <input matInput type="number" formControlName="endMinutes" min="0" max="59">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="tc-field">
+        <mat-label>{{ 'CATALOGUE.EXT_SECONDS' | translate }}</mat-label>
+        <input matInput type="number" formControlName="endSeconds" min="0" max="59">
+      </mat-form-field>
+    </div>
+
+    <div class="meta-row">
+      <mat-form-field appearance="outline" class="meta-field">
+        <mat-label>{{ 'CATALOGUE.EXT_SIZE' | translate }}</mat-label>
+        <input matInput type="number" formControlName="size" step="0.01">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="meta-field">
+        <mat-label>{{ 'CATALOGUE.EXT_TYPE' | translate }}</mat-label>
+        <input matInput formControlName="type" maxlength="1">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="meta-field">
+        <mat-label>{{ 'CATALOGUE.EXT_PIC' | translate }}</mat-label>
+        <input matInput formControlName="pictureCode" maxlength="2">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="meta-field">
+        <mat-label>{{ 'CATALOGUE.EXT_VOI' | translate }}</mat-label>
+        <input matInput formControlName="voiceCode" maxlength="2">
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'CATALOGUE.EXT_RESULT' | translate }}</mat-label>
+      <textarea matInput formControlName="result" rows="4" maxlength="500"></textarea>
+      <mat-hint align="end">{{ (form.get('result')?.value?.length || 0) }}/500</mat-hint>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary"
+          [disabled]="form.invalid || isSaving()"
+          (click)="onSave()">
+    @if (isSaving()) {
+      <mat-spinner diameter="18"></mat-spinner>
+    } @else {
+      <mat-icon>save</mat-icon>
+    }
+    {{ 'APP.SAVE' | translate }}
+  </button>
+</mat-dialog-actions>
+
+<style>
+  .ext-form { display: flex; flex-direction: column; gap: 4px; min-width: 480px; padding-top: 8px; }
+  .full-width { width: 100%; }
+  .timecode-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .tc-label { font-size: 13px; color: #555; white-space: nowrap; min-width: 80px; }
+  .tc-field { flex: 1; }
+  .meta-row { display: flex; gap: 8px; }
+  .meta-field { flex: 1; }
+</style>

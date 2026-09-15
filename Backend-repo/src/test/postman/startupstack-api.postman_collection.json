@@ -1,0 +1,4374 @@
+{
+  "info": {
+    "name": "Form Documenting Platform API",
+    "description": "Complete API collection for macnz_manar library/archive system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Response has token', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data.token).to.be.a('string');",
+                  "  pm.environment.set('token', json.data.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lookups",
+      "item": [
+        {
+          "name": "Get All Arrays",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Returns array', function() { pm.expect(pm.response.json().data).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/lookups/arrays",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "lookups",
+                "arrays"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Subjects (MACNZ)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Returns array', function() { pm.expect(pm.response.json().data).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/lookups/subjects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "lookups",
+                "subjects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Coding",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Returns array', function() { pm.expect(pm.response.json().data).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/lookups/coding",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "lookups",
+                "coding"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalogue",
+      "item": [
+        {
+          "name": "Create Catalogue Record",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Record created', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.data.appNo).to.eql('TST0001');",
+                  "  pm.environment.set('catalogue_appNo', json.data.appNo);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appNo\": \"TST0001\",\n  \"activeTitleAr\": \"عنوان اختبار\",\n  \"type\": \"B\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/catalogue",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Catalogue (paginated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Returns page', function() { pm.expect(pm.response.json().data.content).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Catalogue by Type",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue?type=B&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "B"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Catalogue by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Returns record', function() { pm.expect(pm.response.json().data.appNo).to.eql('TST0001'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Catalogue Record",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appNo\": \"TST0001\",\n  \"activeTitleAr\": \"عنوان محدث\",\n  \"type\": \"B\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Catalogue Record",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalogue Descriptors",
+      "item": [
+        {
+          "name": "Add Subject Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descriptorNo\": \"001000000\",\n  \"serialNo\": \"01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/subjects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "subjects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Subjects for Catalogue",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/subjects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "subjects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Geo Descriptor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descriptorNo\": \"001000000\",\n  \"serialNo\": \"01\",\n  \"geoNo\": \"DZ01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/geo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "geo"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Geo Descriptors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/geo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "geo"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add File Addendum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descriptorNo\": \"001000000\",\n  \"serialNo\": \"01\",\n  \"fileType1\": \"A\",\n  \"fileNo\": \"FILE001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/files",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "files"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Files",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/files",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "files"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Text Memo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memo\": \"ملاحظة اختبار\",\n  \"serial\": 1,\n  \"page\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/text",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "text"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Texts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/text",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "text"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Narrower Term",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/narrower",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "narrower"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descriptorNo\": \"001000000\",\n  \"serialNo\": \"01\",\n  \"relativeNo\": \"002000000\",\n  \"narrowerType\": \"1\",\n  \"narrowerNo\": \"003000000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Narrower Terms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/narrower",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "narrower"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Related Term",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/related",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "related"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descriptorNo\": \"001000000\",\n  \"serialNo\": \"01\",\n  \"relativeNo\": \"002000000\",\n  \"relativeType\": \"1\",\n  \"relationNo\": \"004000000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Related Terms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/related",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "related"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Linked Author",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/authors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "authors"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"01\",\n  \"authorNo\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Linked Authors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/authors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "authors"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Create Book (+ parent catalogue)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Book created with catalogue', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.environment.set('book_appNo', json.data.appNo);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appNo\": \"BK00001\",\n  \"activeTitleAr\": \"كتاب التاريخ\",\n  \"isSeries\": false,\n  \"edition\": 1,\n  \"pageCount\": 350,\n  \"lang\": \"A\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/books",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "books"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Books (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/books?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "books"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Book by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/books/{{book_appNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "books",
+                "{{book_appNo}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Books by Title",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/books?title=التاريخ&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "books"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "التاريخ"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Book",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/books/{{book_appNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "books",
+                "{{book_appNo}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Periodicals",
+      "item": [
+        {
+          "name": "Create Periodical",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Periodical created', function() { pm.environment.set('periodical_no', pm.response.json().data.perNo); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perNo\": 100,\n  \"name\": \"مجلة العلوم والتكنولوجيا\",\n  \"lang\": \"A\",\n  \"frequency\": \"MO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/periodicals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "periodicals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Periodicals",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/periodicals?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "periodicals"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Periodical by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/periodicals/{{periodical_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "periodicals",
+                "{{periodical_no}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Periodical",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/periodicals/{{periodical_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "periodicals",
+                "{{periodical_no}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Articles",
+      "item": [
+        {
+          "name": "Create Article (+ parent catalogue)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Article created', function() { pm.environment.set('article_appNo', pm.response.json().data.appNo); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appNo\": \"ART0001\",\n  \"activeTitleAr\": \"مقال في العلوم\",\n  \"periodicalNo\": 100,\n  \"year\": 2026,\n  \"volume\": 5,\n  \"articleNo\": 1,\n  \"lang\": \"A\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "articles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Articles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/articles?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Articles by Periodical",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/articles?periodicalNo=100&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "periodicalNo",
+                  "value": "100"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Article",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/articles/{{article_appNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "articles",
+                "{{article_appNo}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authors",
+      "item": [
+        {
+          "name": "Create Author",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Author created', function() { pm.environment.set('author_no', pm.response.json().data.autNo); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"autNo\": 500,\n  \"type\": \"01\",\n  \"name\": \"ابن خلدون\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/authors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "authors"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Authors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/authors?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "authors"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Authors by Name",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/authors?name=ابن&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "authors"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "ابن"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Author",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/authors/{{author_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "authors",
+                "{{author_no}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Persons",
+      "item": [
+        {
+          "name": "Create Person",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Person created', function() { pm.environment.set('person_prsNo', pm.response.json().data.prsNo); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prsNo\": \"PRS001\",\n  \"name\": \"محمد أحمد\",\n  \"institution\": \"جامعة\",\n  \"phone\": \"0550000000\",\n  \"email\": \"test@example.com\",\n  \"entity\": \"01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/persons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "persons"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Persons (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/persons?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "persons"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Persons by Name",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/persons?name=محمد&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "persons"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "محمد"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Persons by Entity",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/persons?entity=01&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "persons"
+              ],
+              "query": [
+                {
+                  "key": "entity",
+                  "value": "01"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Person",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prsNo\": \"PRS001\",\n  \"name\": \"محمد أحمد - محدث\",\n  \"phone\": \"0551111111\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/persons/{{person_prsNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "persons",
+                "{{person_prsNo}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Person",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/persons/{{person_prsNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "persons",
+                "{{person_prsNo}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Archive Charts",
+      "item": [
+        {
+          "name": "Create Chart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Chart created', function() { pm.environment.set('chart_id', pm.response.json().data.id); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chaNo\": \"CH0001\",\n  \"title\": \"ملف أرشيفي\",\n  \"type\": 1,\n  \"source\": \"001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/archive/charts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "archive",
+                "charts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Charts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/archive/charts?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "archive",
+                "charts"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Chart Operation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Operation created', function() { pm.environment.set('operation_id', pm.response.json().data.id); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oprNo\": \"OPR0001\",\n  \"title\": \"نقل ملف\",\n  \"transferred\": true,\n  \"fromSite\": \"001\",\n  \"toSite\": \"002\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/archive/charts/{{chart_id}}/operations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "archive",
+                "charts",
+                "{{chart_id}}",
+                "operations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Chart Operations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/archive/charts/{{chart_id}}/operations?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "archive",
+                "charts",
+                "{{chart_id}}",
+                "operations"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Chart",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/archive/charts/{{chart_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "archive",
+                "charts",
+                "{{chart_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Borrowing",
+      "item": [
+        {
+          "name": "Create Borrowing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"iarNo\": \"IAR001\",\n  \"serial\": 1,\n  \"borrowingType\": 1,\n  \"borrowDate\": \"2026-06-01T10:00:00\",\n  \"personNo\": \"PRS001\",\n  \"bookNo\": \"BK00001\",\n  \"period\": 30\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/borrowing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "borrowing"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Borrowings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/borrowing?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "borrowing"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Person",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/borrowing?personNo=PRS001&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "borrowing"
+              ],
+              "query": [
+                {
+                  "key": "personNo",
+                  "value": "PRS001"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Lookup Borrowing by Composite Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/borrowing/lookup?iarNo=IAR001&serial=1&borrowingType=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "borrowing",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "iarNo",
+                  "value": "IAR001"
+                },
+                {
+                  "key": "serial",
+                  "value": "1"
+                },
+                {
+                  "key": "borrowingType",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Return Borrowing (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                  "pm.test('Return date set', function() { pm.expect(pm.response.json().data.returnDate).to.not.be.null; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"returnDate\": \"2026-06-26T12:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/borrowing/return?iarNo=IAR001&serial=1&borrowingType=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "borrowing",
+                "return"
+              ],
+              "query": [
+                {
+                  "key": "iarNo",
+                  "value": "IAR001"
+                },
+                {
+                  "key": "serial",
+                  "value": "1"
+                },
+                {
+                  "key": "borrowingType",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Borrowing",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/borrowing?iarNo=IAR001&serial=1&borrowingType=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "borrowing"
+              ],
+              "query": [
+                {
+                  "key": "iarNo",
+                  "value": "IAR001"
+                },
+                {
+                  "key": "serial",
+                  "value": "1"
+                },
+                {
+                  "key": "borrowingType",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Forms & Sites",
+      "item": [
+        {
+          "name": "Create Form",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Form created', function() { pm.environment.set('form_no', pm.response.json().data.formNo); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formNo\": \"FORM001\",\n  \"formType\": \"01\",\n  \"name\": \"استمارة الموقع\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/forms",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "forms"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Forms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/forms?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "forms"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Site",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siteNo\": \"FORM001\",\n  \"description\": \"موقع اختبار\",\n  \"level\": \"01\",\n  \"status\": \"01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/sites",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "sites"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Sites",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/sites?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "sites"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serial\": \"PST001\",\n  \"formNo\": \"FORM001\",\n  \"siteNo\": \"SITE001\",\n  \"status\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "posts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/posts?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "posts"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Digitization",
+      "item": [
+        {
+          "name": "Create Digit Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"docNo\": \"BK00001\",\n  \"serial\": 1,\n  \"digitNo\": \"DIG001\",\n  \"type\": \"VID\",\n  \"size\": 150.50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/digitization/records",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "digitization",
+                "records"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Digit Records",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/digitization/records?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "digitization",
+                "records"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Demand",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"demandNo\": \"DMD0001\",\n  \"serial\": 1,\n  \"description\": \"طلب رقمنة\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/digitization/demands",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "digitization",
+                "demands"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Demands",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/digitization/demands?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "digitization",
+                "demands"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resultNo\": \"RES0001\",\n  \"serial\": 1,\n  \"digitNo\": \"DIG001\",\n  \"type\": \"PDF\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/digitization/results",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "digitization",
+                "results"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Results",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/digitization/results?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "digitization",
+                "results"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Create Report Template",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Template created', function() { pm.environment.set('template_id', pm.response.json().data.id); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"outputNum\": 1,\n  \"description\": \"تقرير قائمة الكتب\",\n  \"name\": \"BookListReport\",\n  \"type\": \"L\",\n  \"category\": \"BK\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reports/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "templates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Templates",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/reports/templates?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "templates"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Template by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/reports/templates/{{template_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "templates",
+                "{{template_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User Output Assignment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institutionNo\": \"01\",\n  \"userNo\": \"001\",\n  \"outputNum\": 1,\n  \"outputChoice\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reports/user-outputs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "user-outputs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All User Outputs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/reports/user-outputs?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "user-outputs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Template",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/reports/templates/{{template_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "templates",
+                "{{template_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get Temp Schema Fields",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/admin/temp-schema",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "temp-schema"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Temp Schema Field",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/admin/temp-schema",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "temp-schema"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fieldName\": \"F_TITLE\",\n  \"fieldType\": \"C\",\n  \"fieldLen\": 50,\n  \"fieldDec\": 0\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Temp Schema Field",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/admin/temp-schema/F_TITLE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "temp-schema",
+                "F_TITLE"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Media Ranges",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/admin/media-ranges",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-ranges"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Media Range",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/admin/media-ranges",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-ranges"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"noFrom\": \"0000000001\",\n  \"noTo\": \"0000000100\",\n  \"path\": \"/media/1-100\",\n  \"typ\": 1\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Media range created', function() { pm.environment.set('media_range_id', pm.response.json().data.id); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Media Range",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/admin/media-ranges/{{media_range_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-ranges",
+                "{{media_range_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"noFrom\": \"0000000001\",\n  \"noTo\": \"0000000200\",\n  \"path\": \"/media/1-200\",\n  \"typ\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Media Range",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/admin/media-ranges/{{media_range_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-ranges",
+                "{{media_range_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Database Backup",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/admin/backup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "backup"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Database Backups",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/admin/backup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "backup"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalogue Extended",
+      "item": [
+        {
+          "name": "Advanced Search Catalogue",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/search",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "search"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conditions\": [\n    {\n      \"field\": \"title\",\n      \"operator\": \"CONTAINS\",\n      \"value\": \"عنوان\",\n      \"joinWith\": \"AND\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Correction History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/corrections",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "corrections"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unlock Catalogue Record",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/unlock",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "unlock"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Date Subjects",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/date-subjects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "date-subjects"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Date Subject",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/date-subjects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "date-subjects"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dteSerNo\": \"01\",\n  \"dteRelNo\": \"01\",\n  \"dteDescNo\": \"001000000\",\n  \"dteDteDeb\": \"2026-01-01T00:00:00\",\n  \"dteDteFin\": \"2026-12-31T00:00:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Date Subject",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/date-subjects/01/01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "date-subjects",
+                "01",
+                "01"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Time Descriptors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/time-descriptors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "time-descriptors"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Time Descriptor",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/time-descriptors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "time-descriptors"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tmSerNo\": \"01\",\n  \"tmRltvNo\": \"01\",\n  \"tmDescNo\": \"001000000\",\n  \"tmO\": 1,\n  \"tmM\": 0,\n  \"tmS\": 0,\n  \"tmO1\": 1,\n  \"tmM1\": 30,\n  \"tmS1\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Time Descriptor",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/time-descriptors/01/01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "time-descriptors",
+                "01",
+                "01"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Abbreviations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/abbreviations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "abbreviations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Abbreviation",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/abbreviations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "abbreviations"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"relSerNo\": \"01\",\n  \"relRltvN\": \"01\",\n  \"relDescN\": \"001000000\",\n  \"relRltvT\": \"1\",\n  \"relRelNo\": \"002000000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Abbreviation",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/abbreviations/01/01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "abbreviations",
+                "01",
+                "01"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Text1 Entries",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/text1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "text1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Text1 Entry",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/text1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "text1"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"txtSerNo\": \"01\",\n  \"txtDescN\": \"001000000\",\n  \"txtRltvN\": \"01\",\n  \"txtRltvTyp\": \"1\",\n  \"txtText\": \"نص تجريبي\",\n  \"txtNbpage\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Text1 Entry",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/text1/01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "text1",
+                "01"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"txtSerNo\": \"01\",\n  \"txtDescN\": \"001000000\",\n  \"txtRltvN\": \"01\",\n  \"txtRltvTyp\": \"1\",\n  \"txtText\": \"نص محدث\",\n  \"txtNbpage\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Text1 Entry",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/text1/01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "text1",
+                "01"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalogue Extended Info",
+      "item": [
+        {
+          "name": "Get All Extended Info",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/extended?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "extended"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Extended Info by AppNo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/extended",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "extended"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Extended Info",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/extended",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "extended"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chartNo\": \"CH0001\",\n  \"startHours\": 1,\n  \"startMinutes\": 0,\n  \"startSeconds\": 0,\n  \"endHours\": 1,\n  \"endMinutes\": 30,\n  \"endSeconds\": 0,\n  \"size\": 12.5,\n  \"type\": \"B\",\n  \"pictureCode\": \"01\",\n  \"voiceCode\": \"01\",\n  \"result\": \"مكتمل\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Extended Info",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/catalogue/{{catalogue_appNo}}/extended",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "catalogue",
+                "{{catalogue_appNo}}",
+                "extended"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chartNo\": \"CH0001\",\n  \"startHours\": 1,\n  \"startMinutes\": 0,\n  \"startSeconds\": 0,\n  \"endHours\": 2,\n  \"endMinutes\": 0,\n  \"endSeconds\": 0,\n  \"size\": 15,\n  \"type\": \"B\",\n  \"pictureCode\": \"01\",\n  \"voiceCode\": \"01\",\n  \"result\": \"محدث\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Temp Files",
+      "item": [
+        {
+          "name": "Get All Temp Files",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/temp-files?fadNo=MN000001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "temp-files"
+              ],
+              "query": [
+                {
+                  "key": "fadNo",
+                  "value": "MN000001"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Temp File Entry",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/temp-files",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "temp-files"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tmpFadNo\": \"MN000001\",\n  \"tmpFileName\": \"scan.tif\",\n  \"tmpRmrk\": \"ملاحظة\",\n  \"tmpMk\": \"mk\",\n  \"tmpDate\": \"2026-01-01T00:00:00\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Temp file created', function() { pm.environment.set('tmp_ser', pm.response.json().data.tmpSer); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalize Temp File",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/temp-files/MN000001/{{tmp_ser}}/finalize",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "temp-files",
+                "MN000001",
+                "{{tmp_ser}}",
+                "finalize"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Temp File",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/temp-files/MN000001/{{tmp_ser}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "temp-files",
+                "MN000001",
+                "{{tmp_ser}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Maintenance",
+      "item": [
+        {
+          "name": "Renumber Catalogue Record",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/maintenance/renumber",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "maintenance",
+                "renumber"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldAppNo\": \"0000001\",\n  \"newAppNo\": \"0000099\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Copy Media to Archive",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/maintenance/copy-to-archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "maintenance",
+                "copy-to-archive"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stockNo\": \"50\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Link File to Catalogue Record",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/maintenance/file-links",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "maintenance",
+                "file-links"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appNo\": \"0000001\",\n  \"filePath\": \"/media/vol1/50.tif\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('File link created', function() { pm.environment.set('file_link_id', pm.response.json().data.id); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get File Links for Record",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/maintenance/file-links/0000001",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "maintenance",
+                "file-links",
+                "0000001"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete File Link",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/maintenance/file-links/{{file_link_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "maintenance",
+                "file-links",
+                "{{file_link_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media",
+      "item": [
+        {
+          "name": "Resolve Stock Path",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/media/resolve/50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "media",
+                "resolve",
+                "50"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download Media File",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/media/file/50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "media",
+                "file",
+                "50"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {
+          "name": "Create News Record",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/news",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newsNo\": \"NW00001\",\n  \"newsDoc\": \"01\",\n  \"newsTit1\": \"عنوان الخبر\",\n  \"newsTit2\": \"عنوان فرعي\",\n  \"newsPub\": 1\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('News created', function() { pm.environment.set('news_no', pm.response.json().data.newsNo); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All News (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/news?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get News by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/news/{{news_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news",
+                "{{news_no}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Advanced Search News",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/news/search",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news",
+                "search"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conditions\": [\n    {\n      \"field\": \"title\",\n      \"operator\": \"CONTAINS\",\n      \"value\": \"خبر\",\n      \"joinWith\": \"AND\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update News Record",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/news/{{news_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news",
+                "{{news_no}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newsNo\": \"NW00001\",\n  \"newsTit1\": \"عنوان محدث\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get News Keywords",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/news/{{news_no}}/keywords",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news",
+                "{{news_no}}",
+                "keywords"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add News Keyword",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/news/{{news_no}}/keywords",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news",
+                "{{news_no}}",
+                "keywords"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"word\": \"أرشيف\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove News Keyword",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/news/{{news_no}}/keywords/أرشيف",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news",
+                "{{news_no}}",
+                "keywords",
+                "أرشيف"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete News Record",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/news/{{news_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "news",
+                "{{news_no}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pictures",
+      "item": [
+        {
+          "name": "Create Picture Record",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/pictures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pictures"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"picNo\": \"PIC0001\",\n  \"picTit\": \"صورة أرشيفية\",\n  \"picTyp\": 1\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Picture created', function() { pm.environment.set('picture_no', pm.response.json().data.picNo); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Pictures (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/pictures?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pictures"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Picture by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/pictures/{{picture_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pictures",
+                "{{picture_no}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Picture Record",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/pictures/{{picture_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pictures",
+                "{{picture_no}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"picTit\": \"عنوان محدث\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Picture Record",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/pictures/{{picture_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pictures",
+                "{{picture_no}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staff",
+      "item": [
+        {
+          "name": "Create Staff Member",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/staff",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "staff"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prsNo\": \"S0001\",\n  \"name\": \"سعيد أحمد\",\n  \"institution\": \"الأرشيف الوطني\",\n  \"entity\": \"01\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Staff created', function() { pm.environment.set('staff_prsNo', pm.response.json().data.prsNo); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Staff (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/staff?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "staff"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Staff by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/staff/{{staff_prsNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "staff",
+                "{{staff_prsNo}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Staff Member",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/staff/{{staff_prsNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "staff",
+                "{{staff_prsNo}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"اسم محدث\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Staff Member",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/staff/{{staff_prsNo}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "staff",
+                "{{staff_prsNo}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "transactions"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trsOpno\": 100,\n  \"trsNo\": 1,\n  \"trsYear\": 2026,\n  \"trsNum\": \"00001\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Transactions (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/transactions?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by Composite Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/transactions/100/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "100",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/transactions/100/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "100",
+                "1"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trsOpno\": 100,\n  \"trsNo\": 1,\n  \"trsYear\": 2027\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Transactions by Periodical",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/periodicals/100/transactions?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "periodicals",
+                "100",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/transactions/100/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "100",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Public Search (books/news/articles/all)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/public/search?query=عنوان&type=all&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "public",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "عنوان"
+                },
+                {
+                  "key": "type",
+                  "value": "all"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Full-Text Word-Index Search",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/search/fulltext?query=عنوان",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "search",
+                "fulltext"
+              ],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "عنوان"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/auth/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"NewPassw0rd!\",\n  \"confirmPassword\": \"NewPassw0rd!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Migrate Legacy Passwords (Admin)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/admin/migrate-passwords",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "migrate-passwords"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Users (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/users?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userNo\": \"001\",\n  \"userName\": \"librarian1\",\n  \"userPassword\": \"Passw0rd!\",\n  \"userLevel\": \"G\",\n  \"userEnt\": \"01\",\n  \"userDoc\": \"BK\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('User created', function() { pm.environment.set('user_no', pm.response.json().data.userNo); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{user_no}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{user_no}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"librarian1-updated\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{user_no}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Video Orders",
+      "item": [
+        {
+          "name": "Create Video Order",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/video-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "video-orders"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderNo\": \"VO000001\",\n  \"stockNo\": \"50\",\n  \"description\": \"طلب نسخ فيديو\",\n  \"requestedBy\": \"librarian1\",\n  \"requestDate\": \"2026-01-01T00:00:00\",\n  \"status\": \"PENDING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Video order created', function() { pm.environment.set('video_order_id', pm.response.json().data.id); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Video Orders (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/video-orders?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "video-orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Video Order by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/video-orders/{{video_order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "video-orders",
+                "{{video_order_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Video Order",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/video-orders/{{video_order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "video-orders",
+                "{{video_order_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"وصف محدث\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Video Order Status",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/video-orders/{{video_order_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "video-orders",
+                "{{video_order_id}}",
+                "status"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Video Order",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/video-orders/{{video_order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "video-orders",
+                "{{video_order_id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Positions",
+      "item": [
+        {
+          "name": "Create Position",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/positions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "positions"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"posNo\": \"P001\",\n  \"name\": \"رئيس القسم\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+                  "pm.test('Position created', function() { pm.environment.set('position_no', pm.response.json().data.posNo); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Positions (paginated)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/positions?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "positions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Position by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/positions/{{position_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "positions",
+                "{{position_no}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Position",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/positions/{{position_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "positions",
+                "{{position_no}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"اسم محدث\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Position",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/positions/{{position_no}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "positions",
+                "{{position_no}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

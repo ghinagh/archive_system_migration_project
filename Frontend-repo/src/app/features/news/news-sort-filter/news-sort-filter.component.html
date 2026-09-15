@@ -1,0 +1,56 @@
+<mat-expansion-panel [expanded]="expanded()" (opened)="expanded.set(true)" (closed)="expanded.set(false)">
+  <mat-expansion-panel-header>
+    <mat-panel-title>{{ 'NEWS.ADVANCED_FILTER' | translate }}</mat-panel-title>
+  </mat-expansion-panel-header>
+
+  <form [formGroup]="form" class="filter-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'NEWS.TITLE_SEARCH' | translate }}</mat-label>
+      <input matInput formControlName="title">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'NEWS.DOC_TYPE' | translate }}</mat-label>
+      <input matInput formControlName="docType" maxlength="2">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'NEWS.DATE_FROM' | translate }}</mat-label>
+      <input matInput [matDatepicker]="fromPicker" formControlName="dateFrom">
+      <mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+      <mat-datepicker #fromPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'NEWS.DATE_TO' | translate }}</mat-label>
+      <input matInput [matDatepicker]="toPicker" formControlName="dateTo">
+      <mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+      <mat-datepicker #toPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'NEWS.PUBLICATION' | translate }}</mat-label>
+      <input matInput type="number" formControlName="publication">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'NEWS.SORT_BY' | translate }}</mat-label>
+      <mat-select formControlName="sort">
+        @for (opt of sortOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.labelKey | translate }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  <div class="filter-actions">
+    <button mat-raised-button color="primary" (click)="onApply()">
+      <mat-icon>search</mat-icon>
+      {{ 'APP.SEARCH' | translate }}
+    </button>
+    <button mat-button (click)="onClear()">
+      <mat-icon>clear</mat-icon>
+      {{ 'NEWS.CLEAR_FILTER' | translate }}
+    </button>
+  </div>
+</mat-expansion-panel>

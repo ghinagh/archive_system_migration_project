@@ -1,0 +1,666 @@
+<div class="archive-search-cockpit">
+
+  <!-- Top two-pane area, mirroring the legacy screen's own physical layout (player and
+       search criteria sit in the same top band). Pinned to a fixed physical side regardless of
+       language — video always left, search always right — same override pattern already used
+       on video-order-queue's .player-pane (direction:ltr on the row, re-flipped to rtl inside
+       each pane in Arabic mode so their own text/content still reads correctly). -->
+  <div class="console-top">
+
+  <!-- Scene Selection and Details Panel -->
+  <mat-card class="scene-selection-card">
+  @if (selectedResult(); as result) {
+      <div class="scene-selection-header">
+        <h2>{{ 'ARCHIVE_SEARCH.SCENE_SELECTION' | translate }}</h2>
+        <button mat-button (click)="toggleAbstractViewer()">
+          <mat-icon>{{ abstractViewerOpen() ? 'expand_less' : 'description' }}</mat-icon>
+          {{ (abstractViewerOpen() ? 'ARCHIVE_SEARCH.HIDE_ABSTRACT' : 'ARCHIVE_SEARCH.VIEW_ABSTRACT') | translate }}
+        </button>
+      </div>
+      <p class="scene-title">{{ result.activeTitleAr }}</p>
+
+      @if (abstractViewerOpen()) {
+        <mat-card class="abstract-card">
+          <div class="abstract-card-header">
+            <p class="abstract-title" [innerHTML]="result.activeTitleAr | highlight: form.value.word"></p>
+            <button mat-icon-button (click)="toggleAbstractViewer()" [matTooltip]="'ARCHIVE_SEARCH.HIDE_ABSTRACT' | translate">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          @if (result.abstractText) {
+            <p class="abstract-text" [innerHTML]="result.abstractText | highlight: form.value.word"></p>
+          } @else {
+            <p class="no-data">{{ 'ARCHIVE_SEARCH.NO_ABSTRACT' | translate }}</p>
+          }
+          <mat-form-field appearance="outline" class="remark-field">
+            <mat-label>{{ 'ARCHIVE_SEARCH.USER_REMARK' | translate }}</mat-label>
+            <textarea matInput rows="2" [value]="abstractRemark()" (input)="abstractRemark.set($any($event.target).value)"></textarea>
+          </mat-form-field>
+          <button mat-raised-button color="primary" [disabled]="!abstractRemark().trim() || isSavingRemark()" (click)="saveRemark()">
+            {{ 'ARCHIVE_SEARCH.SAVE_REMARK' | translate }}
+          </button>
+        </mat-card>
+      }
+
+      <!-- Video/Media Viewport -->
+      @if (isLoadingVideo()) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else if (videoUnavailable()) {
+        <div class="video-unavailable">
+          <mat-icon>videocam_off</mat-icon>
+          <p>{{ 'ARCHIVE_SEARCH.ASSET_UNAVAILABLE' | translate }}</p>
+        </div>
+      } @else if (videoBlobUrl(); as url) {
+        @switch (mediaMode()) {
+          @case ('audio') {
+            <audio #audioEl controls class="audio-player" [src]="url" (loadedmetadata)="onMediaLoaded()"></audio>
+          }
+          @case ('document') {
+            @if (assetIsImage()) {
+              <img class="asset-image" [src]="url" [alt]="selectedResult()?.activeTitleAr ?? ''">
+            } @else {
+              <div class="asset-document">
+                <mat-icon>description</mat-icon>
+                <button mat-stroked-button (click)="openAssetInNewTab()">
+                  <mat-icon>open_in_new</mat-icon> Open
+                </button>
+              </div>
+            }
+          }
+          @default {
+            <video #videoEl controls class="video-player" [src]="url" (loadedmetadata)="onMediaLoaded()"></video>
+          }
+        }
+      }
+
+      <!-- Media Control Toolbar - BELOW video viewport -->
+      <div class="mark-controls">
+        <button mat-stroked-button (click)="markIn()">
+          <mat-icon>flag</mat-icon> من
+        </button>
+        <span class="mark-value">{{ markedIn() != null ? formatDuration(markedIn()!) : '--:--:--' }}</span>
+
+        <button mat-stroked-button (click)="markOut()">
+          <mat-icon>outlined_flag</mat-icon> إلى
+        </button>
+        <span class="mark-value">{{ markedOut() != null ? formatDuration(markedOut()!) : '--:--:--' }}</span>
+
+        <button mat-button (click)="clearMarks()" [disabled]="markedIn() == null && markedOut() == null">
+          <mat-icon>clear</mat-icon> {{ 'ADVANCED_SEARCH.CLEAR' | translate }}
+        </button>
+      </div>
+
+      <mat-form-field appearance="outline" class="scene-desc-field">
+        <mat-label>{{ 'ARCHIVE_SEARCH.SCENE_DESCRIPTION' | translate }}</mat-label>
+        <input matInput [value]="sceneDescription()" (input)="sceneDescription.set($any($event.target).value)">
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="addScene()">
+        <mat-icon>add</mat-icon> {{ 'ARCHIVE_SEARCH.ADD_SCENE' | translate }}
+      </button>
+      <p class="hint">{{ 'ARCHIVE_SEARCH.ADD_SCENE_HINT' | translate }}</p>
+
+      <!-- Media Control Toolbar - ALWAYS VISIBLE BELOW -->
+      <div class="player-control-bar">
+        <button mat-icon-button class="control-btn" [matMenuTriggerFor]="playerMenu" [disabled]="!selectedResult()">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #playerMenu="matMenu">
+          <button mat-menu-item>Open</button>
+        </mat-menu>
+        <button mat-icon-button class="control-btn" (click)="playMedia()">
+          <mat-icon>play_arrow</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn" (click)="stopMedia()">
+          <mat-icon>stop</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn" (click)="previousFrame()">
+          <mat-icon>skip_previous</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn" (click)="nextFrame()">
+          <mat-icon>skip_next</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn" (click)="toggleMute()">
+          <mat-icon>{{ playerMuted() ? 'volume_off' : 'volume_up' }}</mat-icon>
+        </button>
+        <input type="range" class="volume-slider" min="0" max="100" [value]="playerVolume()" (input)="playerVolume.set(+$any($event.target).value)">
+        <button mat-icon-button class="control-btn" (click)="previousPage()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <input type="number" class="page-input" min="1" [value]="currentPageNo()" (input)="currentPageNo.set(+$any($event.target).value || 1)">
+        <button mat-icon-button class="control-btn" (click)="nextPage()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+        <button mat-button class="control-btn marker-btn" (click)="markIn()">من</button>
+        <button mat-button class="control-btn marker-btn" (click)="markOut()">إلى</button>
+        <button mat-icon-button class="control-btn" (click)="togglePlayerCollapse()">
+          <mat-icon>minimize</mat-icon>
+        </button>
+      </div>
+  } @else {
+      <div class="player-placeholder">
+        <mat-icon>movie</mat-icon>
+        <span>{{ 'ARCHIVE_SEARCH.NO_VIDEO_LOADED' | translate }}</span>
+      </div>
+
+      <!-- Media Control Toolbar - ALWAYS VISIBLE BELOW -->
+      <div class="player-control-bar placeholder-toolbar">
+        <button mat-icon-button class="control-btn" [matMenuTriggerFor]="playerMenu2" [disabled]="!selectedResult()">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #playerMenu2="matMenu">
+          <button mat-menu-item>Open</button>
+        </mat-menu>
+        <button mat-icon-button class="control-btn">
+          <mat-icon>play_arrow</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn">
+          <mat-icon>stop</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn">
+          <mat-icon>skip_previous</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn">
+          <mat-icon>skip_next</mat-icon>
+        </button>
+        <button mat-icon-button class="control-btn">
+          <mat-icon>volume_up</mat-icon>
+        </button>
+        <input type="range" class="volume-slider" min="0" max="100" value="100">
+        <button mat-icon-button class="control-btn">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <input type="number" class="page-input" min="1" value="1">
+        <button mat-icon-button class="control-btn">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+        <button mat-button class="control-btn marker-btn">من</button>
+        <button mat-button class="control-btn marker-btn">إلى</button>
+        <button mat-icon-button class="control-btn">
+          <mat-icon>minimize</mat-icon>
+        </button>
+      </div>
+  }
+  </mat-card>
+
+  <!-- اختیار المشاهد Section -->
+  <mat-card class="scenes-selection-card">
+    <mat-card-header>
+      <mat-card-title>اختیار المشاهد</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="scenesForm" class="scenes-form">
+        <!-- Date Range -->
+        <div class="date-range-group">
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>من تاريخ</mat-label>
+            <input matInput type="date" formControlName="scenesDateFrom">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>الى تاريخ</mat-label>
+            <input matInput type="date" formControlName="scenesDateTo">
+          </mat-form-field>
+        </div>
+
+        <!-- Scene Title Input -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>عنوان المشهد الجديد</mat-label>
+          <input matInput formControlName="sceneNewTitle" placeholder="أدخل عنوان المشهد الجديد">
+        </mat-form-field>
+
+        <!-- Incomplete Requests Checkbox -->
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="incompleteRequestsOnly">
+            الطلبات الغير منجزة
+          </mat-checkbox>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="scenes-buttons">
+          <!-- Primary Action: Send to EDLC (Legacy Command5: operates on queued scenes, not marked selection) -->
+          <button mat-raised-button class="send-to-edlc-btn" (click)="sendSceneToEdlc()">
+            <mat-icon>send</mat-icon>
+            أرسل الى "EDLC"
+          </button>
+
+          <!-- Control Buttons Group -->
+          <div class="control-buttons">
+            <!-- In/Out Buttons (Small) - Legacy Command12/13: mark playback position from existing player -->
+            <div class="mark-buttons">
+              <button mat-stroked-button class="small-btn" (click)="markIn()" [matTooltip]="'ARCHIVE_SEARCH.MARK_IN' | translate">
+                in
+              </button>
+              <button mat-stroked-button class="small-btn" (click)="markOut()" [matTooltip]="'ARCHIVE_SEARCH.MARK_OUT' | translate">
+                out
+              </button>
+            </div>
+
+            <!-- Duration and Execute Buttons - Legacy Command16/14: operate on marked IN/OUT points -->
+            <button mat-stroked-button (click)="showSceneDuration()">
+              مدة المشاهد
+            </button>
+            <button mat-stroked-button (click)="executeScene()">
+              تنفيذ
+            </button>
+
+            <!-- Add Button -->
+            <button mat-raised-button (click)="addSceneToList()">
+              <mat-icon>add</mat-icon>
+              اضافة
+            </button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="search-pane">
+  <mat-expansion-panel [expanded]="searchExpanded()" (opened)="searchExpanded.set(true)" (closed)="searchExpanded.set(false)">
+    <mat-expansion-panel-header>
+      <mat-panel-title>البحث في الأرشيف</mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form [formGroup]="form" class="search-grid">
+      <!-- Search Mode Radio Buttons -->
+      <mat-radio-group formControlName="searchMode" class="search-mode-group">
+        <mat-radio-button value="STARTS_WITH">البحث بداية الاسم</mat-radio-button>
+        <mat-radio-button value="CONTAINS">البحث كلمة معينة</mat-radio-button>
+      </mat-radio-group>
+
+      <!-- Date Range Section -->
+      <mat-form-field appearance="outline">
+        <mat-label>من تاريخ</mat-label>
+        <input matInput type="date" formControlName="dateFrom">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>إلى تاريخ</mat-label>
+        <input matInput type="date" formControlName="dateTo">
+      </mat-form-field>
+
+      <!-- Word Search -->
+      <mat-form-field appearance="outline">
+        <mat-label>كلمة</mat-label>
+        <input matInput formControlName="word" (keyup.enter)="search()">
+      </mat-form-field>
+
+      <!-- Article Type Editable Combobox (Legacy DataCombo) -->
+      <mat-form-field appearance="outline">
+        <mat-label>نوع المقالة</mat-label>
+        <input matInput [formControl]="articleTypeControl" [matAutocomplete]="articleTypeAuto"
+               (focus)="onArticleTypeFocus()" >
+        <mat-icon matSuffix (click)="onArticleTypeFocus()">arrow_drop_down</mat-icon>
+        <mat-autocomplete #articleTypeAuto="matAutocomplete" [displayWith]="displayCoding" [autoActiveFirstOption]="false">
+          @for (o of articleTypeOptions(); track o.code) {
+            <mat-option [value]="o">{{ o.description }} ({{ o.code }})</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Document Type Editable Combobox (Legacy DataCombo) -->
+      <mat-form-field appearance="outline">
+        <mat-label>نوع الوثيقة</mat-label>
+        <input matInput [formControl]="documentTypeControl" [matAutocomplete]="documentTypeAuto"
+               (focus)="onDocumentTypeFocus()" >
+        <mat-icon matSuffix (click)="onDocumentTypeFocus()">arrow_drop_down</mat-icon>
+        <mat-autocomplete #documentTypeAuto="matAutocomplete" [displayWith]="displayCoding" [autoActiveFirstOption]="false">
+          @for (o of documentTypeOptions(); track o.code) {
+            <mat-option [value]="o">{{ o.description }} ({{ o.code }})</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- General File Index Lookup -->
+      <mat-form-field appearance="outline">
+        <mat-label>ملف عام</mat-label>
+        <input matInput [formControl]="generalIndexNoControl" [matAutocomplete]="generalIndexNoAuto">
+        <mat-autocomplete #generalIndexNoAuto="matAutocomplete" [displayWith]="displaySearchResult">
+          @for (o of generalIndexNoOptions(); track o.appNo) {
+            <mat-option [value]="o">
+              <span class="option-label">{{ o.title }}</span>
+              <button mat-icon-button class="option-action" (click)="showPositionsFor(o, $event)"
+                      [matTooltip]="'عرض الوظائف'">
+                <mat-icon>badge</mat-icon>
+              </button>
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Related File Index Lookup (2nd file) -->
+      <mat-form-field appearance="outline">
+        <mat-label>ملف له</mat-label>
+        <input matInput [formControl]="generalIndexNo2Control" [matAutocomplete]="generalIndexNo2Auto">
+        <mat-autocomplete #generalIndexNo2Auto="matAutocomplete" [displayWith]="displaySearchResult">
+          @for (o of generalIndexNo2Options(); track o.appNo) {
+            <mat-option [value]="o">
+              <span class="option-label">{{ o.title }}</span>
+              <button mat-icon-button class="option-action" (click)="showPositionsFor(o, $event)"
+                      [matTooltip]="'عرض الوظائف'">
+                <mat-icon>badge</mat-icon>
+              </button>
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Subject Descriptor Lookup -->
+      <mat-form-field appearance="outline">
+        <mat-label>الموضوع</mat-label>
+        <input matInput [formControl]="descriptorControl" [matAutocomplete]="descriptorAuto">
+        <mat-autocomplete #descriptorAuto="matAutocomplete" [displayWith]="displayMacnz">
+          @for (o of descriptorOptions(); track o.code) {
+            <mat-option [value]="o">{{ o.description }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Narrower Descriptor Lookup -->
+      <mat-form-field appearance="outline">
+        <mat-label>الاضيق</mat-label>
+        <input matInput [formControl]="narrowerDescriptorControl" [matAutocomplete]="narrowerDescriptorAuto">
+        <mat-autocomplete #narrowerDescriptorAuto="matAutocomplete" [displayWith]="displayMacnz">
+          @for (o of narrowerDescriptorOptions(); track o.code) {
+            <mat-option [value]="o">{{ o.description }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Scene/Filming Location Lookup -->
+      <mat-form-field appearance="outline">
+        <mat-label>مكان المشهد</mat-label>
+        <input matInput [formControl]="geoLocationControl" [matAutocomplete]="geoLocationAuto">
+        <mat-autocomplete #geoLocationAuto="matAutocomplete" [displayWith]="displaySearchResult">
+          @for (o of geoLocationOptions(); track o.appNo) {
+            <mat-option [value]="o">{{ o.title }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Responsible Person Editable Combobox (Legacy DataCombo) -->
+      <mat-form-field appearance="outline">
+        <mat-label>المسؤول عن العمل</mat-label>
+        <input matInput [formControl]="responsiblePersonControl" [matAutocomplete]="responsiblePersonAuto"
+               (focus)="onResponsiblePersonFocus()" >
+        <mat-icon matSuffix (click)="onResponsiblePersonFocus()">arrow_drop_down</mat-icon>
+        <mat-autocomplete #responsiblePersonAuto="matAutocomplete" [displayWith]="displayAuthor" [autoActiveFirstOption]="false">
+          @for (o of responsiblePersonOptions(); track o.id) {
+            <mat-option [value]="o">{{ o.name }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <!-- Full Text Search -->
+      <mat-form-field appearance="outline">
+        <mat-label>كلمة من النص</mat-label>
+        <input matInput formControlName="fullText" (keyup.enter)="search()">
+      </mat-form-field>
+
+      <!-- Positions Panel (Legacy DBList3 equivalent) -->
+      @if (positionsPanelOpen()) {
+        <div class="positions-panel">
+          <div class="positions-header">
+            <span>الوظائف المرتبطة ب {{ positionsFormCode() }}</span>
+            <button mat-icon-button (click)="closePositionsPanel()" [matTooltip]="'إغلاق'">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          @if (isLoadingPositions()) {
+            <app-loading-spinner></app-loading-spinner>
+          } @else if (positions().length === 0) {
+            <p class="no-data">لا توجد وظائف</p>
+          } @else {
+            <mat-list dense>
+              @for (p of positions(); track p.posNo) {
+                <mat-list-item>{{ p.name }}</mat-list-item>
+              }
+            </mat-list>
+          }
+        </div>
+      }
+
+    </form>
+
+    <div class="filter-actions">
+      <button mat-raised-button color="primary" (click)="search()">
+        <mat-icon>search</mat-icon>
+        البحث
+      </button>
+      <button mat-button (click)="newSearch()">
+        <mat-icon>refresh</mat-icon>
+        جديد بحث
+      </button>
+      <button mat-button (click)="clearSearch()">
+        <mat-icon>clear</mat-icon>
+        مسح شامل
+      </button>
+      <button mat-button (click)="exportResults()">
+        <mat-icon>download</mat-icon>
+        تصدير
+      </button>
+      <button mat-button (click)="showStatistics()">
+        <mat-icon>info</mat-icon>
+        عرض احصائية
+      </button>
+    </div>
+  </mat-expansion-panel>
+  </div>
+
+  </div>
+
+  <!-- Search Results Grid Section -->
+  <div class="results-section">
+    <h2 class="results-title">نتائج البحث</h2>
+
+    @if (isSearching()) {
+      <div class="search-loading">
+        <app-loading-spinner></app-loading-spinner>
+      </div>
+    } @else if (hasSearched()) {
+      <div class="results-table-wrapper">
+        <table class="results-table legacy-grid">
+          <thead>
+            <tr>
+              <th>المسؤول البياني</th>
+              <th>رقم الاستمارة</th>
+              <th>العنوان</th>
+              <th>العنوان الفرعي</th>
+              <th>نوع الوثيقة</th>
+              <th>تاريخ الوثيقة</th>
+              <th>الصفحة</th>
+              <th>المصدر</th>
+              <th>رقم digital</th>
+              <th>نوع الملف</th>
+              <th>من ث</th>
+              <th>من د</th>
+              <th>من س</th>
+              <th>إلى ث</th>
+              <th>إلى د</th>
+              <th>إلى س</th>
+              <th>{{ 'APP.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (results().length === 0) {
+              <tr class="no-data-row">
+                <td colspan="17" class="no-data-cell">
+                  <p>{{ 'APP.NO_DATA' | translate }}</p>
+                </td>
+              </tr>
+            } @else {
+              @for (row of results(); track row.appNo) {
+                <tr [class.selected-row]="selectedResult() === row" (dblclick)="selectResult(row)">
+                  <td>{{ row.responsiblePersonName }}</td>
+                  <td>{{ row.appNo }}</td>
+                  <td [innerHTML]="row.activeTitleAr | highlight: form.value.word"></td>
+                  <td>{{ row.additionalTitle }}</td>
+                  <td>{{ row.docTypeDescription }}</td>
+                  <td>{{ row.articleDate | date:'yyyy-MM-dd' }}</td>
+                  <td>{{ row.pageNo }}</td>
+                  <td>{{ row.periodicalName }}</td>
+                  <td>{{ row.digitNo }}</td>
+                  <td>{{ row.documentType }}</td>
+                  <td class="timecode-cell">{{ row.durationHours | number:'2.0-0' }}</td>
+                  <td class="timecode-cell">{{ row.durationMinutes | number:'2.0-0' }}</td>
+                  <td class="timecode-cell">{{ row.durationSeconds | number:'2.0-0' }}</td>
+                  <td class="timecode-cell">{{ row.durationHours1 | number:'2.0-0' }}</td>
+                  <td class="timecode-cell">{{ row.durationMinutes1 | number:'2.0-0' }}</td>
+                  <td class="timecode-cell">{{ row.durationSeconds1 | number:'2.0-0' }}</td>
+                  <td>
+                    <button mat-icon-button color="primary" [matTooltip]="'ARCHIVE_SEARCH.PLAY' | translate" (click)="selectResult(row)">
+                      <mat-icon>play_circle</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalResults()"
+        [pageSize]="resultsPageSize()"
+        [pageIndex]="resultsPageIndex()"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        (page)="onResultsPage($event)">
+      </mat-paginator>
+    }
+  </div>
+
+  <mat-card class="scene-queue-card">
+    <div class="queue-header">
+      <h2>{{ 'ARCHIVE_SEARCH.REQUEST_QUEUE' | translate }}</h2>
+      <span class="demand-no">{{ currentDemandNo() ? ('ARCHIVE_SEARCH.REQUEST_NO' | translate) + ': ' + currentDemandNo() : ('ARCHIVE_SEARCH.NO_ACTIVE_REQUEST' | translate) }}</span>
+
+      @if (hasSceneSelection()) {
+        <span class="selection-count">{{ 'ARCHIVE_SEARCH.SELECTED_COUNT' | translate: { count: selectedSceneIds().length } }}</span>
+      }
+      <button mat-button (click)="newRequest()" [disabled]="!currentDemandNo() || batchRunning()">
+        <mat-icon>refresh</mat-icon> {{ 'ARCHIVE_SEARCH.NEW_REQUEST' | translate }}
+      </button>
+    </div>
+
+    <!-- Legacy m_tit / m_tit1: the per-item status line shown while a batch runs (:4222-4232). -->
+    @if (batchRunning() || batchJob()?.state === 'RUNNING') {
+      <div class="batch-progress">
+        <mat-progress-bar mode="determinate" [value]="batchProgress()"></mat-progress-bar>
+        @if (batchJob(); as job) {
+          <p class="batch-status">
+            {{ 'ARCHIVE_SEARCH.BATCH_IN_PROGRESS' | translate }}
+            <span class="batch-counter">{{ job.processed }} / {{ job.total }}</span>
+            @if (job.currentTitle) {
+              <span class="batch-title">{{ job.currentTitle }}</span>
+            }
+          </p>
+        }
+      </div>
+    }
+
+    <!-- Command14 writes server-side, so the produced files are listed for download rather
+         than landing in a folder the user picked in a Save dialog. -->
+    @if (batchJob(); as job) {
+      @if (job.state === 'COMPLETED' && job.outputPaths.length > 0) {
+        <div class="batch-outputs">
+          <p class="batch-outputs-title">{{ 'ARCHIVE_SEARCH.BATCH_OUTPUTS' | translate }}</p>
+          <ul>
+            @for (path of job.outputPaths; track path) {
+              <li>{{ path }}</li>
+            }
+          </ul>
+        </div>
+      }
+    }
+
+    @if (isLoadingScenes()) {
+      <app-loading-spinner></app-loading-spinner>
+    } @else {
+      <table mat-table [dataSource]="scenes()" class="full-width legacy-datagrid2">
+        <!-- Column 0: المستخدمون (user_name) -->
+        <ng-container matColumnDef="userName">
+          <th mat-header-cell *matHeaderCellDef>المستخدمون</th>
+          <td mat-cell *matCellDef="let row">{{ row.userName }}</td>
+        </ng-container>
+
+        <!-- Column 1: الاختيار (dmd_chek) - checkbox for selection -->
+        <ng-container matColumnDef="checked">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox [checked]="allScenesSelected()" (change)="toggleSelectAllScenes()"></mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox [checked]="isSceneSelected(row)" [disabled]="isSceneFulfilled(row)" (change)="toggleSceneSelected(row)"></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Column 2: رقم الطلب (dmd_no / demandNo) -->
+        <ng-container matColumnDef="demandNo">
+          <th mat-header-cell *matHeaderCellDef>رقم الطلب</th>
+          <td mat-cell *matCellDef="let row">{{ row.demandNo }}</td>
+        </ng-container>
+
+        <!-- Column 3: المسلسل (dmd_ser / serial) -->
+        <ng-container matColumnDef="serial">
+          <th mat-header-cell *matHeaderCellDef>المسلسل</th>
+          <td mat-cell *matCellDef="let row">{{ row.serial }}</td>
+        </ng-container>
+
+        <!-- Column 4: الوصف (dmd_desc) -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>الوصف</th>
+          <td mat-cell *matCellDef="let row">{{ row.description }}</td>
+        </ng-container>
+
+        <!-- Column 5: نوع المخزن (dmd_mch_stock) -->
+        <ng-container matColumnDef="machineStock">
+          <th mat-header-cell *matHeaderCellDef>نوع المخزن</th>
+          <td mat-cell *matCellDef="let row">{{ row.machineStock }}</td>
+        </ng-container>
+
+        <!-- Column 6: اسم البرنامج (nam_prg) - NOT IN CURRENT MODEL -->
+        <ng-container matColumnDef="programName">
+          <th mat-header-cell *matHeaderCellDef>اسم البرنامج</th>
+          <td mat-cell *matCellDef="let row">-</td>
+        </ng-container>
+
+        <!-- Column 7: الفترة (dmd_out) -->
+        <ng-container matColumnDef="outputSize">
+          <th mat-header-cell *matHeaderCellDef>الفترة</th>
+          <td mat-cell *matCellDef="let row">{{ row.outputSize ? formatDuration(row.outputSize) : '-' }}</td>
+        </ng-container>
+
+        <!-- Column 8: الوقت (time_frm) -->
+        <ng-container matColumnDef="time1">
+          <th mat-header-cell *matHeaderCellDef>الوقت</th>
+          <td mat-cell *matCellDef="let row">{{ row.time1 }}</td>
+        </ng-container>
+
+        <!-- Column 9: المحتوى (mn_act_ttl) -->
+        <ng-container matColumnDef="catalogueTitle">
+          <th mat-header-cell *matHeaderCellDef>المحتوى</th>
+          <td mat-cell *matCellDef="let row">{{ row.catalogueTitle }}</td>
+        </ng-container>
+
+        <!-- Column 10: المسار (dmd_path) -->
+        <ng-container matColumnDef="path">
+          <th mat-header-cell *matHeaderCellDef>المسار</th>
+          <td mat-cell *matCellDef="let row" class="path-cell" [matTooltip]="row.path">{{ row.path }}</td>
+        </ng-container>
+
+        <!-- Column 11: التاريخ (dmd_dte) -->
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>التاريخ</th>
+          <td mat-cell *matCellDef="let row">{{ row.date | date:'yyyy-MM-dd' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="sceneColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: sceneColumns;"></tr>
+      </table>
+
+      @if (scenes().length === 0) {
+        <p class="no-data">لا توجد بيانات</p>
+      } @else {
+        <p class="duration-summary">إجمالي المدة: {{ totalSceneDuration() }}</p>
+      }
+    }
+  </mat-card>
+</div>

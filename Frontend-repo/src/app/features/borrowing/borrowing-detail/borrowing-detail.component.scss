@@ -1,0 +1,128 @@
+.detail-page {
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    h1 { margin: 0; font-size: 20px; }
+    .spacer { flex: 1; }
+  }
+}
+
+.status-row {
+  margin-bottom: 20px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge-active { background: #e8f5e9; color: #2e7d32; }
+.badge-returned { background: #eeeeee; color: #616161; }
+.badge-overdue { background: #ffebee; color: #c62828; }
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    label { font-size: 12px; color: #666; font-weight: 500; text-transform: uppercase; }
+    span { font-size: 15px; color: #333; }
+    &.full-width { grid-column: 1 / -1; }
+  }
+}
+
+// Sub-resource expansion panels
+.section-panel {
+  margin-top: 16px;
+
+  .panel-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    margin-right: 8px;
+    vertical-align: middle;
+    color: #666;
+  }
+}
+
+.sub-table {
+  width: 100%;
+  margin-bottom: 16px;
+
+  .actions-cell {
+    width: 48px;
+    text-align: right;
+  }
+}
+
+.empty-message {
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+  padding: 16px 0;
+  margin: 0;
+}
+
+// Book autocomplete add row
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+
+  .autocomplete-field {
+    flex: 1;
+  }
+
+  button {
+    flex-shrink: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.book-option {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+
+  strong { font-size: 13px; }
+  span { font-size: 12px; color: #666; }
+}
+
+// Other items inline add form
+.add-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+
+  .field-title {
+    flex: 2;
+    min-width: 160px;
+  }
+
+  .field-short {
+    flex: 1;
+    min-width: 90px;
+  }
+
+  button {
+    flex-shrink: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}

@@ -1,0 +1,6 @@
+<h2 mat-dialog-title>{{ 'DOC_FORM.GOTO_PAGE2' | translate }}</h2>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">{{ 'DOC_FORM.CANCEL_COMMAND' | translate }}</button>
+  <button mat-stroked-button color="primary" (click)="withoutSaving()">{{ 'DOC_FORM.WITHOUT_SAVING' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="withSaving()">{{ 'DOC_FORM.WITH_SAVING' | translate }}</button>
+</mat-dialog-actions>

@@ -1,0 +1,242 @@
+<div class="detail-page">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ 'BORROWING.DETAIL_TITLE' | translate }}: {{ record()?.iarNo }}</h1>
+    <span class="spacer"></span>
+
+    @if (canReturn() && !isReturning()) {
+      <button mat-raised-button color="accent" (click)="returnItem()">
+        <mat-icon>assignment_return</mat-icon>
+        {{ 'BORROWING.RETURN' | translate }}
+      </button>
+    }
+    @if (canReturn() && isReturning()) {
+      <button mat-raised-button color="accent" disabled>
+        <mat-spinner diameter="20"></mat-spinner>
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (record()) {
+    <mat-card>
+      <mat-card-content>
+        <div class="status-row">
+          <span class="status-badge" [ngClass]="{
+            'badge-active': status() === 'ACTIVE',
+            'badge-returned': status() === 'RETURNED',
+            'badge-overdue': status() === 'OVERDUE'
+          }">
+            {{ 'BORROWING.STATUS_' + status() | translate }}
+          </span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="field">
+            <label>{{ 'BORROWING.BORROW_NO' | translate }}</label>
+            <span>{{ record()!.iarNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.PERSON' | translate }}</label>
+            <span>{{ record()!.personName || record()!.personNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.BOOK' | translate }}</label>
+            <span>{{ record()!.bookTitle || record()!.bookNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.TYPE' | translate }}</label>
+            <span>{{ record()!.borrowingType }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.BORROW_DATE' | translate }}</label>
+            <span>{{ record()!.borrowDate | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.DUE_DATE' | translate }}</label>
+            <span>{{ record()!.dueDate | date:'yyyy-MM-dd HH:mm' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.RETURN_DATE' | translate }}</label>
+            <span>{{ record()!.returnDate ? (record()!.returnDate | date:'yyyy-MM-dd HH:mm') : '-' }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.PERIOD' | translate }}</label>
+            <span>{{ record()!.period }} {{ 'BORROWING.DAYS' | translate }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BORROWING.CAUSE' | translate }}</label>
+            <span>{{ record()!.cause }}</span>
+          </div>
+          <div class="field full-width">
+            <label>{{ 'BORROWING.REMARK' | translate }}</label>
+            <span>{{ record()!.remark }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Borrowed Books -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon class="panel-icon">menu_book</mat-icon>
+          {{ 'BORROWING.BOOKS_SECTION' | translate }}
+        </mat-panel-title>
+        <mat-panel-description>{{ books().length }} {{ 'BORROWING.ITEMS' | translate }}</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      @if (booksLoading()) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        @if (books().length > 0) {
+          <table mat-table [dataSource]="books()" class="sub-table">
+            <ng-container matColumnDef="serial">
+              <th mat-header-cell *matHeaderCellDef>{{ 'BORROWING.SERIAL' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.serial }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="bookNo">
+              <th mat-header-cell *matHeaderCellDef>{{ 'BORROWING.BOOK_APP_NO' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.bookNo }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row" class="actions-cell">
+                <button mat-icon-button color="warn"
+                        [matTooltip]="'APP.REMOVE' | translate"
+                        (click)="removeBook(row.serial)">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="bookColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: bookColumns;"></tr>
+          </table>
+        } @else {
+          <p class="empty-message">{{ 'BORROWING.NO_BOOKS' | translate }}</p>
+        }
+
+        <!-- Add book row -->
+        <div class="add-row">
+          <mat-form-field appearance="outline" class="autocomplete-field">
+            <mat-label>{{ 'BORROWING.SEARCH_BOOK' | translate }}</mat-label>
+            <input matInput
+                   [formControl]="bookSearch"
+                   [matAutocomplete]="bookAuto"
+                   autocomplete="off">
+            <mat-autocomplete #bookAuto="matAutocomplete"
+                              [displayWith]="displayBook"
+                              (optionSelected)="onBookSelected($event)">
+              @for (book of (bookSuggestions$ | async) ?? []; track book.appNo) {
+                <mat-option [value]="book">
+                  <span class="book-option">
+                    <strong>{{ book.appNo }}</strong>
+                    <span>{{ book.activeTitleAr }}</span>
+                  </span>
+                </mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+          <button mat-raised-button color="primary"
+                  (click)="addBook()"
+                  [disabled]="!selectedBookNo() || addBookLoading()">
+            @if (addBookLoading()) {
+              <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+              <mat-icon>add</mat-icon>
+            }
+            {{ 'APP.ADD' | translate }}
+          </button>
+        </div>
+      }
+    </mat-expansion-panel>
+
+    <!-- Other Items -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon class="panel-icon">inventory_2</mat-icon>
+          {{ 'BORROWING.OTHERS_SECTION' | translate }}
+        </mat-panel-title>
+        <mat-panel-description>{{ others().length }} {{ 'BORROWING.ITEMS' | translate }}</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      @if (othersLoading()) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        @if (others().length > 0) {
+          <table mat-table [dataSource]="others()" class="sub-table">
+            <ng-container matColumnDef="serial">
+              <th mat-header-cell *matHeaderCellDef>{{ 'BORROWING.SERIAL' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.serial }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef>{{ 'BORROWING.OTHER_TITLE' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.title }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>{{ 'BORROWING.OTHER_TYPE' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.type }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="count">
+              <th mat-header-cell *matHeaderCellDef>{{ 'BORROWING.OTHER_COUNT' | translate }}</th>
+              <td mat-cell *matCellDef="let row">{{ row.count }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row" class="actions-cell">
+                <button mat-icon-button color="warn"
+                        [matTooltip]="'APP.REMOVE' | translate"
+                        (click)="removeOther(row.serial)">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="otherColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: otherColumns;"></tr>
+          </table>
+        } @else {
+          <p class="empty-message">{{ 'BORROWING.NO_OTHERS' | translate }}</p>
+        }
+
+        <!-- Inline add form -->
+        <form [formGroup]="otherForm" (ngSubmit)="addOther()" class="add-form">
+          <mat-form-field appearance="outline" class="field-title">
+            <mat-label>{{ 'BORROWING.OTHER_TITLE' | translate }}</mat-label>
+            <input matInput formControlName="title">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-short">
+            <mat-label>{{ 'BORROWING.OTHER_TYPE' | translate }}</mat-label>
+            <input matInput type="number" formControlName="type" min="0">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-short">
+            <mat-label>{{ 'BORROWING.OTHER_COUNT' | translate }}</mat-label>
+            <input matInput type="number" formControlName="count" min="0">
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="addOtherLoading()">
+            @if (addOtherLoading()) {
+              <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+              <mat-icon>add</mat-icon>
+            }
+            {{ 'APP.ADD' | translate }}
+          </button>
+        </form>
+      }
+    </mat-expansion-panel>
+  }
+</div>

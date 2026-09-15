@@ -1,0 +1,18 @@
+<h1>{{ 'SITES.TITLE' | translate }}</h1>
+<mat-tab-group>
+  <mat-tab [label]="'SITES.FORMS' | translate">
+    <app-form-list></app-form-list>
+  </mat-tab>
+  <mat-tab [label]="'SITES.TAB_SITES' | translate">
+    <app-site-list></app-site-list>
+  </mat-tab>
+  <mat-tab [label]="'SITES.POSTS' | translate">
+    <app-post-list></app-post-list>
+  </mat-tab>
+  <mat-tab [label]="'SITES.POSITIONS' | translate">
+    <app-position-list></app-position-list>
+  </mat-tab>
+  <mat-tab [label]="'SITES.INSTITUTIONS.TITLE' | translate">
+    <app-institution-list></app-institution-list>
+  </mat-tab>
+</mat-tab-group>

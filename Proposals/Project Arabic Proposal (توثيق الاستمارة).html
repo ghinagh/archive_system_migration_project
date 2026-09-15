@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>توثيق الاستمارة - التقرير المالي وتقدير المدة الزمنية</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
+            padding: 20px 12px;
+            color: #212529;
+            direction: rtl;
+        }
+
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px 20px;
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                padding: 40px 50px;
+            }
+            body {
+                padding: 40px 20px;
+            }
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+                margin-bottom: 10px;
+            }
+        }
+
+        .header h2 {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 15px;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .header h2 {
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .client-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+
+        @media (min-width: 640px) {
+            .client-info {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 10px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .client-info {
+                font-size: 14px;
+                margin-top: 20px;
+                padding-top: 20px;
+            }
+        }
+
+        .content {
+            padding: 25px 20px;
+        }
+
+        @media (min-width: 768px) {
+            .content {
+                padding: 40px 50px;
+            }
+        }
+
+        h3 {
+            color: #1e3c72;
+            font-size: 20px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #2a5298;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            h3 {
+                font-size: 22px;
+                margin-top: 30px;
+                margin-bottom: 15px;
+                padding-bottom: 8px;
+            }
+        }
+
+        h4 {
+            color: #2a5298;
+            font-size: 17px;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            h4 {
+                font-size: 18px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            background: #ffc107;
+            color: #212529;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        @media (min-width: 768px) {
+            .badge {
+                font-size: 14px;
+                margin: 10px 0;
+            }
+        }
+
+        /* Responsive Tables - Horizontal Scroll on Mobile */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 15px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 500px;
+        }
+
+        @media (min-width: 768px) {
+            table {
+                font-size: 14px;
+                min-width: auto;
+            }
+        }
+
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 8px 10px;
+            text-align: right;
+            vertical-align: top;
+        }
+
+        @media (min-width: 768px) {
+            th, td {
+                padding: 12px;
+            }
+        }
+
+        th {
+            background: #2a5298;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .cost-table td:last-child, .cost-table th:last-child {
+            text-align: left;
+        }
+
+        .grand-total {
+            background: #1e3c72;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Cards - Stack on Mobile, Side by Side on Desktop */
+        .card {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-right: 4px solid #2a5298;
+            text-align: right;
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .card {
+                padding: 15px;
+                margin-bottom: 0;
+            }
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (min-width: 768px) {
+            .footer {
+                padding: 20px 50px;
+                font-size: 12px;
+            }
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .highlight {
+                padding: 20px;
+                margin: 20px 0;
+                font-size: 16px;
+            }
+        }
+
+        /* Two Column Layout - Stack on Mobile */
+        .two-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        @media (min-width: 768px) {
+            .two-column {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+                margin: 20px 0;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .report-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            th {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .grand-total {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .table-wrapper {
+                overflow-x: visible;
+            }
+            table {
+                min-width: auto;
+            }
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+            justify-content: flex-start;
+        }
+
+        @media (min-width: 768px) {
+            .tech-stack {
+                gap: 10px;
+                margin: 15px 0;
+            }
+        }
+
+        .tech-tag {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        @media (min-width: 768px) {
+            .tech-tag {
+                padding: 5px 12px;
+                font-size: 13px;
+            }
+        }
+
+        ul, p {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        @media (min-width: 768px) {
+            ul, p {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+        }
+
+        ul {
+            text-align: right;
+            padding-right: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        /* Touch-friendly improvements */
+        .card, .tech-tag {
+            touch-action: manipulation;
+        }
+
+        /* Better spacing on mobile */
+        .content > *:first-child {
+            margin-top: 0;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <div class="header">
+        <h1>توثيق الاستمارة</h1>
+        <h2>التقرير المالي وتقدير المدة الزمنية</h2>
+        <div class="client-info">
+            <span><strong>العميل:</strong> عميل سري</span>
+            <span><strong>إعداد:</strong> فريق إدارة هندسة البرمجيات والتقدير المالي</span>
+        </div>
+        <div class="client-info">
+            <span><strong>نوع المشروع:</strong> منصة إدارة ومعالجة البيانات المؤسسية</span>
+            <span><strong>التاريخ:</strong> ٢٤ مايو ٢٠٢٦</span>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Technology Stack -->
+        <div class="tech-stack">
+            <span class="tech-tag">Angular - الواجهة الأمامية</span>
+            <span class="tech-tag">Java Spring Boot - الواجهة الخلفية</span>
+            <span class="tech-tag">PostgreSQL - قاعدة البيانات</span>
+            <span class="tech-tag">REST APIs</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">AWS - البنية التحتية السحابية</span>
+        </div>
+
+        <!-- 1. Executive Summary -->
+        <h3>١. الملخص التنفيذي</h3>
+        <p>يقدم هذا التقرير تقديرًا مهنيًا على المستوى المؤسسي للمدة الزمنية والتكاليف المالية لتطوير منصة إدارة مؤسسية مخصصة <strong>توثيق الاستمارة</strong> بناءً على تصميمات الشاشات واللقطات والأوصاف الوظيفية المقدمة.</p>
+        <p>يتضمن الحل المقترح: شاشات إدخال بيانات مؤسسية معقدة، عمليات إنشاء وقراءة وتحديث وحذف ديناميكية، وظائف إدارة الفيديو، قدرات بحث وتصفية متقدمة، عمليات استيراد وتصدير، التحكم في الوصول القائم على الأدوار، إعداد التقارير وتسجيل التدقيق، بنية نشر مؤسسية.</p>
+        <p><span class="badge">مستوى تعقيد مؤسسي متوسط-مرتفع</span></p>
+        <ul>
+            <li>عدد كبير من نماذج إدخال البيانات</li>
+            <li>منطق أعمال معقد</li>
+            <li>قواعد تحقق متقدمة</li>
+            <li>تكاملات متعددة</li>
+            <li>تفاعلات واجهة أمامية غنية</li>
+            <li>معالجة خلفية معقدة</li>
+        </ul>
+
+        <!-- 2. Project Overview -->
+        <h3>٢. نظرة عامة على المشروع</h3>
+        <p>يهدف مشروع <strong>توثيق الاستمارة</strong> إلى تحديث ومركزة سير العمل التشغيلي من خلال منصة ويب مؤسسية قابلة للتطوير تمكن المستخدمين من: إدارة السجلات المنظمة، معالجة واسترجاع البيانات المعقدة، التعامل مع المعلومات المرتبطة بالفيديو، إجراء عمليات بحث متقدمة، تصدير واستيراد بيانات الأعمال، والحفاظ على إدارة تشغيلية مركزية.</p>
+
+        <!-- 3. Business Objectives -->
+        <h3>٣. الأهداف التجارية</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الهدف</th>
+                        <th>الأثر التجاري المتوقع</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>رقمنة العمليات اليدوية</td><td>تقليل النفقات التشغيلية</td>
+                    </tr>
+                    <tr><td>مركزة إدارة البيانات</td><td>تحسين دقة التقارير</td>
+                    </tr>
+                    <tr><td>تحسين إنتاجية المستخدم</td><td>سير عمل أسرع</td>
+                    </tr>
+                    <tr><td>تعزيز قابلية التوسع</td><td>قابلية توسع مستقبلية</td>
+                    </tr>
+                    <tr><td>تحسين إمكانية التدقيق</td><td>الامتثال المؤسسي</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. Scope Definition -->
+        <h3>٤. تعريف النطاق</h3>
+        <div class="two-column">
+            <div class="card"><strong>✓ النطاق المضمن</strong><br>واجهة أمامية Angular مؤسسية، واجهة خلفية Spring Boot، بنية قاعدة بيانات PostgreSQL، مصادقة JWT، وحدات إدارة إنشاء وقراءة وتحديث وحذف، وحدة إدارة الفيديو، قدرات استيراد وتصدير، تفويض قائم على الأدوار، خطوط أنابيب تكامل ونشر مستمر، ضمان الجودة والاختبار، نشر على AWS.</div>
+            <div class="card"><strong>✗ النطاق المستبعد</strong><br>تطبيقات الجوال، بوابات الدفع الخارجية، ترحيل البيانات القديمة سيتم مناقشته بشكل منفصل، تكامل الأجهزة المخصصة.</div>
+        </div>
+
+        <!-- 5. Frontend Scope Analysis -->
+        <h3>٥. تحليل نطاق الواجهة الأمامية</h3>
+        <p><strong>تقدير تعقيد الواجهة الأمامية: مرتفع</strong></p>
+        <ul>
+            <li><strong>أ. وحدة القائمة الجانبية:</strong> تنقل متعدد المستويات، ٦ وحدات، توجيه ديناميكي، رؤية قائمة على الأدوار</li>
+            <li><strong>ب. شاشات إنشاء وقراءة وتحديث وحذف (٦ شاشات):</strong> قوائم منسدلة، نماذج ديناميكية، جداول بيانات، بحث وتصفية، عمليات إنشاء وقراءة وتحديث وحذف</li>
+            <li><strong>ج. شاشات الاسترجاع الرئيسية (٣ شاشات):</strong> منطق بحث متقدم، تصفية ديناميكية، عمليات استرجاع بيانات كبيرة</li>
+            <li><strong>د. شاشات متوسطة التعقيد (٢ شاشة):</strong> عمليات استرجاع مبسطة، تحققات قياسية</li>
+            <li><strong>هـ. شاشات مؤسسية عالية التعقيد (٢ شاشة):</strong> من ٣٠ إلى ٤٠ حقلاً لكل شاشة، تحقق ديناميكي، أقسام متعددة، منطق أعمال متقدم، معالجة حالة واجهة مستخدم معقدة، شبكات بيانات</li>
+            <li><strong>و. شاشة إدارة الفيديو:</strong> تكامل تشغيل الفيديو، تخزين البيانات الوصفية، إدارة جدول ديناميكي، وظيفة ربط السجلات</li>
+            <li><strong>ز. ميزات الاستيراد والتصدير:</strong> تنسيقات إكسل، CSV، PDF</li>
+        </ul>
+
+        <!-- 6. Backend Scope Analysis -->
+        <h3>٦. تحليل نطاق الواجهة الخلفية</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>الوحدات الخلفية</th><th>التعقيد</th></tr></thead>
+                <tbody>
+                    <tr><td>المصادقة والتفويض</td><td>متوسط</td></tr>
+                    <tr><td>واجهات برمجة تطبيقات إنشاء وقراءة وتحديث وحذف</td><td>متوسط</td></tr>
+                    <tr><td>واجهات برمجة تطبيقات البحث والتصفية</td><td>مرتفع</td></tr>
+                    <tr><td>معالجة البيانات الوصفية للفيديو</td><td>مرتفع</td></tr>
+                    <tr><td>إدارة رفع الملفات</td><td>مرتفع</td></tr>
+                    <tr><td>معالجة التصدير والاستيراد</td><td>متوسط-مرتفع</td></tr>
+                    <tr><td>تسجيل التدقيق</td><td>متوسط</td></tr>
+                    <tr><td>خدمات إعداد التقارير</td><td>متوسط</td></tr>
+                    <tr><td>تحسين قاعدة البيانات</td><td>مرتفع</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 7. Technical Complexity -->
+        <h3>٧. تقييم التعقيد التقني</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>المجال</th><th>التعقيد</th></tr></thead>
+                <tbody>
+                    <tr><td>بنية الواجهة الأمامية</td><td>مرتفع</td></tr>
+                    <tr><td>واجهات برمجة تطبيقات الخلفية</td><td>مرتفع</td></tr>
+                    <tr><td>تصميم قاعدة البيانات</td><td>متوسط-مرتفع</td></tr>
+                    <tr><td>الأمان</td><td>متوسط</td></tr>
+                    <tr><td>معالجة الفيديو</td><td>مرتفع</td></tr>
+                    <tr><td>النماذج الديناميكية</td><td>مرتفع</td></tr>
+                    <tr><td>النشر و DevOps</td><td>متوسط</td></tr>
+                    <tr><td>تغطية ضمان الجودة</td><td>مرتفع</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p><strong>التعقيد العام للمشروع:</strong> <span class="badge">تعقيد مؤسسي متوسط-مرتفع</span></p>
+
+        <!-- 8. Duration Estimation -->
+        <h3>٨. تقدير المدة الزمنية</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>المرحلة</th><th>المدة</th></tr></thead>
+                <tbody>
+                    <tr><td>الاكتشاف والتحليل</td><td>٣ أسابيع</td></tr>
+                    <tr><td>تصميم واجهة المستخدم وتجربة المستخدم</td><td>٤ أسابيع</td></tr>
+                    <tr><td>تطوير الواجهة الأمامية</td><td>١٢ أسبوعًا</td></tr>
+                    <tr><td>تطوير الواجهة الخلفية</td><td>١٢ أسبوعًا</td></tr>
+                    <tr><td>ضمان الجودة والاختبار</td><td>٣ أسابيع</td></tr>
+                    <tr><td>النشر والتثبيت</td><td>أسبوع واحد</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Total Timeline -->
+        <div class="highlight">
+            <strong>إجمالي المدة الزمنية المقدرة:</strong> ٣٥ أسبوعًا (٨ – ٩ أشهر)
+        </div>
+
+        <!-- 9. Financial Estimation -->
+        <h3>٩. التقدير المالي</h3>
+        <h4>تفاصيل تكاليف الموارد البشرية</h4>
+        <div class="table-wrapper">
+            <table class="cost-table">
+                <thead><tr><th>الفئة</th><th>الساعات المقدرة</th><th>السعر بالساعة</th><th>التكلفة المقدرة</th></tr></thead>
+                <tbody>
+                    <tr><td>تصميم واجهة المستخدم وتجربة المستخدم</td><td>١٦٠</td><td>١٠ دولارات</td><td>١,٦٠٠ دولار</td></tr>
+                    <tr><td>تطوير الواجهة الأمامية</td><td>٩٠٠</td><td>١٠ دولارات</td><td>٩,٠٠٠ دولار</td></tr>
+                    <tr><td>تطوير الواجهة الخلفية</td><td>٨٥٠</td><td>١٠ دولارات</td><td>٨,٥٠٠ دولار</td></tr>
+                    <tr><td>ضمان الجودة والاختبار</td><td>٣٠٠</td><td>١٠ دولارات</td><td>٣,٠٠٠ دولار</td></tr>
+                    <tr><td>النشر و DevOps</td><td>١٢٠</td><td>١٠ دولارات</td><td>١,٢٠٠ دولار</td></tr>
+                    <tr><td>إدارة المشروع</td><td>١٨٠</td><td>١٠ دولارات</td><td>١,٨٠٠ دولار</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4>تكاليف البنية التحتية والتشغيل</h4>
+        <div class="table-wrapper">
+            <table>
+                <tr><td>استضافة AWS (إعداد مستقر أساسي)</td><td>٥٠٠ دولار</td></tr>
+                <tr><td>استضافة PostgreSQL</td><td>٣٠٠ دولار</td></tr>
+                <tr><td>خطوط أنابيب التكامل والنشر المستمر</td><td>٢٥٠ دولار</td></tr>
+                <tr><td>المراقبة وتسجيل الأحداث</td><td>١٥٠ دولار</td></tr>
+                <tr><td>النسخ الاحتياطي والأمان</td><td>٢٠٠ دولار</td></tr>
+            </table>
+        </div>
+
+        <h4>إجمالي الميزانية المقدرة</h4>
+        <div class="table-wrapper">
+            <table>
+                <tr><td>الموارد البشرية</td><td>٢٥,١٠٠ دولار</td></tr>
+                <tr><td>البنية التحتية</td><td>١,٤٠٠ دولار</td></tr>
+                <tr><td>احتياطي الطوارئ (١٠٪)</td><td>٢,٦٥٠ دولار</td></tr>
+                <tr><td><strong>الإجمالي النهائي للميزانية المقدرة</strong></td><td><strong>٢٩,١٥٠ دولار</strong></td></tr>
+            </table>
+        </div>
+
+        <!-- 10. Timeline & Milestones -->
+        <h3>١٠. الجدول الزمني والمعالم الرئيسية</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>المرحلة</th><th>المدة</th><th>الأسبوع التراكمي</th><th>المخرجات</th></tr></thead>
+                <tbody>
+                    <tr><td>المرحلة ١</td><td>الأسبوع ١–٣</td><td>الأسبوع ٣</td><td>الاكتشاف والتحليل</td></tr>
+                    <tr><td>المرحلة ٢</td><td>الأسبوع ٤–٧</td><td>الأسبوع ٧</td><td>تصميم واجهة المستخدم وتجربة المستخدم</td></tr>
+                    <tr><td>المرحلة ٣</td><td>الأسبوع ٨–١٩</td><td>الأسبوع ١٩</td><td>واجهات برمجة تطبيقات الخلفية الأساسية</td></tr>
+                    <tr><td>المرحلة ٤</td><td>الأسبوع ٨–٣١</td><td>الأسبوع ٣١</td><td>تطوير الواجهة الأمامية (بالتوازي مع الخلفية)</td></tr>
+                    <tr><td>المرحلة ٥</td><td>الأسبوع ٣٢–٣٤</td><td>الأسبوع ٣٤</td><td>ضمان الجودة واختبار التكامل</td></tr>
+                    <tr><td>المرحلة ٦</td><td>الأسبوع ٣٥</td><td>الأسبوع ٣٥</td><td>النشر والإصدار الإنتاجي</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 11. Infrastructure & Deployment -->
+        <h3>١١. البنية التحتية والنشر</h3>
+        <div class="two-column">
+            <div class="card"><strong>البنية التحتية المقترحة</strong><br>مثيل AWS EC2 أساسي، حاويات Docker، خطوط أنابيب التكامل والنشر المستمر، قاعدة بيانات PostgreSQL، واجهات برمجة تطبيقات REST آمنة، مراقبة وتسجيل الأحداث</div>
+            <div class="card"><strong>بيئات النشر</strong><br>بيئة التطوير، بيئة الاختبار، بيئة الإنتاج</div>
+        </div>
+
+        <!-- 12. Risks & Assumptions -->
+        <h3>١٢. المخاطر والافتراضات</h3>
+        <div class="two-column">
+            <div class="card"><strong>الافتراضات</strong><br>✓ بقاء المتطلبات مستقرة نسبيًا<br>✓ تقديم العميل للملاحظات في الوقت المناسب<br>✓ عدم وجود تغييرات كبيرة في تكامل الأطراف الخارجية<br>✓ تحديد سير العمل الحالي بوضوح</div>
+            <div class="card"><strong>المخاطر</strong><br>⚠ توسع النطاق<br>⚠ متطلبات تقارير إضافية<br>⚠ تعديلات قواعد العمل المعقدة<br>⚠ تغييرات توسع البنية التحتية<br>⚠ متطلبات أمان إضافية</div>
+        </div>
+
+        <!-- 13. Payment Milestones -->
+        <h3>١٣. مراحل الدفع</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>المرحلة</th><th>نسبة الدفع</th></tr></thead>
+                <tbody>
+                    <tr><td>بدء المشروع</td><td>٢٠٪</td></tr>
+                    <tr><td>الموافقة على تصميم واجهة المستخدم وتجربة المستخدم</td><td>١٥٪</td></tr>
+                    <tr><td>إكمال الواجهة الخلفية</td><td>٢٥٪</td></tr>
+                    <tr><td>إكمال الواجهة الأمامية</td><td>٢٥٪</td></tr>
+                    <tr><td>الموافقة على ضمان الجودة واختبار قبول المستخدم</td><td>١٠٪</td></tr>
+                    <tr><td>النشر في بيئة الإنتاج</td><td>٥٪</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 14. Final Recommendation -->
+        <h3>١٤. التوصية النهائية</h3>
+        <p>بناءً على تحليل اللقطات وتعقيد النظام ومتطلبات البنية التحتية المؤسسية، يتطلب المشروع دورة حياة تطوير منظمة مع الحفاظ على تحسين التكلفة وخدمات البنية التحتية المستقرة.</p>
+        <p>تم تحسين الميزانية والجدول الزمني المقترح من أجل:</p>
+        <ul>
+            <li>تطبيق مستقر على المستوى المؤسسي</li>
+            <li>بنية قابلة للصيانة</li>
+            <li>نشر فعال من حيث التكلفة</li>
+            <li>جودة جاهزة للإنتاج</li>
+            <li>تحسينات مستقبلية قابلة للتوسع</li>
+        </ul>
+        
+        <div class="highlight">المشروع قابل للتنفيذ تقنيًا ضمن الميزانية المحسنة المقترحة مع الحفاظ على جودة البرمجيات والاستقرار التشغيلي.</div>
+    </div>
+
+    <div class="footer">
+        <p>سري — إعداد فريق إدارة هندسة البرمجيات والتقدير المالي</p>
+        <p>توثيق الاستمارة - تقرير تقدير التطوير المالي والمدة الزمنية | تم الإنشاء مايو ٢٠٢٦</p>
+    </div>
+</div>
+</body>
+</html>

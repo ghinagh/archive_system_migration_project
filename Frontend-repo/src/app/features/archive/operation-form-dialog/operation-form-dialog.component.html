@@ -1,0 +1,56 @@
+<h2 mat-dialog-title>{{ 'ARCHIVE.ADD_OPERATION' | translate }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.OPR_NO' | translate }}</mat-label>
+      <input matInput formControlName="oprNo" maxlength="7">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.SUBJECT' | translate }}</mat-label>
+      <input matInput formControlName="subject" maxlength="2">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.DATE' | translate }}</mat-label>
+      <input matInput type="datetime-local" formControlName="date">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.TIME' | translate }}</mat-label>
+      <input matInput formControlName="time" maxlength="15">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.FROM' | translate }}</mat-label>
+      <input matInput formControlName="fromSite" maxlength="3">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.FROM_PERSON' | translate }}</mat-label>
+      <input matInput formControlName="fromPerson" maxlength="3">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.TO' | translate }}</mat-label>
+      <input matInput formControlName="toSite" maxlength="3">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.TO_PERSON' | translate }}</mat-label>
+      <input matInput formControlName="toPerson" maxlength="3">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ 'ARCHIVE.DUE_DATE' | translate }}</mat-label>
+      <input matInput type="datetime-local" formControlName="returnDate">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'ARCHIVE.CHART_TITLE' | translate }}</mat-label>
+      <input matInput formControlName="title" maxlength="70">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'ARCHIVE.REMARK' | translate }}</mat-label>
+      <textarea matInput formControlName="remark" rows="2" maxlength="50"></textarea>
+    </mat-form-field>
+    <mat-checkbox formControlName="transferred">{{ 'ARCHIVE.TRANSFERRED' | translate }}</mat-checkbox>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isLoading()">
+    @if (isLoading()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ 'APP.SAVE' | translate }} }
+  </button>
+</mat-dialog-actions>

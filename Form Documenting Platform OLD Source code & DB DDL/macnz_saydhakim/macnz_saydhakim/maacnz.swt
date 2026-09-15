@@ -1,0 +1,169 @@
+[Setup Wizard Template]
+TemplateDate=04/02/96 04:34:05 Õ
+
+[Select Project and Options]
+txtProjFile=C:\macnz\Project1.vbp
+chkProjRebuild=0
+optBldSetup=True
+chkIncludeDEP=0
+optInternet=False
+optDEPOnly=False
+
+[Distribution Method]
+optFloppyTarg=False
+optSingleDirTarg=True
+optMultDirTarg=False
+
+[Single Directory]
+cboFloppyDrives=0
+cboFloppyDriveSize=0
+txtDirTarget=c:\mcnz\
+
+[Internet Package]
+optRemoteSite=True
+optLocalSite=False
+txtLocalSite=
+
+[Data Access]
+chkUseJet=1
+chkUseODBC=1
+Isam0=dBase III
+Isam1=dBase IV
+Isam2=dBase 5.0
+Isam3=FoxPro 2.0
+Isam4=FoxPro 2.5
+Isam5=FoxPro 2.6
+Isam6=FoxPro 3.0
+Isam7=FoxPro DBC
+Isam8=Paradox 3.X
+Isam9=Paradox 4.X
+Isam10=Paradox 5.X
+Isam11=Excel 5.0
+Isam12=Excel 4.0
+Isam13=Excel 3.0
+Isam14=Excel 8.0
+Isam15=Text
+Isam16=HTML Import
+Isam17=HTML Export
+Isam18=Lotus WK1
+Isam19=Lotus WK3
+Isam20=Lotus WK4
+Isam21=Jet 2.x
+Isam22=
+dBase III=False
+dBase IV=False
+dBase 5.0=False
+FoxPro 2.0=False
+FoxPro 2.5=False
+FoxPro 2.6=False
+FoxPro 3.0=False
+FoxPro DBC=False
+Paradox 3.X=False
+Paradox 4.X=False
+Paradox 5.X=False
+Excel 5.0=False
+Excel 4.0=False
+Excel 3.0=False
+Excel 8.0=False
+Text=False
+HTML Import=False
+HTML Export=False
+Lotus WK1=False
+Lotus WK3=False
+Lotus WK4=False
+Jet 2.x=False
+
+[ActiveX Server Components]
+File1="C:\PROGRAM FILES\COMMON FILES\SYSTEM\ADO\MSADO15.DLL",True,32763,True,False,,,0,False,False
+File2="C:\PROGRAM FILES\COMMON FILES\SYSTEM\ADO\MSADOR15.DLL",True,32763,True,False,,,0,False,False
+File3="C:\WINDOWS\SYSTEM\PLUGIN.OCX",True,32763,True,False,,,0,False,False
+File4="C:\PROGRAM FILES\COMMON FILES\DESIGNER\MSCONDES.DLL",True,32763,True,False,,,0,False,False
+File5="C:\PROGRAM FILES\COMMON FILES\SYSTEM\MSADC\MSADCF.DLL",True,32763,True,False,,,0,False,False
+File6="C:\WINDOWS\SYSTEM\SQLPARSE.DLL",True,32763,True,False,,,0,False,False
+File7="C:\PROGRAM FILES\COMMON FILES\SYSTEM\OLE DB\MSDASC.DLL",True,32763,True,False,,,0,False,False
+File8="C:\WINDOWS\SYSTEM\MSDBRPTR.DLL",True,32763,True,False,,,0,False,False
+File9=
+
+[Confirm Dependencies]
+File1="C:\WINDOWS\SYSTEM\DBLIST32.OCX",True,32764
+File2="C:\WINDOWS\SYSTEM\MSRDC20.OCX",True,32764
+File3="C:\WINDOWS\SYSTEM\DBGRID32.OCX",True,32764
+File4="C:\PROGRAM FILES\COMMON FILES\DESIGNER\MSCDRUN.DLL",True,32763
+File5="C:\PROGRAM FILES\COMMON FILES\MICROSOFT SHARED\DAO\DAO350.DLL",True,32763
+File6="C:\WINDOWS\SYSTEM\MSRDO20.DLL",True,32763
+File7="C:\WINDOWS\SYSTEM\MSADODC.OCX",True,32764
+File8="C:\WINDOWS\SYSTEM\xmsconf.ocx",True,32763
+File9="C:\PROGRAM FILES\COMMON FILES\MICROSOFT SHARED\MSINFO\MSISYS.OCX",True,32764
+File10="C:\WINDOWS\SYSTEM\CRYSTL32.OCX",True,32764
+File11=
+
+[Shared ActiveX Application]
+optDeployApplication=True
+optDeployShared=False
+optRemoteServer1=True
+optRemoteServer0=False
+
+[File Summary]
+File1="C:\WINDOWS\SYSTEM\MSVBVM50.dll",True,"$(WinSysPathSysFile)",$(DLLSelfRegister),False
+File2="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\StdOle2.tlb",True,"$(WinSysPathSysFile)",$(TLBRegister),False
+File3="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\OleAut32.dll",True,"$(WinSysPathSysFile)",$(DLLSelfRegister),False
+File4="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\OlePro32.dll",True,"$(WinSysPathSysFile)",$(DLLSelfRegister),False
+File5="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\AsycFilt.dll",True,"$(WinSysPathSysFile)",,False
+File6="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\Ctl3d32.dll",True,"$(WinSysPathSysFile)",,False
+File7="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\ComCat.dll",True,"$(WinSysPathSysFile)",$(DLLSelfRegister),False
+File8="C:\WINDOWS\SYSTEM\DBLIST32.OCX",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File9="C:\WINDOWS\SYSTEM\MSRDC20.OCX",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File10="C:\WINDOWS\SYSTEM\MSRDO20.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File11="C:\WINDOWS\SYSTEM\rdocurs.dll",True,"$(WinSysPath)",,True
+File12="C:\WINDOWS\SYSTEM\odbc32.dll",True,"$(WinSysPath)",,True
+File13="C:\WINDOWS\SYSTEM\DBGRID32.OCX",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File14="C:\PROGRAM FILES\COMMON FILES\DESIGNER\MSCDRUN.DLL",True,"$(CommonFiles)\Designer",$(DLLSelfRegister),True
+File15="C:\PROGRAM FILES\COMMON FILES\MICROSOFT SHARED\DAO\DAO350.DLL",True,"$(MSDAOPath)",$(DLLSelfRegister),True
+File16="C:\WINDOWS\SYSTEM\MSJtEr35.dll",True,"$(WinSysPathSysFile)",,False
+File17="C:\WINDOWS\SYSTEM\MSJInt35.dll",True,"$(WinSysPathSysFile)",,False
+File18="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\MSVCRT40.dll",True,"$(WinSysPathSysFile)",,False
+File19="C:\WINDOWS\SYSTEM\MSADODC.OCX",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File20="C:\WINDOWS\SYSTEM\MSStdFmt.dll",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File21="C:\WINDOWS\SYSTEM\xmsconf.ocx",True,"$(WinSysPath)",,True
+File22="C:\PROGRAM FILES\COMMON FILES\MICROSOFT SHARED\MSINFO\MSISYS.OCX",True,"$(WinSysPath)",,True
+File23="C:\WINDOWS\SYSTEM\CRYSTL32.OCX",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File24="C:\WINDOWS\SYSTEM\CRPE32.DLL",True,"$(WinSysPath)",,True
+File25="C:\WINDOWS\SYSTEM\IMPLODE.DLL",True,"$(WinSysPath)",,True
+File26="C:\WINDOWS\SYSTEM\PG32.DLL",True,"$(WinSysPath)",,True
+File27="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\CO2C40EN.DLL",True,"$(WinSysPath)",,True
+File28="C:\Program Files\DevStudio\VB\SETUPKIT\KITFIL32\SYS32\MSVCRT20.DLL",True,"$(WinSysPathSysFile)",,False
+File29="C:\WINDOWS\Crystal\CRXLAT32.DLL",True,"$(WinPath)\Crystal",,True
+File30="C:\WINDOWS\SYSTEM\P2BBND.DLL",True,"$(WinSysPath)",,True
+File31="C:\WINDOWS\SYSTEM\P2BDAO.DLL",True,"$(WinSysPath)",,True
+File32="C:\WINDOWS\SYSTEM\P2CTDAO.DLL",True,"$(WinSysPath)",,True
+File33="C:\WINDOWS\SYSTEM\P2IRDAO.DLL",True,"$(WinSysPath)",,True
+File34="C:\WINDOWS\SYSTEM\P2SODBC.DLL",True,"$(WinSysPath)",,True
+File35="C:\WINDOWS\Crystal\U2DDISK.DLL",True,"$(WinPath)\Crystal",,True
+File36="C:\WINDOWS\Crystal\U2DMAPI.DLL",True,"$(WinPath)\Crystal",,True
+File37="C:\WINDOWS\Crystal\U2FCR.DLL",True,"$(WinPath)\Crystal",,True
+File38="C:\WINDOWS\Crystal\U2FDIF.DLL",True,"$(WinPath)\Crystal",,True
+File39="C:\WINDOWS\Crystal\U2FHTML.DLL",True,"$(WinPath)\Crystal",,True
+File40="C:\WINDOWS\Crystal\U2FREC.DLL",True,"$(WinPath)\Crystal",,True
+File41="C:\WINDOWS\Crystal\U2FRTF.DLL",True,"$(WinPath)\Crystal",,True
+File42="C:\WINDOWS\Crystal\U2FSEPV.DLL",True,"$(WinPath)\Crystal",,True
+File43="C:\WINDOWS\Crystal\U2FTEXT.DLL",True,"$(WinPath)\Crystal",,True
+File44="C:\WINDOWS\Crystal\U2FWKS.DLL",True,"$(WinPath)\Crystal",,True
+File45="C:\WINDOWS\Crystal\U2FWORDW.DLL",True,"$(WinPath)\Crystal",,True
+File46="C:\WINDOWS\Crystal\U2FXLS.DLL",True,"$(WinPath)\Crystal",,True
+File47="C:\WINDOWS\SYSTEM\MSJet35.dll",True,"$(WinSysPathSysFile)",$(DLLSelfRegister),False
+File48="C:\WINDOWS\SYSTEM\VBAJet32.dll",True,"$(WinSysPathSysFile)",,False
+File49="C:\WINDOWS\SYSTEM\VB5DB.dll",True,"$(WinSysPath)",,True
+File50="C:\WINDOWS\SYSTEM\MSRD2x35.dll",True,"$(WinSysPathSysFile)",$(DLLSelfRegister),False
+File51="C:\WINDOWS\SYSTEM\MsRepl35.dll",True,"$(WinSysPathSysFile)",,False
+File52="C:\WINDOWS\SYSTEM\ODBCJt32.dll",True,"$(WinSysPathSysFile)",,False
+File53="C:\WINDOWS\SYSTEM\ODBCJI32.dll",True,"$(WinSysPathSysFile)",,False
+File54="C:\WINDOWS\SYSTEM\ODBCTL32.dll",True,"$(WinSysPathSysFile)",,False
+File55="C:\PROGRAM FILES\COMMON FILES\SYSTEM\ADO\MSADO15.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File56="C:\PROGRAM FILES\COMMON FILES\SYSTEM\ADO\MSADOR15.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File57="C:\WINDOWS\SYSTEM\PLUGIN.OCX",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File58="C:\PROGRAM FILES\COMMON FILES\DESIGNER\MSCONDES.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File59="C:\PROGRAM FILES\COMMON FILES\SYSTEM\MSADC\MSADCF.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File60="C:\WINDOWS\SYSTEM\SQLPARSE.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File61="C:\PROGRAM FILES\COMMON FILES\SYSTEM\OLE DB\MSDASC.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File62="C:\WINDOWS\SYSTEM\MSDBRPTR.DLL",True,"$(WinSysPath)",$(DLLSelfRegister),True
+File63="C:\macnz\macnz.exe",True,"$(AppPath)",,False

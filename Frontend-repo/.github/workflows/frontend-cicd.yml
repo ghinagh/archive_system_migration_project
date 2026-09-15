@@ -1,0 +1,33 @@
+name: Frontend CICD
+
+on:
+  push:
+    branches: [qa, staging, prod]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: npm ci
+      - run: npm run build --configuration=${GITHUB_REF_NAME}
+
+      - run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+
+      - run: docker build -t startupstack/frontend:${GITHUB_REF_NAME} ./docker
+      - run: docker push startupstack/frontend:${GITHUB_REF_NAME}
+
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/startupstack/frontend
+            export ENV=${GITHUB_REF_NAME}
+            docker compose up -d

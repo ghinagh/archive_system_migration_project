@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>{{ 'CATALOGUE.ADD_PENDING_FILE' | translate }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'CATALOGUE.TMP_FILE_NAME' | translate }}</mat-label>
+      <input matInput formControlName="tmpFileName" maxlength="50">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'CATALOGUE.TMP_RMRK' | translate }}</mat-label>
+      <input matInput formControlName="tmpRmrk" maxlength="50">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'CATALOGUE.TMP_MK' | translate }}</mat-label>
+      <input matInput formControlName="tmpMk" maxlength="30">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'CATALOGUE.TMP_DATE' | translate }}</mat-label>
+      <input matInput type="date" formControlName="tmpDate">
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || isSaving">
+    {{ 'APP.SAVE' | translate }}
+  </button>
+</mat-dialog-actions>

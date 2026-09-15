@@ -1,0 +1,141 @@
+<div class="detail-page">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ 'PERSONS.DETAIL_TITLE' | translate }}</h1>
+    <span class="spacer"></span>
+    <button mat-raised-button color="primary" (click)="onEdit()">
+      <mat-icon>edit</mat-icon>
+      {{ 'APP.EDIT' | translate }}
+    </button>
+    <button mat-raised-button color="warn" (click)="onDelete()">
+      <mat-icon>delete</mat-icon>
+      {{ 'APP.DELETE' | translate }}
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (person()) {
+    <mat-tab-group (selectedTabChange)="onTabChange($event)">
+
+      <!-- ── Tab 0: Personal Info ──────────────────────────────────────── -->
+      <mat-tab [label]="'PERSONS.PERSONAL_INFO' | translate">
+        <mat-card>
+          <mat-card-content>
+            <div class="detail-grid">
+              <div class="field">
+                <label>{{ 'PERSONS.PRS_NO' | translate }}</label>
+                <span>{{ person()!.prsNo }}</span>
+              </div>
+              <div class="field">
+                <label>{{ 'PERSONS.NAME' | translate }}</label>
+                <span>{{ person()!.name }}</span>
+              </div>
+              <div class="field">
+                <label>{{ 'PERSONS.INSTITUTION' | translate }}</label>
+                <span>{{ person()!.institution }}</span>
+              </div>
+              <div class="field">
+                <label>{{ 'PERSONS.PHONE' | translate }}</label>
+                <span>{{ person()!.phone }}</span>
+              </div>
+              <div class="field">
+                <label>{{ 'PERSONS.EMAIL' | translate }}</label>
+                <span>{{ person()!.email }}</span>
+              </div>
+              <div class="field">
+                <label>{{ 'PERSONS.SEX' | translate }}</label>
+                <span>{{ person()!.sex }}</span>
+              </div>
+              <div class="field">
+                <label>{{ 'PERSONS.ENTITY' | translate }}</label>
+                <span>{{ person()!.entity }}</span>
+              </div>
+              <div class="field full-width">
+                <label>{{ 'PERSONS.ADDRESS' | translate }}</label>
+                <span>{{ person()!.address }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+
+      <!-- ── Tab 1: Assignments ────────────────────────────────────────── -->
+      <mat-tab [label]="'PERSONS.ASSIGNMENTS' | translate">
+        @if (assignmentsLoading()) {
+          <app-loading-spinner></app-loading-spinner>
+        } @else {
+          @if (assignmentsLoaded() && assignments().length === 0) {
+            <p class="no-data">{{ 'PERSONS.NO_ASSIGNMENTS' | translate }}</p>
+          } @else {
+            <table mat-table [dataSource]="assignments()" class="assignments-table">
+
+              <ng-container matColumnDef="siteDescription">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.SITE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.siteDescription }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="postType">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.POST_TYPE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.postType }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="startDate">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.START_DATE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.startDate | date:'yyyy-MM-dd' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="endDate">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.END_DATE' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.endDate | date:'yyyy-MM-dd' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.STATUS' | translate }}</th>
+                <td mat-cell *matCellDef="let r">
+                  <span class="status-badge"
+                        [class.active]="r.status === 1"
+                        [class.inactive]="r.status !== 1 && r.status != null">
+                    {{ r.status === 1 ? ('PERSONS.STATUS_ACTIVE' | translate) : ('PERSONS.STATUS_INACTIVE' | translate) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="level">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.LEVEL' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.level }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="wilayaNo">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.WILAYA' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.wilayaNo }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="positionNo">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.ASSIGNMENTS.POSITION_NO' | translate }}</th>
+                <td mat-cell *matCellDef="let r">{{ r.positionNo ?? '-' }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="positionName">
+                <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.ASSIGNMENTS.POSITION_NAME' | translate }}</th>
+                <td mat-cell *matCellDef="let r">
+                  @if (r.positionName) {
+                    <a [routerLink]="['/sites']" [queryParams]="{ positionNo: r.positionNo }">{{ r.positionName }}</a>
+                  } @else {
+                    <span>-</span>
+                  }
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="assignmentColumns"></tr>
+              <tr mat-row *matRowDef="let r; columns: assignmentColumns;"></tr>
+            </table>
+          }
+        }
+      </mat-tab>
+
+    </mat-tab-group>
+  }
+</div>

@@ -1,0 +1,57 @@
+# Frontend
+Frontend-repo/node_modules/
+Frontend-repo/dist/
+Frontend-repo/.angular/
+Frontend-repo/out-tsc/
+
+# Backend
+Backend-repo/target/
+Backend-repo/.classpath
+Backend-repo/.project
+Backend-repo/.settings/
+
+# IDE / Editor (but keep .vscode/settings.json for shared config)
+.idea/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Machine-specific Claude configuration
+# (Keep .claude/agents/migration-completion-agent.md, exclude settings.local.json)
+.claude/settings.local.json
+
+# Maven local repo
+.m2/
+
+# Environment files
+Frontend-repo/.env.local
+
+# OS temp/cache
+.vscode/.vscode
+.vscode/cache/
+
+# Logs (exclude VB6 IDE and generated logs, but NOT application logs)
+*.log
+/logs/
+
+# VB6 IDE temporary files
+VB*.tmp
+*.tmp
+
+# Windows shortcuts and thumbnails
+*.lnk
+
+# Do NOT ignore:
+# - Frontend-repo/package-lock.json (committed for dependency consistency)
+# - Backend-repo/pom.xml (committed)
+# - Backend-repo/src/main/resources/db/migration/*.sql (Flyway migrations)
+# - .vscode/settings.json (shared project settings)
+# - .claude/agents/migration-completion-agent.md (project instruction agent)
+# - docker-compose.dev.yml (development compose config)
+# - CLAUDE.md files (project documentation)
+# - Form Documenting Platform OLD Source code & DB DDL/** (all legacy files/binaries included)

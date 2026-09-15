@@ -1,0 +1,26 @@
+<div class="form-page">
+  <div class="header"><button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button><h1>{{ (isEditMode() ? 'APP.EDIT' : 'SITES.ADD_SITE') | translate }}</h1></div>
+  @if (pageLoading()) { <app-loading-spinner></app-loading-spinner> } @else {
+    <mat-card><mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.SITE_NO' | translate }}</mat-label><input matInput formControlName="siteNo" maxlength="10"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.LEVEL' | translate }}</mat-label><input matInput formControlName="level" maxlength="2"></mat-form-field>
+          <mat-form-field appearance="outline" class="full-width"><mat-label>{{ 'SITES.DESCRIPTION' | translate }}</mat-label><textarea matInput formControlName="description" rows="2"></textarea></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.DOC_NO' | translate }}</mat-label><input matInput formControlName="docNo" maxlength="7"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.TYPE' | translate }}</mat-label><input matInput formControlName="type" maxlength="2"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.START_DATE' | translate }}</mat-label><input matInput type="datetime-local" formControlName="startDate"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.END_DATE' | translate }}</mat-label><input matInput type="datetime-local" formControlName="endDate"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.STATUS' | translate }}</mat-label><input matInput formControlName="status" maxlength="2"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.WILAYA' | translate }}</mat-label><input matInput type="number" formControlName="wilyaNo"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.KIND' | translate }}</mat-label><input matInput formControlName="kind" maxlength="2"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>{{ 'SITES.USER' | translate }}</mat-label><input matInput formControlName="user" maxlength="3"></mat-form-field>
+        </div>
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">{{ 'APP.SAVE' | translate }}</button>
+          <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+        </div>
+      </form>
+    </mat-card-content></mat-card>
+  }
+</div>

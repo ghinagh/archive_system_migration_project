@@ -1,0 +1,37 @@
+<div class="search-wrapper">
+  <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+    <mat-icon matPrefix class="search-icon">search</mat-icon>
+    <input
+      matInput
+      type="text"
+      [formControl]="searchControl"
+      [matAutocomplete]="searchAuto"
+      [placeholder]="'SEARCH.PLACEHOLDER' | translate">
+    @if (isLoading()) {
+      <mat-spinner matSuffix [diameter]="18"></mat-spinner>
+    }
+  </mat-form-field>
+</div>
+
+<mat-autocomplete
+  #searchAuto
+  [displayWith]="displayFn"
+  (optionSelected)="onOptionSelected($event)">
+
+  @if (!isLoading() && results().length === 0 && (searchControl.value?.length ?? 0) >= 2) {
+    <mat-option disabled class="no-results">
+      {{ 'SEARCH.NO_RESULTS' | translate }}
+    </mat-option>
+  }
+
+  @for (group of groupedResults(); track group.type) {
+    <mat-optgroup [label]="group.type">
+      @for (result of group.items; track result.appNo) {
+        <mat-option [value]="result" class="search-option">
+          <span class="result-title">{{ result.title }}</span>
+        </mat-option>
+      }
+    </mat-optgroup>
+  }
+
+</mat-autocomplete>

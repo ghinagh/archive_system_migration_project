@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  width: 280px;
+  max-width: 100%;
+}
+
+.search-wrapper {
+  width: 100%;
+}
+
+.search-field {
+  width: 100%;
+
+  // Keep field compact inside the toolbar
+  .search-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  ::ng-deep {
+    // Transparent fill over the primary-color toolbar
+    .mat-mdc-text-field-wrapper {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    input.mat-mdc-input-element {
+      color: white;
+      caret-color: white;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+    }
+
+    // Remove bottom spacing reserved for hints/errors
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+  }
+}
+
+.result-title {
+  font-size: 14px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 360px;
+}
+
+.no-results {
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.54);
+}

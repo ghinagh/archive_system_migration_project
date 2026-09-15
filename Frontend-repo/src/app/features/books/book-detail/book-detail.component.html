@@ -1,0 +1,164 @@
+<div class="detail-page">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ 'BOOKS.DETAIL_TITLE' | translate }}: {{ item()?.catalogueTitle }}</h1>
+    <span class="spacer"></span>
+    <button mat-raised-button color="primary" (click)="edit()">
+      <mat-icon>edit</mat-icon> {{ 'APP.EDIT' | translate }}
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (item()) {
+    <mat-card class="info-card">
+      <mat-card-content>
+        <div class="detail-grid">
+          <div class="field"><label>{{ 'BOOKS.APP_NO' | translate }}</label><span>{{ item()!.appNo }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.ARABIC_TITLE' | translate }}</label><span>{{ item()!.catalogueTitle }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.ADDITIONAL_TITLE' | translate }}</label><span>{{ item()!.additionalTitle }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.DOC_TYPE' | translate }}</label><span>{{ item()!.documentType }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.SELECT_NO' | translate }}</label><span>{{ item()!.selectNo }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.PUBLISHER' | translate }}</label><span>{{ item()!.publisher }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.PUB_LOCATION' | translate }}</label><span>{{ item()!.publishLocation }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.PUB_TYPE' | translate }}</label><span>{{ item()!.publishType }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.PUB_DATE' | translate }}</label><span>{{ item()!.publishDate | date:'yyyy-MM-dd' }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.EDITION' | translate }}</label><span>{{ item()!.edition }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.PAGES' | translate }}</label><span>{{ item()!.pageCount }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.PRINT_NO' | translate }}</label><span>{{ item()!.materialCount }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.VOLUME' | translate }}</label><span>{{ item()!.volume }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.PRICE' | translate }}</label><span>{{ item()!.price }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.LANGUAGE' | translate }}</label><span>{{ item()!.lang }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.LANG1' | translate }}</label><span>{{ item()!.lang1 }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.COVER_TYPE' | translate }}</label><span>{{ item()!.cover }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.IS_SERIES' | translate }}</label><span>{{ item()!.isSeries }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.SERIES_TITLE' | translate }}</label><span>{{ item()!.seriesTitle }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.SERIES_NO' | translate }}</label><span>{{ item()!.seriesNo }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.KHALIF' | translate }}</label><span>{{ item()!.khalif }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.WATHIQ_TYPE' | translate }}</label><span>{{ item()!.rdmk }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.QUARTER' | translate }}</label><span>{{ item()!.quarter }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.IKTDTE' | translate }}</label><span>{{ item()!.acquisitionDate | date:'yyyy-MM-dd' }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.TRANSLATOR' | translate }}</label><span>{{ item()!.translator }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.RESULT' | translate }}</label><span>{{ item()!.result }}</span></div>
+          <div class="field"><label>{{ 'BOOKS.STATUS' | translate }}</label><span>{{ item()!.status }}</span></div>
+          <div class="field full-width"><label>{{ 'BOOKS.CONTENT' | translate }}</label><span>{{ item()!.content }}</span></div>
+          <div class="field full-width"><label>{{ 'BOOKS.MEMO' | translate }}</label><span>{{ item()!.memo }}</span></div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Series Info -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>library_books</mat-icon>
+          {{ 'BOOKS.SERIES_INFO' | translate }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      @if (!series()) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <div class="detail-grid">
+          <div class="field">
+            <label>{{ 'BOOKS.ARABIC_SERIES_TITLE' | translate }}</label>
+            <span>{{ series()!.arabicSeriesTitle }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BOOKS.ADDITIONAL_TITLE' | translate }}</label>
+            <span>{{ series()!.additionalTitle }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BOOKS.ACTIVE_NO' | translate }}</label>
+            <span>{{ series()!.activeNo }}</span>
+          </div>
+          <div class="field">
+            <label>{{ 'BOOKS.ADDITIONAL_NO' | translate }}</label>
+            <span>{{ series()!.additionalNo }}</span>
+          </div>
+        </div>
+      }
+    </mat-expansion-panel>
+
+    <!-- Linked Authors -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>people</mat-icon>
+          {{ 'BOOKS.LINKED_AUTHORS' | translate }} ({{ linkedAuthors().length }})
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      @if (linkedAuthors().length === 0) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <table mat-table [dataSource]="linkedAuthors()" class="full-width">
+          <ng-container matColumnDef="authorName">
+            <th mat-header-cell *matHeaderCellDef>{{ 'BOOKS.AUTHOR_NAME' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.authorName }}</td>
+          </ng-container>
+          <ng-container matColumnDef="resourceType">
+            <th mat-header-cell *matHeaderCellDef>{{ 'BOOKS.RESOURCE_TYPE' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.resourceType }}</td>
+          </ng-container>
+          <ng-container matColumnDef="authorNo">
+            <th mat-header-cell *matHeaderCellDef>{{ 'BOOKS.AUTHOR_NO' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.authorNo }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['authorName','resourceType','authorNo']"></tr>
+          <tr mat-row *matRowDef="let r; columns: ['authorName','resourceType','authorNo']"></tr>
+        </table>
+      }
+    </mat-expansion-panel>
+
+    <!-- Subjects -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>category</mat-icon>
+          {{ 'BOOKS.SUBJECTS' | translate }} ({{ subjects().length }})
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      @if (subjects().length === 0) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <table mat-table [dataSource]="subjects()" class="full-width">
+          <ng-container matColumnDef="subjectCode">
+            <th mat-header-cell *matHeaderCellDef>{{ 'BOOKS.SUBJECT_CODE' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.subjectCode }}</td>
+          </ng-container>
+          <ng-container matColumnDef="subjectName">
+            <th mat-header-cell *matHeaderCellDef>{{ 'BOOKS.SUBJECT_NAME' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.subjectName }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['subjectCode','subjectName']"></tr>
+          <tr mat-row *matRowDef="let r; columns: ['subjectCode','subjectName']"></tr>
+        </table>
+      }
+    </mat-expansion-panel>
+
+    <!-- Descriptors -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>label</mat-icon>
+          {{ 'BOOKS.DESCRIPTORS' | translate }} ({{ descriptors().length }})
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      @if (descriptors().length === 0) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <table mat-table [dataSource]="descriptors()" class="full-width">
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>{{ 'BOOKS.DESC_TYPE' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.type }}</td>
+          </ng-container>
+          <ng-container matColumnDef="value">
+            <th mat-header-cell *matHeaderCellDef>{{ 'BOOKS.DESC_VALUE' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.value }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['type','value']"></tr>
+          <tr mat-row *matRowDef="let r; columns: ['type','value']"></tr>
+        </table>
+      }
+    </mat-expansion-panel>
+  }
+</div>

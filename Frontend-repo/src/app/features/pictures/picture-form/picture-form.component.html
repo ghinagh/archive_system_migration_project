@@ -1,0 +1,205 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <mat-accordion multi>
+
+    <!-- Identification -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ 'PICTURES.SECTION_IDENTIFICATION' | translate }}</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.PIC_NO' | translate }}</mat-label>
+          <input matInput formControlName="picNo" maxlength="7">
+          @if (form.get('picNo')?.hasError('required') && form.get('picNo')?.touched) {
+            <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.NEGATIVE_NO' | translate }}</mat-label>
+          <input matInput formControlName="picNgNo" maxlength="6">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.POSITION_NO' | translate }}</mat-label>
+          <input matInput formControlName="picPosNo" maxlength="6">
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Document Info -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ 'PICTURES.SECTION_DOCUMENT' | translate }}</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.DOCUMENT' | translate }}</mat-label>
+          <input matInput formControlName="picDoc" maxlength="3">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.DOC_DATE' | translate }}</mat-label>
+          <input matInput [matDatepicker]="docDtePicker" formControlName="picDocDte">
+          <mat-datepicker-toggle matIconSuffix [for]="docDtePicker"></mat-datepicker-toggle>
+          <mat-datepicker #docDtePicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.ENTITY' | translate }}</mat-label>
+          <input matInput formControlName="picEnt" maxlength="3">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.ENTITY_DATE' | translate }}</mat-label>
+          <input matInput [matDatepicker]="entDtePicker" formControlName="picEntDte">
+          <mat-datepicker-toggle matIconSuffix [for]="entDtePicker"></mat-datepicker-toggle>
+          <mat-datepicker #entDtePicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Person & Date -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ 'PICTURES.SECTION_PERSON_DATE' | translate }}</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.PERSON' | translate }}</mat-label>
+          <input matInput formControlName="picPrs" maxlength="3">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.DATE' | translate }}</mat-label>
+          <input matInput [matDatepicker]="dtePicker" formControlName="picDte">
+          <mat-datepicker-toggle matIconSuffix [for]="dtePicker"></mat-datepicker-toggle>
+          <mat-datepicker #dtePicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Description -->
+    <mat-expansion-panel expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ 'PICTURES.SECTION_DESCRIPTION' | translate }}</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PICTURES.TITLE_FIELD' | translate }}</mat-label>
+          <input matInput formControlName="picTit" maxlength="100">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.COTE' | translate }}</mat-label>
+          <input matInput formControlName="picCot" maxlength="10">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.GEOGRAPHIC' | translate }}</mat-label>
+          <input matInput formControlName="picGeo" maxlength="10">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PICTURES.REMARKS' | translate }}</mat-label>
+          <textarea matInput formControlName="picRmrk" rows="2" maxlength="70"></textarea>
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Physical -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ 'PICTURES.SECTION_PHYSICAL' | translate }}</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.TYPE' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picTyp">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.FORM' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picForm">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.LENGTH' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picLen">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.WIDTH' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picLarge">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.QUALITY' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picQualty">
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Subject & Copy -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ 'PICTURES.SECTION_SUBJECT_COPY' | translate }}</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.SUBJECT' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picSub">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.COPIES' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picCopy">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.LBN' | translate }}</mat-label>
+          <input matInput formControlName="picLbn" maxlength="5">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.PAGE' | translate }}</mat-label>
+          <input matInput formControlName="picPage" maxlength="5">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.LINE' | translate }}</mat-label>
+          <input matInput formControlName="picLine" maxlength="5">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.TYPE1' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picTyp1">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.BRIND' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picBrind">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.CHOICE' | translate }}</mat-label>
+          <input matInput type="number" formControlName="picChoice">
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+
+  </mat-accordion>
+
+  <div class="form-actions">
+    <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+      @if (isLoading()) {
+        <mat-spinner diameter="20"></mat-spinner>
+      } @else {
+        {{ 'APP.SAVE' | translate }}
+      }
+    </button>
+    <button mat-button type="button" (click)="onCancel()">
+      {{ 'APP.CANCEL' | translate }}
+    </button>
+  </div>
+</form>

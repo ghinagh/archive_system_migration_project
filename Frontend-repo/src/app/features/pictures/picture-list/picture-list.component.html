@@ -1,0 +1,128 @@
+<div class="picture-list">
+  <div class="header">
+    <h1>{{ 'PICTURES.TITLE' | translate }}</h1>
+    <button mat-raised-button color="primary" *appRequiresPermission="PERM_CREATE" (click)="addNew()">
+      <mat-icon>add</mat-icon>
+      {{ 'PICTURES.ADD_NEW' | translate }}
+    </button>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.TYPE' | translate }}</mat-label>
+          <input matInput type="number" [value]="filterType()" (input)="filterType.set($any($event.target).value)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.ENTITY' | translate }}</mat-label>
+          <input matInput [value]="filterEntity()" (input)="filterEntity.set($any($event.target).value)" maxlength="3">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.DATE_FROM' | translate }}</mat-label>
+          <input matInput [matDatepicker]="fromPicker" [value]="filterDateFrom()"
+                 (dateChange)="filterDateFrom.set($event.value?.toISOString() || '')">
+          <mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #fromPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PICTURES.DATE_TO' | translate }}</mat-label>
+          <input matInput [matDatepicker]="toPicker" [value]="filterDateTo()"
+                 (dateChange)="filterDateTo.set($event.value?.toISOString() || '')">
+          <mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+          <mat-datepicker #toPicker></mat-datepicker>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-raised-button color="primary" (click)="applyFilter()">
+            <mat-icon>search</mat-icon>
+            {{ 'APP.SEARCH' | translate }}
+          </button>
+          <button mat-button (click)="clearFilter()">
+            <mat-icon>clear</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <table mat-table [dataSource]="items()" class="full-width">
+
+      <ng-container matColumnDef="picNo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.PIC_NO' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picNo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="picTit">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.TITLE_FIELD' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picTit }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="picTyp">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.TYPE' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picTyp }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="picEnt">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.ENTITY' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picEnt }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="picDte">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.DATE' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picDte | date:'yyyy-MM-dd' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="picPrs">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.PERSON' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picPrs }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="picCot">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.COTE' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picCot }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="picGeo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PICTURES.GEOGRAPHIC' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.picGeo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button color="primary" (click)="viewDetail(row.picNo)"
+                  [matTooltip]="'APP.EDIT' | translate">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <ng-container *appRequiresPermission="PERM_DELETE"><button mat-icon-button color="warn" (click)="onDelete(row.picNo)"
+                  [matTooltip]="'APP.DELETE' | translate">
+            <mat-icon>delete</mat-icon>
+          </button></ng-container>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row"></tr>
+    </table>
+
+    @if (items().length === 0) {
+      <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+    }
+
+    <mat-paginator
+      [length]="totalElements()"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  }
+</div>

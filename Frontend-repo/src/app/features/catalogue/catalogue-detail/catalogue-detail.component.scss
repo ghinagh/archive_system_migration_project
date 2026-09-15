@@ -1,0 +1,167 @@
+.section-panel {
+  margin-top: 16px;
+
+  mat-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.no-data {
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.54);
+  padding: 8px 0;
+  margin: 0;
+}
+
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+
+  .add-field { flex: 1; min-width: 120px; }
+  .add-field-sm { width: 80px; flex-shrink: 0; }
+}
+
+.add-btn {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.detail-page {
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    h1 { margin: 0; font-size: 20px; }
+
+    .spacer { flex: 1; }
+
+    button + button { margin-inline-start: 8px; }
+  }
+}
+
+.text-preview-cell {
+  max-width: 340px;
+}
+
+.text-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+
+  .text-full {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+
+  .expand-btn {
+    flex-shrink: 0;
+    margin-top: -4px;
+  }
+}
+
+.text1-form {
+  margin-top: 12px;
+
+  .text1-form-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+
+    .add-field-sm { width: 90px; flex-shrink: 0; }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    span {
+      font-size: 15px;
+      color: #333;
+    }
+
+    &.full-width {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.corrections-table {
+  min-width: 720px;
+}
+
+.correction-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e65100;
+  color: #fff;
+  border-radius: 12px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 20px;
+  height: 20px;
+}
+
+.field-name-badge {
+  display: inline-block;
+  background: #f3e5f5;
+  color: #6a1b9a;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.value-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.old-value { color: #c62828; }
+  &.new-value { color: #2e7d32; }
+}
+
+.reason-cell {
+  max-width: 200px;
+  font-style: italic;
+  color: #546e7a;
+}

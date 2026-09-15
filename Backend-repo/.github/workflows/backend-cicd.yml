@@ -1,0 +1,32 @@
+name: Backend CICD
+
+on:
+  push:
+    branches: [qa, staging, prod]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+
+      - run: mvn clean package -DskipTests
+
+      - run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+
+      - run: docker build -t startupstack/backend:${GITHUB_REF_NAME} ./docker
+      - run: docker push startupstack/backend:${GITHUB_REF_NAME}
+
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/startupstack/backend
+            export ENV=${GITHUB_REF_NAME}
+            docker compose up -d

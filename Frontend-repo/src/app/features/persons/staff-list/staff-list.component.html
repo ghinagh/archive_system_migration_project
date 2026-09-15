@@ -1,0 +1,107 @@
+<div class="staff-list">
+  <div class="header">
+    <h2>{{ 'PERSONS.STAFF_TITLE' | translate }}</h2>
+    <button mat-raised-button color="primary" *appRequiresPermission="PERM_CREATE" (click)="addNew()">
+      <mat-icon>person_add</mat-icon>
+      {{ 'PERSONS.STAFF_ADD_NEW' | translate }}
+    </button>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PERSONS.NAME' | translate }}</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [value]="filterName()"
+                 (input)="filterName.set($any($event.target).value)"
+                 (keyup.enter)="applyFilter()">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'PERSONS.ENTITY' | translate }}</mat-label>
+          <mat-select [value]="filterEntity()" (selectionChange)="filterEntity.set($event.value)">
+            <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+            <mat-option value="01">01</mat-option>
+            <mat-option value="02">02</mat-option>
+            <mat-option value="03">03</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-raised-button color="primary" (click)="applyFilter()">
+            <mat-icon>search</mat-icon>
+            {{ 'APP.SEARCH' | translate }}
+          </button>
+          <button mat-button (click)="clearFilter()">
+            <mat-icon>clear</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <table mat-table [dataSource]="items()" class="full-width">
+
+      <ng-container matColumnDef="prsNo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.PRS_NO' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.prsNo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.NAME' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="institution">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.INSTITUTION' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.institution }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.PHONE' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.phone }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.EMAIL' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.email }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="entity">
+        <th mat-header-cell *matHeaderCellDef>{{ 'PERSONS.ENTITY' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.entity }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button color="primary" (click)="viewDetail(row.prsNo)"
+                  [matTooltip]="'APP.VIEW' | translate">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row"
+          (click)="viewDetail(row.prsNo)"></tr>
+    </table>
+
+    @if (items().length === 0) {
+      <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+    }
+
+    <mat-paginator
+      [length]="totalElements()"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  }
+</div>

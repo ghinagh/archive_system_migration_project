@@ -1,0 +1,74 @@
+<h2 mat-dialog-title>{{ (isEditMode ? 'CATALOGUE.DIG_EDIT_TITLE' : 'CATALOGUE.DIG_ADD_TITLE') | translate }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+    <div class="dialog-row">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_DIGIT_NO' | translate }}</mat-label>
+        <input matInput formControlName="digitNo" maxlength="6">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_TYPE' | translate }}</mat-label>
+        <input matInput formControlName="type" maxlength="4">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_HIGH_TYPE' | translate }}</mat-label>
+        <input matInput formControlName="highType" maxlength="3">
+      </mat-form-field>
+    </div>
+    <div class="dialog-row">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_TYPE1' | translate }}</mat-label>
+        <input matInput formControlName="type1" maxlength="2">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_MATERIAL_TYPE' | translate }}</mat-label>
+        <input matInput formControlName="materialType" maxlength="2">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_SIZE' | translate }}</mat-label>
+        <input matInput type="number" formControlName="size">
+      </mat-form-field>
+    </div>
+
+    <h4>{{ 'CATALOGUE.DIG_START' | translate }}</h4>
+    <div class="dialog-row timecode">
+      <mat-form-field appearance="outline"><mat-label>H</mat-label><input matInput type="number" formControlName="durationHours" min="0"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>M</mat-label><input matInput type="number" formControlName="durationMinutes" min="0" max="59"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>S</mat-label><input matInput type="number" formControlName="durationSeconds" min="0" max="59"></mat-form-field>
+    </div>
+
+    <h4>{{ 'CATALOGUE.DIG_END' | translate }}</h4>
+    <div class="dialog-row timecode">
+      <mat-form-field appearance="outline"><mat-label>H</mat-label><input matInput type="number" formControlName="durationHours1" min="0"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>M</mat-label><input matInput type="number" formControlName="durationMinutes1" min="0" max="59"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>S</mat-label><input matInput type="number" formControlName="durationSeconds1" min="0" max="59"></mat-form-field>
+    </div>
+
+    <div class="dialog-row">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_CHART_TYPE' | translate }}</mat-label>
+        <input matInput formControlName="chartType" maxlength="2">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_CHART_NO' | translate }}</mat-label>
+        <input matInput formControlName="chartNo" maxlength="6">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'CATALOGUE.DIG_NEW_CHART_NO' | translate }}</mat-label>
+        <input matInput formControlName="newChartNo" maxlength="6">
+      </mat-form-field>
+    </div>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'CATALOGUE.DIG_CHART_GEO' | translate }}</mat-label>
+      <input matInput formControlName="chartGeo" maxlength="10">
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || isSaving">
+    {{ 'APP.SAVE' | translate }}
+  </button>
+</mat-dialog-actions>

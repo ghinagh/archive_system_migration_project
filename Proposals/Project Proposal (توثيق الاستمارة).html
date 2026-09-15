@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>توثيق الاستمارة - Financial & Duration Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
+            padding: 20px 12px;
+            color: #212529;
+        }
+
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px 20px;
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                padding: 40px 50px;
+            }
+            body {
+                padding: 40px 20px;
+            }
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+                margin-bottom: 10px;
+            }
+        }
+
+        .header h2 {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 15px;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .header h2 {
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .client-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 13px;
+        }
+
+        @media (min-width: 640px) {
+            .client-info {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 10px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .client-info {
+                font-size: 14px;
+                margin-top: 20px;
+                padding-top: 20px;
+            }
+        }
+
+        .content {
+            padding: 25px 20px;
+        }
+
+        @media (min-width: 768px) {
+            .content {
+                padding: 40px 50px;
+            }
+        }
+
+        h3 {
+            color: #1e3c72;
+            font-size: 20px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #2a5298;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            h3 {
+                font-size: 22px;
+                margin-top: 30px;
+                margin-bottom: 15px;
+                padding-bottom: 8px;
+            }
+        }
+
+        h4 {
+            color: #2a5298;
+            font-size: 17px;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            h4 {
+                font-size: 18px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            background: #ffc107;
+            color: #212529;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        @media (min-width: 768px) {
+            .badge {
+                font-size: 14px;
+                margin: 10px 0;
+            }
+        }
+
+        /* Responsive Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 15px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 500px;
+        }
+
+        @media (min-width: 768px) {
+            table {
+                font-size: 14px;
+                min-width: auto;
+            }
+        }
+
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        @media (min-width: 768px) {
+            th, td {
+                padding: 12px;
+            }
+        }
+
+        th {
+            background: #2a5298;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .cost-table td:last-child, .cost-table th:last-child {
+            text-align: right;
+        }
+
+        .grand-total {
+            background: #1e3c72;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Cards - Mobile Friendly */
+        .card {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #2a5298;
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .card {
+                padding: 15px;
+                margin-bottom: 0;
+            }
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (min-width: 768px) {
+            .footer {
+                padding: 20px 50px;
+                font-size: 12px;
+            }
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .highlight {
+                padding: 20px;
+                margin: 20px 0;
+                font-size: 16px;
+            }
+        }
+
+        .two-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        @media (min-width: 768px) {
+            .two-column {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+                margin: 20px 0;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .report-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            th {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .grand-total {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .table-wrapper {
+                overflow-x: visible;
+            }
+            table {
+                min-width: auto;
+            }
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        @media (min-width: 768px) {
+            .tech-stack {
+                gap: 10px;
+                margin: 15px 0;
+            }
+        }
+
+        .tech-tag {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        @media (min-width: 768px) {
+            .tech-tag {
+                padding: 5px 12px;
+                font-size: 13px;
+            }
+        }
+
+        ul, p {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        @media (min-width: 768px) {
+            ul, p {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        /* Touch-friendly improvements */
+        button, a, .card, .tech-tag {
+            touch-action: manipulation;
+        }
+
+        /* Better spacing on mobile */
+        .content > *:first-child {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <div class="header">
+        <h1>توثيق الاستمارة</h1>
+        <h2>Financial & Duration Estimation Report</h2>
+        <div class="client-info">
+            <span><strong>Client:</strong> Confidential Client</span>
+            <span><strong>Prepared By:</strong> Senior Software Engineering Management & Financial Estimation Team</span>
+        </div>
+        <div class="client-info">
+            <span><strong>Project Type:</strong> Enterprise Management & Data Processing Platform</span>
+            <span><strong>Date:</strong> May 24, 2026</span>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Technology Stack -->
+        <div class="tech-stack">
+            <span class="tech-tag">Angular Frontend</span>
+            <span class="tech-tag">Java Spring Boot Backend</span>
+            <span class="tech-tag">PostgreSQL Database</span>
+            <span class="tech-tag">REST APIs</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">AWS Cloud Infrastructure</span>
+        </div>
+
+        <!-- 1. Executive Summary -->
+        <h3>1. Executive Summary</h3>
+        <p>This report provides a professional enterprise-level financial and duration estimation for the development of a custom enterprise management platform based on the provided screen designs, screenshots, and functional descriptions.</p>
+        <p>The proposed solution includes: Complex enterprise data-entry screens, Dynamic CRUD operations, Video management functionality, Advanced filtering and search capabilities, Import/Export operations, Role-based access control, Reporting and audit logging, Enterprise deployment architecture.</p>
+        <p><span class="badge">Medium-High Enterprise Complexity Level</span></p>
+        <ul>
+            <li>Large number of data-entry forms</li>
+            <li>Heavy business logic</li>
+            <li>Advanced validation rules</li>
+            <li>Multiple integrations</li>
+            <li>Rich frontend interactions</li>
+            <li>Complex backend processing</li>
+        </ul>
+
+        <!-- 2. Project Overview -->
+        <h3>2. Project Overview</h3>
+        <p>The project aims to modernize and centralize operational workflows through a scalable enterprise web platform that enables users to: Manage structured records, Process and retrieve complex data, Handle video-linked information, Perform advanced search operations, Export/import business data, Maintain centralized operational management.</p>
+
+        <!-- 3. Business Objectives -->
+        <h3>3. Business Objectives</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Objective</th>
+                        <th>Expected Business Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Digitize manual operations</td><td>Reduce operational overhead</td></tr>
+                    <tr><td>Centralize data management</td><td>Improve reporting accuracy</td></tr>
+                    <tr><td>Improve user productivity</td><td>Faster workflows</td></tr>
+                    <tr><td>Enhance scalability</td><td>Future extensibility</td></tr>
+                    <tr><td>Improve auditability</td><td>Enterprise compliance</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. Scope Definition -->
+        <h3>4. Scope Definition</h3>
+        <div class="two-column">
+            <div class="card"><strong>✓ Included Scope</strong><br>Enterprise Angular frontend, Spring Boot backend APIs, PostgreSQL database architecture, JWT Authentication, CRUD management modules, Video management module, Export/Import capabilities, Role-based authorization, CI/CD deployment pipelines, QA & testing, AWS deployment.</div>
+            <div class="card"><strong>✗ Out of Scope (if any)</strong><br>Mobile apps, Third-party payment gateways, Legacy data migration (to be discussed separately), Custom hardware integration.</div>
+        </div>
+
+        <!-- 5. Frontend Scope Analysis -->
+        <h3>5. Frontend Scope Analysis</h3>
+        <p><strong>Estimated Frontend Complexity: High</strong></p>
+        <ul>
+            <li><strong>A. Side Menu Module:</strong> Multi-level navigation, 6 modules, Dynamic routing, Role-based visibility</li>
+            <li><strong>B. CRUD Screens (6 Screens):</strong> Dropdowns, Dynamic forms, Data tables, Search & filtering, CRUD operations</li>
+            <li><strong>C. Major Retrieval Screens (3 Screens):</strong> Advanced search logic, Dynamic filtering, Large data retrieval operations</li>
+            <li><strong>D. Medium Complexity Screens (2 Screens):</strong> Simplified retrieval operations, Standard validations</li>
+            <li><strong>E. Highly Complex Enterprise Screens (2 Screens):</strong> 30–40 fields each, Dynamic validation, Multiple sections, Advanced business logic, Complex UI state handling, Data grids</li>
+            <li><strong>F. Video Management Screen:</strong> Video playback integration, Metadata storage, Dynamic table management, Record linking functionality</li>
+            <li><strong>G. Import/Export Features:</strong> Excel, CSV, PDF formats</li>
+        </ul>
+
+        <!-- 6. Backend Scope Analysis -->
+        <h3>6. Backend Scope Analysis</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Backend Modules</th><th>Complexity</th></tr></thead>
+                <tbody>
+                    <tr><td>Authentication & Authorization</td><td>Medium</td></tr>
+                    <tr><td>CRUD APIs</td><td>Medium</td></tr>
+                    <tr><td>Search & Filtering APIs</td><td>High</td></tr>
+                    <tr><td>Video Metadata Processing</td><td>High</td></tr>
+                    <tr><td>File Upload Management</td><td>High</td></tr>
+                    <tr><td>Export/Import Processing</td><td>Medium-High</td></tr>
+                    <tr><td>Audit Logging</td><td>Medium</td></tr>
+                    <tr><td>Reporting Services</td><td>Medium</td></tr>
+                    <tr><td>Database Optimization</td><td>High</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 7. Technical Complexity -->
+        <h3>7. Technical Complexity Assessment</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Area</th><th>Complexity</th></tr></thead>
+                <tbody>
+                    <tr><td>Frontend Architecture</td><td>High</td></tr>
+                    <tr><td>Backend APIs</td><td>High</td></tr>
+                    <tr><td>Database Design</td><td>Medium-High</td></tr>
+                    <tr><td>Security</td><td>Medium</td></tr>
+                    <tr><td>Video Handling</td><td>High</td></tr>
+                    <tr><td>Dynamic Forms</td><td>High</td></tr>
+                    <tr><td>Deployment & DevOps</td><td>Medium</td></tr>
+                    <tr><td>QA Coverage</td><td>High</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p><strong>Overall Project Complexity:</strong> <span class="badge">Medium-High Enterprise Complexity</span></p>
+
+        <!-- 8. Duration Estimation -->
+        <h3>8. Duration Estimation</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Phase</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>Discovery & Analysis</td><td>3 Weeks</td></tr>
+                    <tr><td>UI/UX Design</td><td>4 Weeks</td></tr>
+                    <tr><td>Frontend Development</td><td>12 Weeks</td></tr>
+                    <tr><td>Backend Development</td><td>12 Weeks</td></tr>
+                    <tr><td>QA & Testing</td><td>3 Weeks</td></tr>
+                    <tr><td>Deployment & Stabilization</td><td>1 Week</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="highlight">
+            <strong>Total Estimated Timeline:</strong> 35 Weeks (8 – 9 Months)
+        </div>
+
+        <!-- 9. Financial Estimation -->
+        <h3>9. Financial Estimation</h3>
+        <h4>Human Resource Cost Breakdown</h4>
+        <div class="table-wrapper">
+            <table class="cost-table">
+                <thead><tr><th>Category</th><th>Estimated Hours</th><th>Hourly Rate</th><th>Estimated Cost</th></tr></thead>
+                <tbody>
+                    <tr><td>UI/UX Design</td><td>160</td><td>$10</td><td>$1,600</td></tr>
+                    <tr><td>Frontend Development</td><td>900</td><td>$10</td><td>$9,000</td></tr>
+                    <tr><td>Backend Development</td><td>850</td><td>$10</td><td>$8,500</td></tr>
+                    <tr><td>QA & Testing</td><td>300</td><td>$10</td><td>$3,000</td></tr>
+                    <tr><td>DevOps & Deployment</td><td>120</td><td>$10</td><td>$1,200</td></tr>
+                    <tr><td>Project Management</td><td>180</td><td>$10</td><td>$1,800</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4>Infrastructure & Operational Costs</h4>
+        <div class="table-wrapper">
+            <table>
+                <tr><td>AWS Hosting (Basic Stable Setup)</td><td>$500</td></tr>
+                <tr><td>PostgreSQL Hosting</td><td>$300</td></tr>
+                <tr><td>CI/CD Pipelines</td><td>$250</td></tr>
+                <tr><td>Monitoring & Logging</td><td>$150</td></tr>
+                <tr><td>Backup & Security</td><td>$200</td></tr>
+            </table>
+        </div>
+
+        <h4>Total Estimated Budget</h4>
+        <div class="table-wrapper">
+            <table>
+                <tr><td>Human Resources</td><td>$25,100</td></tr>
+                <tr><td>Infrastructure</td><td>$1,400</td></tr>
+                <tr><td>Contingency Reserve (10%)</td><td>$2,650</td></tr>
+                <tr><td><strong>Grand Total Estimated Budget</strong></td><td><strong>$29,150</strong></td></tr>
+            </table>
+        </div>
+
+        <!-- 10. Timeline & Milestones -->
+        <h3>10. Timeline & Milestones</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Milestone</th><th>Duration</th><th>Cumulative Week</th><th>Deliverable</th></tr></thead>
+                <tbody>
+                    <tr><td>Phase 1</td><td>Week 1–3</td><td>Week 3</td><td>Discovery & Analysis</td></tr>
+                    <tr><td>Phase 2</td><td>Week 4–7</td><td>Week 7</td><td>UI/UX Design</td></tr>
+                    <tr><td>Phase 3</td><td>Week 8–19</td><td>Week 19</td><td>Core Backend APIs</td></tr>
+                    <tr><td>Phase 4</td><td>Week 8–31</td><td>Week 31</td><td>Frontend Development (parallel with backend)</td></tr>
+                    <tr><td>Phase 5</td><td>Week 32–34</td><td>Week 34</td><td>QA & Integration Testing</td></tr>
+                    <tr><td>Phase 6</td><td>Week 35</td><td>Week 35</td><td>Deployment & Production Release</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 11. Infrastructure & Deployment -->
+        <h3>11. Infrastructure & Deployment</h3>
+        <div class="two-column">
+            <div class="card"><strong>Proposed Infrastructure</strong><br>AWS EC2 Basic Instance, Docker Containers, CI/CD Pipelines, PostgreSQL Database, Secure REST APIs, Monitoring & Logging</div>
+            <div class="card"><strong>Deployment Environments</strong><br>Development, Staging, Production</div>
+        </div>
+
+        <!-- 12. Risks & Assumptions -->
+        <h3>12. Risks & Assumptions</h3>
+        <div class="two-column">
+            <div class="card"><strong>Assumptions</strong><br>✓ Requirements remain relatively stable<br>✓ Client provides timely feedback<br>✓ No major third-party integration changes<br>✓ Existing workflows are clearly defined</div>
+            <div class="card"><strong>Risks</strong><br>⚠ Scope expansion<br>⚠ Additional reporting requirements<br>⚠ Complex business-rule modifications<br>⚠ Infrastructure scaling changes<br>⚠ Additional security requirements</div>
+        </div>
+
+        <!-- 13. Payment Milestones -->
+        <h3>13. Payment Milestones</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Milestone</th><th>Payment Percentage</th></tr></thead>
+                <tbody>
+                    <tr><td>Project Kickoff</td><td>20%</td></tr>
+                    <tr><td>UI/UX Approval</td><td>15%</td></tr>
+                    <tr><td>Backend Completion</td><td>25%</td></tr>
+                    <tr><td>Frontend Completion</td><td>25%</td></tr>
+                    <tr><td>QA & UAT Approval</td><td>10%</td></tr>
+                    <tr><td>Production Deployment</td><td>5%</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 14. Final Recommendation -->
+        <h3>14. Final Recommendation</h3>
+        <p>Based on the analyzed screenshots, system complexity, and enterprise architecture requirements, the project requires a structured development lifecycle while maintaining cost optimization and stable infrastructure services.</p>
+        <p>The proposed budget and timeline are optimized for:</p>
+        <ul>
+            <li>Stable enterprise-grade implementation</li>
+            <li>Maintainable architecture</li>
+            <li>Cost-efficient deployment</li>
+            <li>Production-ready quality</li>
+            <li>Scalable future enhancements</li>
+        </ul>
+        
+        <div class="highlight">The project is technically feasible within the proposed optimized budget while preserving software quality and operational stability.</div>
+    </div>
+
+    <div class="footer">
+        <p>Confidential — Prepared by Senior Software Engineering Management & Financial Estimation Team</p>
+        <p>توثيق الاستمارة Financial & Duration Estimation Report | Generated May 2026</p>
+    </div>
+</div>
+</body>
+</html>

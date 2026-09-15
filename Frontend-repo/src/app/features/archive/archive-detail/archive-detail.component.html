@@ -1,0 +1,32 @@
+<div class="detail-page">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ 'ARCHIVE.DETAIL_TITLE' | translate }}: {{ chart()?.chaNo }}</h1>
+    <span class="spacer"></span>
+    <button mat-raised-button color="primary" (click)="onEdit()"><mat-icon>edit</mat-icon> {{ 'APP.EDIT' | translate }}</button>
+    <button mat-raised-button color="warn" (click)="onDelete()"><mat-icon>delete</mat-icon> {{ 'APP.DELETE' | translate }}</button>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (chart()) {
+    <mat-card>
+      <mat-card-content>
+        <div class="detail-grid">
+          <div class="field"><label>{{ 'ARCHIVE.CHART_NO' | translate }}</label><span>{{ chart()!.chaNo }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.CHART_TITLE' | translate }}</label><span>{{ chart()!.title }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.SUBJECT' | translate }}</label><span>{{ chart()!.subject }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.TYPE' | translate }}</label><span>{{ chart()!.type }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.DATE' | translate }}</label><span>{{ chart()!.date | date:'yyyy-MM-dd' }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.SOURCE' | translate }}</label><span>{{ chart()!.source }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.STOCK' | translate }}</label><span>{{ chart()!.stock }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.DISTRIBUTED' | translate }}</label><span>{{ chart()!.nbDis }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.FROM' | translate }}</label><span>{{ chart()!.fromSite }} / {{ chart()!.fromPerson }}</span></div>
+          <div class="field"><label>{{ 'ARCHIVE.TO' | translate }}</label><span>{{ chart()!.toSite }} / {{ chart()!.toPerson }}</span></div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <app-operations-history [chartId]="chartId"></app-operations-history>
+  }
+</div>

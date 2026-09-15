@@ -1,0 +1,123 @@
+<div class="catalogue-list">
+  <div class="header">
+    <h1>{{ 'CATALOGUE.TITLE' | translate }}</h1>
+    <button mat-raised-button color="primary" *appRequiresPermission="PERM_CREATE" (click)="addNew()">
+      <mat-icon>add</mat-icon>
+      {{ 'CATALOGUE.ADD_NEW' | translate }}
+    </button>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.TITLE_SEARCH' | translate }}</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [value]="filterTitle()"
+                 (input)="filterTitle.set($any($event.target).value)"
+                 (keyup.enter)="applyFilter()">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.TYPE' | translate }}</mat-label>
+          <mat-select [value]="filterType()" (selectionChange)="filterType.set($event.value)">
+            <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+            <mat-option value="B">{{ 'NAV.BOOKS' | translate }}</mat-option>
+            <mat-option value="A">{{ 'NAV.ARTICLES' | translate }}</mat-option>
+            <mat-option value="N">{{ 'NAV.NEWS' | translate }}</mat-option>
+            <mat-option value="P">{{ 'NAV.PERIODICALS' | translate }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.DATE_FROM' | translate }}</mat-label>
+          <input matInput type="datetime-local" [value]="filterDateFrom()"
+                 (change)="filterDateFrom.set($any($event.target).value)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.DATE_TO' | translate }}</mat-label>
+          <input matInput type="datetime-local" [value]="filterDateTo()"
+                 (change)="filterDateTo.set($any($event.target).value)">
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-raised-button color="primary" (click)="applyFilter()">
+            <mat-icon>search</mat-icon>
+            {{ 'APP.SEARCH' | translate }}
+          </button>
+          <button mat-button (click)="clearFilter()">
+            <mat-icon>clear</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <app-advanced-search [fields]="advancedSearchFields" (search)="onAdvancedSearch($event)" (cleared)="onAdvancedSearchCleared()"></app-advanced-search>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <table mat-table [dataSource]="items()" class="full-width">
+
+      <ng-container matColumnDef="appNo">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.APP_NO' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.appNo }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="activeTitleAr">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.ACTIVE_TITLE' | translate }}</th>
+        <td mat-cell *matCellDef="let row" [innerHTML]="row.activeTitleAr | highlight: filterTitle()"></td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.TYPE' | translate }}</th>
+        <td mat-cell *matCellDef="let row">
+          @switch (row.type?.trim()) {
+            @case ('B') { {{ 'NAV.BOOKS' | translate }} }
+            @case ('A') { {{ 'NAV.ARTICLES' | translate }} }
+            @case ('N') { {{ 'NAV.NEWS' | translate }} }
+            @case ('P') { {{ 'NAV.PERIODICALS' | translate }} }
+            @default { {{ row.type }} }
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="entryDate">
+        <th mat-header-cell *matHeaderCellDef>{{ 'CATALOGUE.ENTRY_DATE' | translate }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.entryDate | date:'yyyy-MM-dd' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button color="primary" (click)="viewDetail(row.appNo)"
+                  [matTooltip]="'APP.EDIT' | translate">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <ng-container *appRequiresPermission="PERM_DELETE"><button mat-icon-button color="warn" (click)="onDelete(row.appNo)"
+                  [matTooltip]="'APP.DELETE' | translate">
+            <mat-icon>delete</mat-icon>
+          </button></ng-container>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row"></tr>
+    </table>
+
+    @if (items().length === 0) {
+      <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+    }
+
+    <mat-paginator
+      [length]="totalElements()"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  }
+</div>

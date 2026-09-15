@@ -1,0 +1,129 @@
+<div class="detail-page">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-titles">
+      <h1>{{ item()?.name }}</h1>
+      <span class="staff-id">{{ 'PERSONS.PRS_NO' | translate }}: {{ item()?.prsNo }}</span>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (item()) {
+    <mat-card>
+      <mat-card-header>
+        <mat-icon class="staff-avatar-icon">badge</mat-icon>
+        <mat-card-title>{{ 'PERSONS.STAFF_TAB' | translate }}</mat-card-title>
+        <mat-card-subtitle>{{ item()!.entity }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="detail-grid">
+
+          <div class="field">
+            <label>{{ 'PERSONS.NAME' | translate }}</label>
+            <span>{{ item()!.name }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.ENTITY' | translate }}</label>
+            <span>{{ item()!.entity }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.INSTITUTION' | translate }}</label>
+            <span>{{ item()!.institution }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.PHONE' | translate }}</label>
+            <span>{{ item()!.phone }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.EMAIL' | translate }}</label>
+            <span>{{ item()!.email }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.INSTITUTION_PHONE' | translate }}</label>
+            <span>{{ item()!.institutionPhone }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.INSTITUTION_EMAIL' | translate }}</label>
+            <span>{{ item()!.institutionEmail }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.INSTITUTION_DIRECTORATE' | translate }}</label>
+            <span>{{ item()!.institutionDirectorate }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.BOX' | translate }}</label>
+            <span>{{ item()!.poBox }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.INSTITUTION_BOX' | translate }}</label>
+            <span>{{ item()!.institutionBox }}</span>
+          </div>
+
+          <div class="field full-width">
+            <label>{{ 'PERSONS.ADDRESS' | translate }}</label>
+            <span>{{ item()!.address }}</span>
+          </div>
+
+          <div class="field full-width">
+            <label>{{ 'PERSONS.ADDRESS2' | translate }}</label>
+            <span>{{ item()!.secondaryAddress }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.VILLAGE' | translate }}</label>
+            <span>{{ item()!.village }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.RESIDENCE' | translate }}</label>
+            <span>{{ item()!.residence }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.BIRTH_DATE' | translate }}</label>
+            <span>{{ item()!.birthDate | date:'yyyy-MM-dd' }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.REGISTRATION_ID' | translate }}</label>
+            <span>{{ item()!.registrationId }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.QUALIFICATION' | translate }}</label>
+            <span>{{ item()!.qualification }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.SPECIALTY_TYPE' | translate }}</label>
+            <span>{{ item()!.specialtyTypeCode }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.SPECIALTY_DATE1' | translate }}</label>
+            <span>{{ item()!.specialtyDate1 | date:'yyyy-MM-dd' }}</span>
+          </div>
+
+          <div class="field">
+            <label>{{ 'PERSONS.SPECIALTY_DATE2' | translate }}</label>
+            <span>{{ item()!.specialtyDate2 | date:'yyyy-MM-dd' }}</span>
+          </div>
+
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

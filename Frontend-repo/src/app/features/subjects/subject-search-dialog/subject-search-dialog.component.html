@@ -1,0 +1,7 @@
+<h2 mat-dialog-title>{{ 'SUBJECTS.ADD_SUBJECT' | translate }}</h2>
+<mat-dialog-content>
+  <app-subject-search (subjectSelected)="onSubjectSelected($event)"></app-subject-search>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+</mat-dialog-actions>

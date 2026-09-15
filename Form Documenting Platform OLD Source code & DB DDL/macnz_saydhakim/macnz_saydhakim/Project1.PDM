@@ -1,0 +1,212 @@
+[Root]
+Most Recent Package=Standard Setup Package 1
+
+
+[Package|Standard Setup Package 1|Root]
+SubWizProgID=PDWizard.SetupPkgSubWiz
+BuildFolder=c:\package_picture
+
+[Package|Standard Setup Package 1|Configure DAO ISAMs]
+Applicable=Yes
+Xbase=No
+Excel=No
+Exchange=No
+Text=No
+Jet 2.x=No
+Lotus=No
+Paradox=No
+
+[Package|Standard Setup Package 1|Configure DAO ODBC]
+JetWorkspace=
+ODBCDirect=
+
+[Package|Standard Setup Package 1|Files Found]
+
+[Package|Standard Setup Package 1|Files Released]
+
+[Package|Standard Setup Package 1|Missing Dependency Information]
+C:\WINNT\system32\tdc.ocx=
+C:\WINNT\system32\MSSTDFMT.DLL=
+C:\Program Files\Common Files\System\Ole DB\oledb32.dll=
+C:\WINNT\system32\xmsconf.ocx=
+C:\WINNT\system32\SQLPARSE.DLL=
+C:\Program Files\Common Files\Designer\MSCONDES.DLL=
+C:\WINNT\system32\MSCONEXT.TLB=
+C:\WINNT\system32\plugin.ocx=
+C:\Program Files\Common Files\System\ado\msado20.tlb=
+
+[Package|Standard Setup Package 1|Out-of-Date Dependency Information]
+C:\WINNT\system32\CRYSTL32.OCX=
+C:\WINNT\system32\MSRDO20.DLL=
+
+[Package|Standard Setup Package 1|Files Added]
+
+[Package|Standard Setup Package 1|Files Removed]
+
+[Package|Standard Setup Package 1|Files In Project]
+C:\macnz_vb_6\macnz.exe=Yes
+C:\WINNT\system32\msvbvm60.dll=Yes
+C:\WINNT\system32\oleaut32.dll=Yes
+C:\WINNT\system32\olepro32.dll=Yes
+C:\WINNT\system32\asycfilt.dll=Yes
+C:\WINNT\system32\stdole2.tlb=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=Yes
+C:\Program Files\Common Files\System\ado\msado20.tlb=Yes
+C:\WINNT\system32\plugin.ocx=Yes
+C:\WINNT\system32\MSCONEXT.TLB=Yes
+C:\WINNT\system32\MSCDRUN.DLL=Yes
+C:\WINNT\system32\MSRDO20.DLL=Yes
+C:\WINNT\system32\RDOCURS.DLL=Yes
+C:\Program Files\Common Files\Designer\MSCONDES.DLL=Yes
+C:\WINNT\system32\DAO350.DLL=Yes
+C:\WINNT\system32\MSJet35.dll=Yes
+C:\WINNT\system32\MSJtEr35.dll=Yes
+C:\WINNT\system32\MSJInt35.dll=Yes
+C:\WINNT\system32\vbajet32.dll=Yes
+C:\WINNT\system32\expsrv.dll=Yes
+C:\WINNT\system32\MSRD2x35.dll=Yes
+C:\WINNT\system32\MsRepl35.dll=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MSVCRT40.DLL=Yes
+C:\WINNT\system32\VB5DB.dll=Yes
+C:\WINNT\system32\SQLPARSE.DLL=Yes
+C:\WINNT\system32\xmsconf.ocx=Yes
+C:\Program Files\Common Files\System\Ole DB\oledb32.dll=Yes
+C:\WINNT\system32\MSDBRPTR.DLL=Yes
+C:\WINNT\system32\MSSTDFMT.DLL=Yes
+C:\WINNT\system32\tdc.ocx=Yes
+C:\WINNT\system32\DBLIST32.OCX=Yes
+C:\WINNT\system32\MSRDC20.OCX=Yes
+C:\WINNT\system32\DBGRID32.OCX=Yes
+C:\WINNT\system32\CRYSTL32.OCX=Yes
+C:\WINNT\system32\CRPE32.DLL=Yes
+C:\WINNT\system32\IMPLODE.DLL=Yes
+C:\WINNT\system32\PG32.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\CO2C40EN.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MSVCRT20.DLL=Yes
+C:\WINNT\Crystal\CRXLAT32.DLL=Yes
+C:\WINNT\system32\P2BBND.DLL=Yes
+C:\WINNT\system32\P2BDAO.DLL=Yes
+C:\WINNT\system32\P2CTDAO.DLL=Yes
+C:\WINNT\system32\P2IRDAO.DLL=Yes
+C:\WINNT\system32\P2SODBC.DLL=Yes
+C:\WINNT\Crystal\U2DDISK.DLL=Yes
+C:\WINNT\Crystal\U2DMAPI.DLL=Yes
+C:\WINNT\Crystal\U2FCR.DLL=Yes
+C:\WINNT\Crystal\U2FDIF.DLL=Yes
+C:\WINNT\Crystal\U2FHTML.DLL=Yes
+C:\WINNT\Crystal\U2FREC.DLL=Yes
+C:\WINNT\Crystal\U2FRTF.DLL=Yes
+C:\WINNT\Crystal\U2FSEPV.DLL=Yes
+C:\WINNT\Crystal\U2FTEXT.DLL=Yes
+C:\WINNT\Crystal\U2FWKS.DLL=Yes
+C:\WINNT\Crystal\U2FWORDW.DLL=Yes
+C:\WINNT\Crystal\U2FXLS.DLL=Yes
+C:\WINNT\system32\MSMASK32.OCX=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MDAC_TYP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=Yes
+C:\WINNT\system32\VB6STKIT.DLL=Yes
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=Yes
+
+[Package|Standard Setup Package 1|Configure Registry Files]
+Applicable=No
+
+[Package|Standard Setup Package 1|Configure Remote Servers]
+Applicable=No
+
+[Package|Standard Setup Package 1|Install Locations]
+C:\macnz_vb_6\macnz.exe=$(AppPath)
+C:\WINNT\system32\msvbvm60.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\oleaut32.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\olepro32.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\asycfilt.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\stdole2.tlb=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\COMCAT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Common Files\System\ado\msado20.tlb=$(WinSysPath)
+C:\WINNT\system32\plugin.ocx=$(WinSysPath)
+C:\WINNT\system32\MSCONEXT.TLB=$(WinSysPath)
+C:\WINNT\system32\MSCDRUN.DLL=$(WinSysPath)
+C:\WINNT\system32\MSRDO20.DLL=$(WinSysPath)
+C:\WINNT\system32\RDOCURS.DLL=$(WinSysPath)
+C:\Program Files\Common Files\Designer\MSCONDES.DLL=$(WinSysPath)
+C:\WINNT\system32\DAO350.DLL=$(MSDAOPath)
+C:\WINNT\system32\MSJet35.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJtEr35.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\MSJInt35.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\vbajet32.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\expsrv.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\MSRD2x35.dll=$(WinSysPathSysFile)
+C:\WINNT\system32\MsRepl35.dll=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MSVCRT40.DLL=$(WinSysPathSysFile)
+C:\WINNT\system32\VB5DB.dll=$(WinSysPath)
+C:\WINNT\system32\SQLPARSE.DLL=$(WinSysPath)
+C:\WINNT\system32\xmsconf.ocx=$(AppPath)
+C:\Program Files\Common Files\System\Ole DB\oledb32.dll=$(WinSysPath)
+C:\WINNT\system32\MSDBRPTR.DLL=$(WinSysPath)
+C:\WINNT\system32\MSSTDFMT.DLL=$(WinSysPath)
+C:\WINNT\system32\tdc.ocx=$(WinSysPath)
+C:\WINNT\system32\DBLIST32.OCX=$(WinSysPath)
+C:\WINNT\system32\MSRDC20.OCX=$(WinSysPath)
+C:\WINNT\system32\DBGRID32.OCX=$(WinSysPath)
+C:\WINNT\system32\CRYSTL32.OCX=$(WinSysPath)
+C:\WINNT\system32\CRPE32.DLL=$(WinSysPath)
+C:\WINNT\system32\IMPLODE.DLL=$(WinSysPath)
+C:\WINNT\system32\PG32.DLL=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\CO2C40EN.DLL=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MSVCRT20.DLL=$(WinSysPathSysFile)
+C:\WINNT\Crystal\CRXLAT32.DLL=$(WinPath)\Crystal
+C:\WINNT\system32\P2BBND.DLL=$(WinSysPath)
+C:\WINNT\system32\P2BDAO.DLL=$(WinSysPath)
+C:\WINNT\system32\P2CTDAO.DLL=$(WinSysPath)
+C:\WINNT\system32\P2IRDAO.DLL=$(WinSysPath)
+C:\WINNT\system32\P2SODBC.DLL=$(WinSysPath)
+C:\WINNT\Crystal\U2DDISK.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2DMAPI.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FCR.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FDIF.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FHTML.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FREC.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FRTF.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FSEPV.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FTEXT.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FWKS.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FWORDW.DLL=$(WinPath)\Crystal
+C:\WINNT\Crystal\U2FXLS.DLL=$(WinPath)\Crystal
+C:\WINNT\system32\MSMASK32.OCX=$(WinSysPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MDAC_TYP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP.EXE=$(AppPath)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\SETUP1.EXE=$(WinPath)
+C:\WINNT\system32\VB6STKIT.DLL=$(WinSysPathSysFile)
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\ST6UNST.EXE=$(WinPath)
+
+[Package|Standard Setup Package 1|Configure Shared Files]
+Applicable=Yes
+C:\macnz_vb_6\macnz.exe=No
+C:\WINNT\system32\xmsconf.ocx=No
+C:\Program Files\Microsoft Visual Studio\VB98\Wizards\PDWizard\Redist\MDAC_TYP.EXE=No
+
+[Package|Standard Setup Package 1|Distribution]
+Type=single
+Size=
+Title=Project1
+
+[Package|Standard Setup Package 1|IconGroups]
+Group0=Project1
+PrivateGroup0=True
+Parent0=$(Programs)
+
+[Package|Standard Setup Package 1|Project1]
+Icon1=macnz.exe
+Title1=Project1
+StartIn1=$(AppPath)
+Key1=Icon1
+
+[Package|Standard Setup Package 1|Package]
+PackageFolder=c:\package_picture
+ProjectFolder=C:\macnz_vb_6
+ServerSideCab=
+File1=c:\package_picture\setup.exe
+File2=c:\package_picture\Setup.Lst
+File3=c:\package_picture\macnz.CAB
+Handler1=PDWizard.FolderDplySubWiz
+Handler2=PDWizard.WebPostDplySubWiz

@@ -1,0 +1,369 @@
+<svg id="erd-svg" class="erd" width="100%" viewBox="0 0 680 1360" role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect x="0" y="0" width="680" height="1360" fill="#ffffff"/>
+    <title>macnz_manar ERD with cardinality</title>
+    <desc>Entity relationship diagram with orthogonal connectors and cardinality labels for the macnz_manar library archive database</desc>
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M2 2L8 5L2 8" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+      <style>
+        .card-label { font-size: 13px; font-weight: 500; font-family: sans-serif; }
+        .card-sub   { font-size: 11px; font-family: sans-serif; }
+        .rel-label  { font-size: 10px; fill: #888; font-family: sans-serif; }
+        .conn { fill: none; stroke-width: 1.2; }
+        .conn-doc   { stroke: #378ADD; }
+        .conn-desc  { stroke: #1D9E75; }
+        .conn-auth  { stroke: #D85A30; }
+        .conn-loan  { stroke: #D4537E; }
+        .conn-period{ stroke: #BA7517; }
+        .conn-thes  { stroke: #639922; stroke-dasharray: 4 3; }
+        .conn-loc   { stroke: #888780; }
+        .conn-ops   { stroke: #534AB7; }
+        .conn-user  { stroke: #5F5E5A; stroke-dasharray: 3 3; }
+        .leg-line   { stroke-width: 1.5; fill: none; }
+      
+      text { font-family: Arial, Helvetica, sans-serif; }
+      .rel-label { font-size: 10px; fill: #888888; font-family: Arial, Helvetica, sans-serif; }
+      .card-label { font-size: 13px; font-weight: 500; font-family: Arial, Helvetica, sans-serif; }
+      .card-sub { font-size: 11px; font-family: Arial, Helvetica, sans-serif; }
+    </style>
+    </defs>
+
+    <!-- ═══ LEGEND ═══ -->
+    <rect x="8" y="8" width="250" height="138" rx="6" fill="#fafafa" stroke="#ccc" stroke-width="0.5"/>
+    <text class="card-label" x="20" y="26" fill="#222">Legend</text>
+    <line x1="20" y1="40" x2="52" y2="40" class="leg-line conn-doc" marker-end="url(#ah)"/>
+    <text class="rel-label" x="58" y="44">Document link  1:1 or N:1</text>
+    <line x1="20" y1="58" x2="52" y2="58" class="leg-line conn-desc" marker-end="url(#ah)"/>
+    <text class="rel-label" x="58" y="62">Descriptor  N:1</text>
+    <line x1="20" y1="76" x2="52" y2="76" class="leg-line conn-auth" marker-end="url(#ah)"/>
+    <text class="rel-label" x="58" y="80">Authorship  N:1</text>
+    <line x1="20" y1="94" x2="52" y2="94" class="leg-line conn-loan" marker-end="url(#ah)"/>
+    <text class="rel-label" x="58" y="98">Loans / people  N:1</text>
+    <line x1="20" y1="112" x2="52" y2="112" class="leg-line conn-thes" marker-end="url(#ah)"/>
+    <text class="rel-label" x="58" y="116">Thesaurus ref  N:1</text>
+    <line x1="20" y1="130" x2="52" y2="130" class="leg-line conn-ops" marker-end="url(#ah)"/>
+    <text class="rel-label" x="58" y="134">Ops / config  N:1</text>
+
+    <!-- ═══ TIER 0: main ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the main table in detail')">
+      <rect x="270" y="170" width="140" height="44" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+      <text class="card-label" x="340" y="196" text-anchor="middle" dominant-baseline="central" fill="#3C3489">main</text>
+    </g>
+
+    <!-- ═══ DOCUMENT CHILDREN ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the ARTICLE table')">
+      <rect x="20" y="290" width="110" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.8"/>
+      <text class="card-label" x="75" y="308" text-anchor="middle" dominant-baseline="central" fill="#0C447C">ARTICLE</text>
+      <text class="card-sub" x="75" y="323" text-anchor="middle" fill="#185FA5">1:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the BOOK table')">
+      <rect x="150" y="290" width="100" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.8"/>
+      <text class="card-label" x="200" y="308" text-anchor="middle" dominant-baseline="central" fill="#0C447C">BOOK</text>
+      <text class="card-sub" x="200" y="323" text-anchor="middle" fill="#185FA5">1:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the DIGIT table')">
+      <rect x="270" y="290" width="100" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.8"/>
+      <text class="card-label" x="320" y="308" text-anchor="middle" dominant-baseline="central" fill="#0C447C">DIGIT</text>
+      <text class="card-sub" x="320" y="323" text-anchor="middle" fill="#185FA5">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the SERIES table')">
+      <rect x="390" y="290" width="100" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.8"/>
+      <text class="card-label" x="440" y="308" text-anchor="middle" dominant-baseline="central" fill="#0C447C">SERIES</text>
+      <text class="card-sub" x="440" y="323" text-anchor="middle" fill="#185FA5">N:1 with main</text>
+    </g>
+
+    <!-- main → doc children -->
+    <path class="conn conn-doc" d="M300 214 L300 250 L75 250 L75 290" marker-end="url(#ah)"/>
+    <text class="rel-label" x="182" y="246">1:1</text>
+    <path class="conn conn-doc" d="M320 214 L320 265 L200 265 L200 290" marker-end="url(#ah)"/>
+    <text class="rel-label" x="252" y="261">1:1</text>
+    <path class="conn conn-doc" d="M340 214 L340 270 L320 270 L320 290" marker-end="url(#ah)"/>
+    <text class="rel-label" x="328" y="266">1:N</text>
+    <path class="conn conn-doc" d="M370 214 L370 275 L440 275 L440 290" marker-end="url(#ah)"/>
+    <text class="rel-label" x="396" y="271">1:N</text>
+
+    <!-- ═══ DESCRIPTORS (right bus) ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the ANALIS table')">
+      <rect x="520" y="170" width="110" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="189" text-anchor="middle" dominant-baseline="central" fill="#085041">ANALIS</text>
+      <text class="card-sub" x="575" y="204" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the GEO table')">
+      <rect x="520" y="236" width="110" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="255" text-anchor="middle" dominant-baseline="central" fill="#085041">GEO</text>
+      <text class="card-sub" x="575" y="270" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the NAROWER table')">
+      <rect x="520" y="302" width="110" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="321" text-anchor="middle" dominant-baseline="central" fill="#085041">NAROWER</text>
+      <text class="card-sub" x="575" y="336" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the RELATIVE table')">
+      <rect x="520" y="368" width="110" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="387" text-anchor="middle" dominant-baseline="central" fill="#085041">RELATIVE</text>
+      <text class="card-sub" x="575" y="402" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the FILE_ADD table')">
+      <rect x="520" y="434" width="110" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="453" text-anchor="middle" dominant-baseline="central" fill="#085041">FILE_ADD</text>
+      <text class="card-sub" x="575" y="468" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the TEXT table')">
+      <rect x="520" y="500" width="110" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="519" text-anchor="middle" dominant-baseline="central" fill="#085041">TEXT</text>
+      <text class="card-sub" x="575" y="534" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the TIME table')">
+      <rect x="520" y="566" width="110" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="585" text-anchor="middle" dominant-baseline="central" fill="#085041">TIME</text>
+      <text class="card-sub" x="575" y="600" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+
+    <!-- right descriptor bus -->
+    <line x1="510" y1="192" x2="510" y2="588" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="2 2"/>
+    <path class="conn conn-desc" d="M410 192 L510 192" marker-end="url(#ah)"/>
+    <text class="rel-label" x="452" y="188">1:N</text>
+    <line x1="510" y1="258" x2="520" y2="258" class="conn conn-desc" marker-end="url(#ah)"/>
+    <line x1="510" y1="324" x2="520" y2="324" class="conn conn-desc" marker-end="url(#ah)"/>
+    <line x1="510" y1="390" x2="520" y2="390" class="conn conn-desc" marker-end="url(#ah)"/>
+    <line x1="510" y1="456" x2="520" y2="456" class="conn conn-desc" marker-end="url(#ah)"/>
+    <line x1="510" y1="522" x2="520" y2="522" class="conn conn-desc" marker-end="url(#ah)"/>
+    <line x1="510" y1="588" x2="520" y2="588" class="conn conn-desc" marker-end="url(#ah)"/>
+
+    <!-- ═══ AUTHORSHIP ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the RES table')">
+      <rect x="20" y="430" width="100" height="44" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+      <text class="card-label" x="70" y="449" text-anchor="middle" dominant-baseline="central" fill="#712B13">RES</text>
+      <text class="card-sub" x="70" y="464" text-anchor="middle" fill="#993C1D">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the AUTHER table')">
+      <rect x="20" y="510" width="100" height="44" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+      <text class="card-label" x="70" y="529" text-anchor="middle" dominant-baseline="central" fill="#712B13">AUTHER</text>
+      <text class="card-sub" x="70" y="544" text-anchor="middle" fill="#993C1D">N:1 from RES/BOOK</text>
+    </g>
+
+    <path class="conn conn-auth" d="M270 192 L140 192 L140 452 L120 452" marker-end="url(#ah)"/>
+    <text class="rel-label" x="148" y="188">1:N</text>
+    <path class="conn conn-auth" d="M70 474 L70 510" marker-end="url(#ah)"/>
+    <text class="rel-label" x="74" y="496">N:1</text>
+    <path class="conn conn-auth" d="M150 312 L125 312 L125 532 L120 532" marker-end="url(#ah)" stroke-dasharray="4 3"/>
+    <text class="rel-label" x="127" y="420">N:1</text>
+
+    <!-- ═══ PERIOD ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the PERIOD table')">
+      <rect x="150" y="430" width="100" height="44" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.8"/>
+      <text class="card-label" x="200" y="449" text-anchor="middle" dominant-baseline="central" fill="#633806">PERIOD</text>
+      <text class="card-sub" x="200" y="464" text-anchor="middle" fill="#854F0B">N:1 from ARTICLE</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the TRANS table')">
+      <rect x="150" y="510" width="100" height="44" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.8"/>
+      <text class="card-label" x="200" y="529" text-anchor="middle" dominant-baseline="central" fill="#633806">TRANS</text>
+      <text class="card-sub" x="200" y="544" text-anchor="middle" fill="#854F0B">N:1 with PERIOD</text>
+    </g>
+
+    <path class="conn conn-period" d="M75 334 L75 420 L150 420 L150 452" marker-end="url(#ah)"/>
+    <text class="rel-label" x="110" y="416">N:1</text>
+    <path class="conn conn-period" d="M200 510 L200 474" marker-end="url(#ah)"/>
+    <text class="rel-label" x="204" y="496">N:1</text>
+
+    <!-- ═══ LOANS ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the ISTARA borrow table')">
+      <rect x="270" y="430" width="110" height="44" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width="0.8"/>
+      <text class="card-label" x="325" y="449" text-anchor="middle" dominant-baseline="central" fill="#72243E">ISTARA</text>
+      <text class="card-sub" x="325" y="464" text-anchor="middle" fill="#993556">N:1 with main</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the PERSON table')">
+      <rect x="270" y="510" width="110" height="44" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width="0.8"/>
+      <text class="card-label" x="325" y="529" text-anchor="middle" dominant-baseline="central" fill="#72243E">PERSON</text>
+      <text class="card-sub" x="325" y="544" text-anchor="middle" fill="#993556">N:1 from ISTARA</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the IST_BK table')">
+      <rect x="270" y="590" width="110" height="44" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width="0.8"/>
+      <text class="card-label" x="325" y="609" text-anchor="middle" dominant-baseline="central" fill="#72243E">IST_BK</text>
+      <text class="card-sub" x="325" y="624" text-anchor="middle" fill="#993556">N:1 with ISTARA</text>
+    </g>
+
+    <path class="conn conn-loan" d="M340 214 L340 360 L325 360 L325 430" marker-end="url(#ah)"/>
+    <text class="rel-label" x="344" y="356">1:N</text>
+    <path class="conn conn-loan" d="M325 474 L325 510" marker-end="url(#ah)"/>
+    <text class="rel-label" x="329" y="496">N:1</text>
+    <path class="conn conn-loan" d="M290 474 L290 590" marker-end="url(#ah)"/>
+    <text class="rel-label" x="294" y="535">1:N</text>
+    <path class="conn conn-loan" d="M270 612 L245 612 L245 312 L250 312" marker-end="url(#ah)" stroke-dasharray="4 3"/>
+    <text class="rel-label" x="247" y="460">N:1</text>
+
+    <!-- ═══ THESAURUS ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the MACNZ thesaurus table')">
+      <rect x="520" y="660" width="110" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="679" text-anchor="middle" dominant-baseline="central" fill="#27500A">MACNZ</text>
+      <text class="card-sub" x="575" y="694" text-anchor="middle" fill="#3B6D11">thesaurus</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the CODING lookup table')">
+      <rect x="520" y="730" width="110" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="749" text-anchor="middle" dominant-baseline="central" fill="#27500A">CODING</text>
+      <text class="card-sub" x="575" y="764" text-anchor="middle" fill="#3B6D11">lookup codes</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the RELIS table')">
+      <rect x="520" y="810" width="110" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.8"/>
+      <text class="card-label" x="575" y="829" text-anchor="middle" dominant-baseline="central" fill="#27500A">RELIS</text>
+      <text class="card-sub" x="575" y="844" text-anchor="middle" fill="#3B6D11">MACNZ ↔ MACNZ</text>
+    </g>
+
+    <path class="conn conn-thes" d="M630 192 L650 192 L650 682 L630 682" marker-end="url(#ah)"/>
+    <text class="rel-label" x="652" y="440">N:1</text>
+    <path class="conn conn-thes" d="M630 324 L660 324 L660 682 L630 682" marker-end="url(#ah)"/>
+    <path class="conn conn-thes" d="M630 390 L655 390 L655 682 L630 682" marker-end="url(#ah)"/>
+    <path class="conn conn-thes" d="M575 704 L575 810" marker-end="url(#ah)"/>
+    <text class="rel-label" x="578" y="760">N:N</text>
+
+    <!-- ═══ LOCATIONS ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the form table')">
+      <rect x="400" y="430" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="450" y="449" text-anchor="middle" dominant-baseline="central" fill="#444441">form</text>
+      <text class="card-sub" x="450" y="464" text-anchor="middle" fill="#5F5E5A">archive locations</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the SUBJECT table')">
+      <rect x="400" y="510" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="450" y="529" text-anchor="middle" dominant-baseline="central" fill="#444441">SUBJECT</text>
+      <text class="card-sub" x="450" y="544" text-anchor="middle" fill="#5F5E5A">N:1 with form</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the REL_FORM table')">
+      <rect x="400" y="590" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="450" y="609" text-anchor="middle" dominant-baseline="central" fill="#444441">REL_FORM</text>
+      <text class="card-sub" x="450" y="624" text-anchor="middle" fill="#5F5E5A">form ↔ form</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the POSITION table')">
+      <rect x="400" y="670" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="450" y="689" text-anchor="middle" dominant-baseline="central" fill="#444441">POSITION</text>
+      <text class="card-sub" x="450" y="704" text-anchor="middle" fill="#5F5E5A">N:1 with form</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the sites table')">
+      <rect x="400" y="750" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="450" y="769" text-anchor="middle" dominant-baseline="central" fill="#444441">sites</text>
+      <text class="card-sub" x="450" y="784" text-anchor="middle" fill="#5F5E5A">N:1 with form</text>
+    </g>
+
+    <path class="conn conn-loc" d="M410 192 L490 192 L490 452 L500 452" marker-end="url(#ah)"/>
+    <text class="rel-label" x="493" y="320">1:N</text>
+    <path class="conn conn-loc" d="M450 474 L450 510" marker-end="url(#ah)"/>
+    <text class="rel-label" x="454" y="496">1:N</text>
+    <path class="conn conn-loc" d="M430 474 L430 590" marker-end="url(#ah)"/>
+    <text class="rel-label" x="434" y="535">N:N</text>
+    <path class="conn conn-loc" d="M420 474 L395 474 L395 692 L400 692" marker-end="url(#ah)" stroke-dasharray="3 3"/>
+    <text class="rel-label" x="348" y="580">N:1</text>
+    <path class="conn conn-loc" d="M410 474 L385 474 L385 772 L400 772" marker-end="url(#ah)" stroke-dasharray="3 3"/>
+    <path class="conn conn-thes" d="M500 532 L510 532 L510 682 L520 682" marker-end="url(#ah)"/>
+    <text class="rel-label" x="513" y="608">N:1</text>
+    <path class="conn conn-thes" d="M130 312 L130 380 L480 380 L480 752 L520 752" marker-end="url(#ah)" stroke-dasharray="4 3"/>
+    <text class="rel-label" x="302" y="376">N:1</text>
+
+    <!-- ═══ ARCHIVE OPS ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the CHARIT archive charter table')">
+      <rect x="20" y="660" width="100" height="44" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+      <text class="card-label" x="70" y="679" text-anchor="middle" dominant-baseline="central" fill="#3C3489">CHARIT</text>
+      <text class="card-sub" x="70" y="694" text-anchor="middle" fill="#534AB7">archive charter</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the OPR_CHRT operations table')">
+      <rect x="20" y="740" width="100" height="44" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+      <text class="card-label" x="70" y="759" text-anchor="middle" dominant-baseline="central" fill="#3C3489">OPR_CHRT</text>
+      <text class="card-sub" x="70" y="774" text-anchor="middle" fill="#534AB7">N:1 with CHARIT</text>
+    </g>
+
+    <path class="conn conn-ops" d="M270 452 L155 452 L155 615 L70 615 L70 660" marker-end="url(#ah)"/>
+    <text class="rel-label" x="108" y="611">N:1</text>
+    <path class="conn conn-ops" d="M70 740 L70 704" marker-end="url(#ah)"/>
+    <text class="rel-label" x="74" y="726">N:1</text>
+
+    <!-- ═══ USERS / CONFIG ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the config users table')">
+      <rect x="150" y="660" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="200" y="679" text-anchor="middle" dominant-baseline="central" fill="#444441">config</text>
+      <text class="card-sub" x="200" y="694" text-anchor="middle" fill="#5F5E5A">user accounts</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the bnkout output templates table')">
+      <rect x="150" y="740" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="200" y="759" text-anchor="middle" dominant-baseline="central" fill="#444441">bnkout</text>
+      <text class="card-sub" x="200" y="774" text-anchor="middle" fill="#5F5E5A">output templates</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the user_bnkout table')">
+      <rect x="150" y="820" width="110" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="205" y="839" text-anchor="middle" dominant-baseline="central" fill="#444441">user_bnkout</text>
+      <text class="card-sub" x="205" y="854" text-anchor="middle" fill="#5F5E5A">N:1 bnkout+config</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the catogorie table')">
+      <rect x="150" y="900" width="110" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="205" y="919" text-anchor="middle" dominant-baseline="central" fill="#444441">catogorie</text>
+      <text class="card-sub" x="205" y="934" text-anchor="middle" fill="#5F5E5A">N:1 with bnkout</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the demand media request table')">
+      <rect x="270" y="740" width="110" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="325" y="759" text-anchor="middle" dominant-baseline="central" fill="#444441">demand</text>
+      <text class="card-sub" x="325" y="774" text-anchor="middle" fill="#5F5E5A">N:1 main+config</text>
+    </g>
+    <g class="node-box" onclick="sendPrompt('Describe the result table')">
+      <rect x="270" y="820" width="110" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="325" y="839" text-anchor="middle" dominant-baseline="central" fill="#444441">result</text>
+      <text class="card-sub" x="325" y="854" text-anchor="middle" fill="#5F5E5A">N:1 with DIGIT</text>
+    </g>
+
+    <path class="conn conn-user" d="M340 214 L340 385 L325 385 L325 740" marker-end="url(#ah)"/>
+    <path class="conn conn-user" d="M270 762 L230 762 L230 700 L250 700" marker-end="url(#ah)" stroke-dasharray="3 3"/>
+    <text class="rel-label" x="232" y="730">N:1</text>
+    <path class="conn conn-user" d="M325 820 L325 800 L480 800 L480 312 L370 312" marker-end="url(#ah)" stroke-dasharray="3 3"/>
+    <text class="rel-label" x="483" y="558">N:1</text>
+    <path class="conn conn-user" d="M200 784 L200 820" marker-end="url(#ah)"/>
+    <text class="rel-label" x="204" y="806">1:N</text>
+    <path class="conn conn-user" d="M150 842 L130 842 L130 682 L150 682" marker-end="url(#ah)" stroke-dasharray="3 3"/>
+    <text class="rel-label" x="108" y="762">N:1</text>
+    <path class="conn conn-user" d="M200 900 L200 784" marker-end="url(#ah)"/>
+    <text class="rel-label" x="204" y="846">N:1</text>
+
+    <!-- ═══ EXTRAS ═══ -->
+    <g class="node-box" onclick="sendPrompt('Describe the date_subject table')">
+      <rect x="20" y="820" width="120" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+      <text class="card-label" x="80" y="839" text-anchor="middle" dominant-baseline="central" fill="#085041">date_subject</text>
+      <text class="card-sub" x="80" y="854" text-anchor="middle" fill="#0F6E56">N:1 with main</text>
+    </g>
+    <path class="conn conn-desc" d="M270 192 L40 192 L40 820" marker-end="url(#ah)"/>
+    <text class="rel-label" x="44" y="510">1:N</text>
+
+    <g class="node-box" onclick="sendPrompt('Describe the IST_OTH table')">
+      <rect x="20" y="900" width="120" height="44" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width="0.8"/>
+      <text class="card-label" x="80" y="919" text-anchor="middle" dominant-baseline="central" fill="#72243E">IST_OTH</text>
+      <text class="card-sub" x="80" y="934" text-anchor="middle" fill="#993556">N:1 with ISTARA</text>
+    </g>
+    <path class="conn conn-loan" d="M270 474 L160 474 L160 900 L140 900" marker-end="url(#ah)" stroke-dasharray="4 3"/>
+    <text class="rel-label" x="163" y="686">1:N</text>
+
+    <g class="node-box" onclick="sendPrompt('Describe the tmp_fileadd table')">
+      <rect x="20" y="980" width="130" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="85" y="999" text-anchor="middle" dominant-baseline="central" fill="#444441">tmp_fileadd</text>
+      <text class="card-sub" x="85" y="1014" text-anchor="middle" fill="#5F5E5A">N:1 with config</text>
+    </g>
+    <path class="conn conn-user" d="M150 682 L100 682 L100 980" marker-end="url(#ah)" stroke-dasharray="3 3"/>
+    <text class="rel-label" x="103" y="830">1:N</text>
+
+    <g class="node-box" onclick="sendPrompt('Describe the posts table')">
+      <rect x="270" y="980" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="320" y="999" text-anchor="middle" dominant-baseline="central" fill="#444441">posts</text>
+      <text class="card-sub" x="320" y="1014" text-anchor="middle" fill="#5F5E5A">N:1 with form</text>
+    </g>
+    <path class="conn conn-loc" d="M420 794 L420 960 L320 960 L320 980" marker-end="url(#ah)" stroke-dasharray="3 3"/>
+    <text class="rel-label" x="368" y="956">1:N</text>
+
+    <g class="node-box" onclick="sendPrompt('Describe the ranjpath table')">
+      <rect x="400" y="900" width="110" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+      <text class="card-label" x="455" y="919" text-anchor="middle" dominant-baseline="central" fill="#444441">ranjpath</text>
+      <text class="card-sub" x="455" y="934" text-anchor="middle" fill="#5F5E5A">standalone paths</text>
+    </g>
+
+    <g class="node-box" onclick="sendPrompt('Describe the WORD keyword table')">
+      <rect x="400" y="980" width="110" height="44" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.8"/>
+      <text class="card-label" x="455" y="999" text-anchor="middle" dominant-baseline="central" fill="#27500A">WORD</text>
+      <text class="card-sub" x="455" y="1014" text-anchor="middle" fill="#3B6D11">keyword index</text>
+    </g>
+    <path class="conn conn-thes" d="M455 980 L455 900 L510 900 L510 682 L520 682" marker-end="url(#ah)"/>
+    <text class="rel-label" x="513" y="830">N:1</text>
+
+    <rect x="0" y="1320" width="1" height="1" fill="none"/>
+  </svg>

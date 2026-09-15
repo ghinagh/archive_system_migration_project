@@ -1,0 +1,123 @@
+@use '@angular/material' as mat;
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+[dir="rtl"] {
+  font-family: "Noto Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+
+// Native date/time inputs always lay out their internal segments (mm/dd/yyyy, etc.)
+// left-to-right regardless of page direction. Under an RTL container this causes the
+// browser to clip/reorder the placeholder and value. Forcing `direction: ltr` keeps the
+// widget's internal layout correct, while `text-align: right` keeps it visually flush
+// with the RTL form field around it.
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  direction: ltr;
+  text-align: right;
+}
+
+.highlight {
+  background-color: #fff176;
+  font-weight: bold;
+}
+
+// mat-select / mat-autocomplete panels render into the CDK overlay container,
+// appended to <body> as a sibling of the app root — outside any component's
+// view encapsulation and outside the reach of its `:host` custom properties.
+// Themed forms must therefore style their dropdown panels here, scoped by a
+// panelClass so the dark theme doesn't leak onto unrelated dropdowns.
+.doc-form-panel {
+  background: #1e3243 !important; // --panel
+  border: 1px solid #4f7691; // --line
+  border-radius: 4px;
+
+  .mat-mdc-option {
+    color: #e9f1f6; // --ink
+    min-height: 40px;
+
+    .mdc-list-item__primary-text {
+      color: inherit;
+    }
+
+    &:hover:not(.mdc-list-item--disabled),
+    &.mat-mdc-option-active {
+      background: #24394b; // --panel-2
+    }
+
+    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+      background: #e0b45533; // --accent-dim
+      color: #e0b455; // --accent
+    }
+  }
+
+  .mat-mdc-optgroup-label {
+    color: #9db3c2; // --ink-dim
+  }
+
+  .mdc-list-divider {
+    border-color: #33506655; // --line-soft
+  }
+}
+
+// MatDialog surfaces render into the same CDK overlay container as mat-select/
+// mat-autocomplete panels above, for the same reason: outside any component's
+// view encapsulation. panelClass: 'doc-form-dialog' on dialog.open() reaches
+// .cdk-overlay-pane, with the dialog surface nested inside as a descendant.
+.doc-form-dialog {
+  .mat-mdc-dialog-surface {
+    background: #1e3243; // --panel
+    color: #e9f1f6; // --ink
+  }
+
+  .mat-mdc-dialog-title {
+    color: #e9f1f6; // --ink
+  }
+
+  .mat-mdc-dialog-content {
+    color: #e9f1f6; // --ink
+  }
+
+  .mat-mdc-dialog-actions {
+    border-top: 1px solid #4f7691; // --line
+  }
+
+  .mat-mdc-form-field {
+    --mdc-outlined-text-field-outline-color: #4f7691; // --line
+    --mdc-outlined-text-field-hover-outline-color: #e0b455; // --accent
+    --mdc-outlined-text-field-focus-outline-color: #e0b455; // --accent
+    --mdc-outlined-text-field-label-text-color: #9db3c2; // --ink-dim
+    --mdc-outlined-text-field-focus-label-text-color: #e0b455; // --accent
+    --mdc-outlined-text-field-input-text-color: #e9f1f6; // --ink
+    --mat-select-enabled-trigger-text-color: #e9f1f6; // --ink
+    --mat-select-placeholder-text-color: #9db3c2; // --ink-dim
+  }
+
+  .mat-mdc-text-field-wrapper {
+    background-color: #24394b; // --panel-2
+    border-radius: 4px;
+  }
+
+  .mdc-floating-label,
+  .mat-mdc-floating-label {
+    color: #9db3c2; // --ink-dim
+  }
+
+  input.mat-mdc-input-element,
+  textarea.mat-mdc-input-element {
+    color: #e9f1f6; // --ink
+    caret-color: #e0b455; // --accent
+  }
+
+  .mat-mdc-select-arrow,
+  .mat-mdc-select-value-text {
+    color: #e9f1f6; // --ink
+  }
+}

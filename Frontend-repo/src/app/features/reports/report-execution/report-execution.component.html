@@ -1,0 +1,131 @@
+<div class="execution-section">
+
+  <!-- ── Template selector ──────────────────────────────────────────────── -->
+  <mat-card class="selector-card">
+    <mat-card-header>
+      <mat-card-title>{{ 'REPORTS.EXECUTION.TITLE' | translate }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'REPORTS.EXECUTION.SELECT_TEMPLATE' | translate }}</mat-label>
+        <mat-select (selectionChange)="onTemplateChange($event.value)">
+          @for (tpl of templates(); track tpl.id) {
+            <mat-option [value]="tpl">{{ tpl.outputNum | number:'1.0-0' }} — {{ tpl.description }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (selectedTemplate(); as tpl) {
+
+        <!-- ── Condition info (read-only) ──────────────────────────────── -->
+        @if (tpl.subCondition || tpl.mainCondition || tpl.subCondition0) {
+          <div class="condition-info">
+            <h4>{{ 'REPORTS.EXECUTION.CONDITIONS_INFO' | translate }}</h4>
+            @if (tpl.subCondition) {
+              <p>
+                <strong>{{ 'REPORTS.EXECUTION.SUB_COND' | translate }}:</strong>
+                <code>{{ tpl.subCondition }}</code>
+              </p>
+            }
+            @if (tpl.mainCondition) {
+              <p>
+                <strong>{{ 'REPORTS.EXECUTION.MAIN_COND' | translate }}:</strong>
+                <code>{{ tpl.mainCondition }}</code>
+              </p>
+            }
+            @if (tpl.subCondition0) {
+              <p>
+                <strong>{{ 'REPORTS.EXECUTION.BASE_QUERY' | translate }}:</strong>
+                <code>{{ tpl.subCondition0 }}</code>
+              </p>
+            }
+          </div>
+        }
+
+        <!-- ── Dynamic parameter inputs ───────────────────────────────── -->
+        @if (paramKeys().length > 0) {
+          <div class="params-section">
+            <h4>{{ 'REPORTS.EXECUTION.PARAMETERS' | translate }}</h4>
+            <div class="params-grid">
+              @for (key of paramKeys(); track key) {
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ key }}</mat-label>
+                  <input matInput [(ngModel)]="paramValues[key]"
+                         [placeholder]="'REPORTS.EXECUTION.PARAM_PLACEHOLDER' | translate" />
+                </mat-form-field>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── Execute button ──────────────────────────────────────────── -->
+        <div class="execute-row">
+          <button mat-raised-button color="primary"
+                  [disabled]="isExecuting()" (click)="execute()">
+            <mat-icon>play_arrow</mat-icon>
+            {{ 'REPORTS.EXECUTION.EXECUTE' | translate }}
+          </button>
+          @if (isExecuting()) {
+            <mat-progress-spinner diameter="24" mode="indeterminate"
+                                  class="inline-spinner"></mat-progress-spinner>
+          }
+        </div>
+
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- ── Results ────────────────────────────────────────────────────────── -->
+  @if (result(); as r) {
+    <mat-card class="results-card">
+
+      <mat-card-header>
+        <mat-card-title>
+          {{ 'REPORTS.EXECUTION.RESULTS' | translate }}: {{ r.title }}
+          <span class="row-count">({{ r.totalRows }} {{ 'REPORTS.EXECUTION.ROWS' | translate }})</span>
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-actions class="export-actions">
+        <button mat-stroked-button (click)="exportCsv()">
+          <mat-icon>table_chart</mat-icon>
+          {{ 'REPORTS.EXECUTION.EXPORT_CSV' | translate }}
+        </button>
+        <div class="export-pdf-row">
+          <button mat-stroked-button color="accent"
+                  [disabled]="isExporting()" (click)="exportPdf()">
+            <mat-icon>picture_as_pdf</mat-icon>
+            {{ 'REPORTS.EXECUTION.EXPORT_PDF' | translate }}
+          </button>
+          @if (isExporting()) {
+            <mat-progress-spinner diameter="20" mode="indeterminate"
+                                  class="inline-spinner"></mat-progress-spinner>
+          }
+        </div>
+      </mat-card-actions>
+
+      <mat-card-content class="table-wrapper">
+        @if (r.rows.length > 0) {
+          <div class="table-scroll">
+            <table mat-table [dataSource]="r.rows" class="results-table">
+              @for (col of r.columns; track col.fieldName) {
+                <ng-container [matColumnDef]="col.fieldName">
+                  <th mat-header-cell *matHeaderCellDef
+                      [style.min-width.px]="col.width">{{ col.label }}</th>
+                  <td mat-cell *matCellDef="let row">{{ row[col.fieldName] }}</td>
+                </ng-container>
+              }
+              <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
+            </table>
+          </div>
+        } @else {
+          <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+        }
+      </mat-card-content>
+
+    </mat-card>
+  }
+
+</div>

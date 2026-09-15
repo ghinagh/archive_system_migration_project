@@ -1,0 +1,103 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      {{ (isEditMode() ? 'APP.EDIT' : 'NEWS.ADD_NEW') | translate }}
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.NEWS_NO' | translate }}</mat-label>
+          <input matInput formControlName="newsNo" maxlength="7">
+          @if (form.get('newsNo')?.hasError('required') && form.get('newsNo')?.touched) {
+            <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.DOC_TYPE' | translate }}</mat-label>
+          <input matInput formControlName="newsDoc" maxlength="2">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'NEWS.ARABIC_TITLE' | translate }}</mat-label>
+          <input matInput formControlName="newsTit1" maxlength="75">
+          @if (form.get('newsTit1')?.hasError('required') && form.get('newsTit1')?.touched) {
+            <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'NEWS.SECOND_TITLE' | translate }}</mat-label>
+          <input matInput formControlName="newsTit2" maxlength="75">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.DATE' | translate }}</mat-label>
+          <input matInput [matDatepicker]="dtePicker" formControlName="newsDte">
+          <mat-datepicker-toggle matIconSuffix [for]="dtePicker"></mat-datepicker-toggle>
+          <mat-datepicker #dtePicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.DOCUMENT_DATE' | translate }}</mat-label>
+          <input matInput [matDatepicker]="dteDPicker" formControlName="newsDteD">
+          <mat-datepicker-toggle matIconSuffix [for]="dteDPicker"></mat-datepicker-toggle>
+          <mat-datepicker #dteDPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.NUMBER' | translate }}</mat-label>
+          <input matInput type="number" formControlName="newsNum">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.PUBLICATION' | translate }}</mat-label>
+          <input matInput type="number" formControlName="newsPub">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.DESC_TYPE' | translate }}</mat-label>
+          <input matInput formControlName="newsDesT" maxlength="2">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.DESC_DATE' | translate }}</mat-label>
+          <input matInput [matDatepicker]="desDPicker" formControlName="newsDesD">
+          <mat-datepicker-toggle matIconSuffix [for]="desDPicker"></mat-datepicker-toggle>
+          <mat-datepicker #desDPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.DESC_PERSON' | translate }}</mat-label>
+          <input matInput type="number" formControlName="newsDesP">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.DESC_NUMBER' | translate }}</mat-label>
+          <input matInput formControlName="newsDesN" maxlength="9">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'NEWS.APPENDIX' | translate }}</mat-label>
+          <input matInput type="number" formControlName="newsMlh">
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            {{ 'APP.SAVE' | translate }}
+          }
+        </button>
+        <button mat-button type="button" (click)="onCancel()">
+          {{ 'APP.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

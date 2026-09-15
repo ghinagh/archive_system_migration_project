@@ -1,0 +1,183 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="cancel()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ (isEdit() ? 'PERIODICALS.EDIT_TITLE' : 'PERIODICALS.ADD_NEW') | translate }}</h1>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <!-- Basic Info -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>{{ 'PERIODICALS.TAB_INFO' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.NAME' | translate }}</mat-label>
+              <input matInput formControlName="name" dir="rtl">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PUB_LOCATION' | translate }}</mat-label>
+              <input matInput formControlName="publishLocation" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.START_DATE' | translate }}</mat-label>
+              <input matInput formControlName="startDate" type="date">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.LANG' | translate }}</mat-label>
+              <mat-select formControlName="lang">
+                <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+                <mat-option value="A">{{ 'BOOKS.LANG_AR' | translate }}</mat-option>
+                <mat-option value="F">{{ 'BOOKS.LANG_FR' | translate }}</mat-option>
+                <mat-option value="E">{{ 'BOOKS.LANG_EN' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.TYPE' | translate }}</mat-label>
+              <input matInput formControlName="type" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.TYPE1' | translate }}</mat-label>
+              <input matInput formControlName="type1">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.FREQUENCY' | translate }}</mat-label>
+              <input matInput formControlName="frequency">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.GEO' | translate }}</mat-label>
+              <input matInput formControlName="geo">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.GEO1' | translate }}</mat-label>
+              <input matInput formControlName="geo1">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.REMARK' | translate }}</mat-label>
+              <input matInput formControlName="rdmd">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Contact -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>Contact</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'PERIODICALS.ADDRESS' | translate }}</mat-label>
+              <input matInput formControlName="address">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PHONE' | translate }}</mat-label>
+              <input matInput formControlName="phone">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.FAX' | translate }}</mat-label>
+              <input matInput formControlName="fax">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.EMAIL' | translate }}</mat-label>
+              <input matInput formControlName="email" type="email">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.WEBSITE' | translate }}</mat-label>
+              <input matInput formControlName="website">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Editorial -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>Editorial</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PUBLISHER' | translate }}</mat-label>
+              <input matInput formControlName="publisher" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.MOASS' | translate }}</mat-label>
+              <input matInput formControlName="institution">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.TAHRIR' | translate }}</mat-label>
+              <input matInput formControlName="editor">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.TAH1' | translate }}</mat-label>
+              <input matInput formControlName="tah1">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.DIRCT' | translate }}</mat-label>
+              <input matInput formControlName="director">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PRESD' | translate }}</mat-label>
+              <input matInput formControlName="president">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.CREAT' | translate }}</mat-label>
+              <input matInput formControlName="creator">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Financial / Misc -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>Financial &amp; Classification</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.AMOUNT' | translate }}</mat-label>
+              <input matInput formControlName="amount" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PRICE' | translate }}</mat-label>
+              <input matInput formControlName="price" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PRICE1' | translate }}</mat-label>
+              <input matInput formControlName="price1" type="number">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.DATE' | translate }}</mat-label>
+              <input matInput formControlName="date" type="date">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.UTILS' | translate }}</mat-label>
+              <input matInput formControlName="utils">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PUB' | translate }}</mat-label>
+              <input matInput formControlName="pub">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="form-actions">
+        <button mat-button type="button" (click)="cancel()">{{ 'APP.CANCEL' | translate }}</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="isSaving()">
+          {{ 'APP.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>
+  {{ (isEdit ? 'SITES.EDIT_POSITION' : 'SITES.ADD_POSITION') | translate }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'SITES.POSITION_NO' | translate }}</mat-label>
+      <input matInput formControlName="posNo" maxlength="10">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'SITES.POSITION_NAME' | translate }}</mat-label>
+      <input matInput formControlName="name" maxlength="60">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'SITES.RECORD_DATE' | translate }}</mat-label>
+      <input matInput type="date" formControlName="recordDate">
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || isSaving">
+    {{ 'APP.SAVE' | translate }}
+  </button>
+</mat-dialog-actions>

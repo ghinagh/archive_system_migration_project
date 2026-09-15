@@ -1,0 +1,50 @@
+<h2 mat-dialog-title>
+  <mat-icon color="warn">warning</mat-icon>
+  {{ 'ARCHIVE.DELETE_CONFIRM_TITLE' | translate }}
+</h2>
+
+<mat-dialog-content>
+  @if (isLoading()) {
+    <div class="spinner-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+    <p class="warning-text">
+      {{ 'ARCHIVE.DELETE_WARNING' | translate: { count: totalCount() } }}
+    </p>
+
+    @if (totalCount() > 0) {
+      <mat-list class="operations-list">
+        @for (op of visibleOperations(); track op.id) {
+          <mat-list-item>
+            <span matListItemTitle>{{ op.oprNo || '—' }} &nbsp;·&nbsp; {{ op.title || '—' }}</span>
+            <span matListItemLine>{{ op.date | date:'yyyy-MM-dd' }}</span>
+          </mat-list-item>
+        }
+      </mat-list>
+      @if (extraCount() > 0) {
+        <p class="extra-count">+ {{ extraCount() }} {{ 'ARCHIVE.DELETE_MORE_OPERATIONS' | translate }}</p>
+      }
+    }
+
+    <mat-checkbox class="confirm-checkbox"
+                  [checked]="confirmed()"
+                  (change)="confirmed.set($event.checked)">
+      {{ 'ARCHIVE.DELETE_UNDERSTAND' | translate }}
+    </mat-checkbox>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isDeleting()">
+    {{ 'APP.CANCEL' | translate }}
+  </button>
+  <button mat-raised-button color="warn" (click)="onConfirm()"
+          [disabled]="!confirmed() || isDeleting() || isLoading()">
+    @if (isDeleting()) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      {{ 'ARCHIVE.CONFIRM_DELETE' | translate }}
+    }
+  </button>
+</mat-dialog-actions>

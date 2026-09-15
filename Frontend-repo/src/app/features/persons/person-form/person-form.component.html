@@ -1,0 +1,208 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="onCancel()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ (isEditMode() ? 'PERSONS.EDIT_TITLE' : 'PERSONS.ADD_NEW') | translate }}</h1>
+  </div>
+
+  @if (pageLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-accordion multi>
+
+        <!-- Basic Info -->
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'PERSONS.SECTION_BASIC' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.PRS_NO' | translate }}</mat-label>
+              <input matInput formControlName="prsNo" maxlength="10">
+              @if (form.get('prsNo')?.hasError('required') && form.get('prsNo')?.touched) {
+                <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.NAME' | translate }}</mat-label>
+              <input matInput formControlName="name" maxlength="50">
+              @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+                <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.SEX' | translate }}</mat-label>
+              <mat-select formControlName="sex">
+                <mat-option value="">-</mat-option>
+                <mat-option value="M">{{ 'PERSONS.MALE' | translate }}</mat-option>
+                <mat-option value="F">{{ 'PERSONS.FEMALE' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.BIRTH_DATE' | translate }}</mat-label>
+              <input matInput [matDatepicker]="birthPicker" formControlName="birthDate">
+              <mat-datepicker-toggle matIconSuffix [for]="birthPicker"></mat-datepicker-toggle>
+              <mat-datepicker #birthPicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.ENTITY' | translate }}</mat-label>
+              <input matInput formControlName="entity" maxlength="2">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.REGISTRATION_ID' | translate }}</mat-label>
+              <input matInput formControlName="registrationId" maxlength="10">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.VILLAGE' | translate }}</mat-label>
+              <input matInput formControlName="village" maxlength="10">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.RESIDENCE' | translate }}</mat-label>
+              <input matInput formControlName="residence" maxlength="10">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.QUALIFICATION' | translate }}</mat-label>
+              <input matInput formControlName="qualification" maxlength="3">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.DENOMINATION' | translate }}</mat-label>
+              <input matInput formControlName="denomination" maxlength="3">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.POLITICAL_AFFILIATION' | translate }}</mat-label>
+              <input matInput formControlName="politicalAffiliation" maxlength="3">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.PREVIOUS_JOB' | translate }}</mat-label>
+              <input matInput formControlName="previousJob" maxlength="3">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.SPECIALTY_DATE' | translate }}</mat-label>
+              <input matInput [matDatepicker]="specialtyPicker" formControlName="specialtyDate">
+              <mat-datepicker-toggle matIconSuffix [for]="specialtyPicker"></mat-datepicker-toggle>
+              <mat-datepicker #specialtyPicker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Contact -->
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'PERSONS.SECTION_CONTACT' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.PHONE' | translate }}</mat-label>
+              <input matInput formControlName="phone" maxlength="50">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.EMAIL' | translate }}</mat-label>
+              <input matInput formControlName="email" maxlength="50" type="email">
+              @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+                <mat-error>{{ 'PERSONS.INVALID_EMAIL' | translate }}</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.PO_BOX' | translate }}</mat-label>
+              <input matInput formControlName="poBox" maxlength="50">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'PERSONS.SOCIAL_MEDIA' | translate }}</mat-label>
+              <input matInput formControlName="socialMedia" maxlength="100">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'PERSONS.ADDRESS' | translate }}</mat-label>
+              <textarea matInput formControlName="address" rows="2" maxlength="100"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'PERSONS.SECONDARY_ADDRESS' | translate }}</mat-label>
+              <textarea matInput formControlName="secondaryAddress" rows="2" maxlength="100"></textarea>
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Institution -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'PERSONS.SECTION_INSTITUTION' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.INSTITUTION' | translate }}</mat-label>
+              <input matInput formControlName="institution" maxlength="10">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.INSTITUTION_PHONE' | translate }}</mat-label>
+              <input matInput formControlName="institutionPhone" maxlength="30">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.INSTITUTION_EMAIL' | translate }}</mat-label>
+              <input matInput formControlName="institutionEmail" maxlength="50" type="email">
+              @if (form.get('institutionEmail')?.hasError('email') && form.get('institutionEmail')?.touched) {
+                <mat-error>{{ 'PERSONS.INVALID_EMAIL' | translate }}</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERSONS.INSTITUTION_BOX' | translate }}</mat-label>
+              <input matInput formControlName="institutionBox" maxlength="15">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'PERSONS.INSTITUTION_DIRECTORATE' | translate }}</mat-label>
+              <input matInput formControlName="institutionDirectorate" maxlength="50">
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Additional Info -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'PERSONS.SECTION_ADDITIONAL' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="form-grid info-summary">
+            <p><strong>{{ 'PERSONS.PRS_NO' | translate }}:</strong> {{ form.get('prsNo')?.value }}</p>
+            <p><strong>{{ 'PERSONS.NAME' | translate }}:</strong> {{ form.get('name')?.value }}</p>
+            <p><strong>{{ 'PERSONS.ENTITY' | translate }}:</strong> {{ form.get('entity')?.value }}</p>
+            <p><strong>{{ 'PERSONS.QUALIFICATION' | translate }}:</strong> {{ form.get('qualification')?.value }}</p>
+          </div>
+        </mat-expansion-panel>
+
+      </mat-accordion>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            {{ 'APP.SAVE' | translate }}
+          }
+        </button>
+        <button mat-button type="button" (click)="onCancel()">
+          {{ 'APP.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

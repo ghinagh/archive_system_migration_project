@@ -1,0 +1,366 @@
+// Blueprint theme lifted from the Form6 wireframe artifact (dark "engineering schematic" look).
+// These custom properties are set on :host but, being plain CSS custom properties, they also
+// cascade into nested components rendered in this template (e.g. app-digital-files-grid) via
+// normal DOM inheritance — no need to redeclare them there.
+:host {
+  --bg: #16232f;
+  --panel: #1e3243;
+  --panel-2: #24394b;
+  --line: #4f7691;
+  --line-soft: #33506655;
+  --ink: #e9f1f6;
+  --ink-dim: #9db3c2;
+  --accent: #e0b455;
+  --accent-dim: #e0b45533;
+  --danger: #d98a6b;
+
+  display: block;
+}
+
+.doc-form-page {
+  padding: 16px;
+  min-height: calc(100vh - 32px);
+  background:
+    linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/28px 100%,
+    var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", "Tahoma", sans-serif;
+  border-radius: 6px;
+}
+
+.doc-form-stage {
+  display: grid;
+  grid-template-columns: 184px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.doc-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 8px;
+
+  button {
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.doc-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+
+  // The .doc-panel/.doc-split-row sections are direct children of <form>, not of
+  // .doc-canvas itself — the gap above only ever separated .doc-canvas's own
+  // children (the loading spinner and the <form> block), never the panels inside
+  // it. <form> was plain display:block with no gap, so panels stacked with zero
+  // space between their borders. This makes <form> the actual flex container.
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 0;
+  }
+}
+
+.doc-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 15px;
+}
+
+// Titles + small multi-field row shown as two independently bordered .doc-panels
+// side by side, instead of stacked — the gap keeps their borders from touching.
+.doc-split-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: stretch;
+  .doc-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doc-panel-title {
+  margin: 0 0 12px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line-soft);
+  }
+}
+
+// جدول المسؤولية البيانية / جدول ربط الوثائق الرقمية بالبيانات — larger than the
+// other .doc-panel-title headings (e.g. Abstract) so these two grid titles stand out.
+.doc-panel-title-lg {
+  font-size: 15px;
+}
+
+.doc-row {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  &.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  // Sits inside .doc-split-row's half-width column — a fixed 5-column grid there
+  // would crush each field too narrow to show its Arabic label without truncating.
+  // auto-fit + minmax gives each field a guaranteed minimum width and wraps onto
+  // as many rows as needed instead.
+  &.cols-5 {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  @media (max-width: 900px) {
+    &.cols-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.no-data {
+  color: var(--ink-dim);
+  font-style: italic;
+  margin: 8px 0;
+}
+
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+
+  .add-field {
+    flex: 1 1 240px;
+    max-width: 320px;
+  }
+
+  .add-field-sm {
+    flex: 0 0 220px;
+    width: 220px;
+  }
+}
+
+.add-btn {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 900px) {
+  .doc-form-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .doc-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+
+    button {
+      width: auto;
+      flex: 1 1 auto;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Material internals: the elements below (mdc button surface, form-field notch,
+// input text, table cells) are rendered by each Material component's own
+// template, so reaching them from this component's stylesheet requires
+// piercing the child's view encapsulation.
+// ---------------------------------------------------------------------------
+:host ::ng-deep {
+
+  // Toolbar buttons -> flat "panel-2" surface with a hairline border.
+  // MDC's button height is a fixed token and its label span is nowrap by default,
+  // so a two-word Arabic label at this rail's width used to spill text past the
+  // button's border instead of wrapping. Letting the label wrap onto a second line
+  // and switching the button to a uniform min-height (instead of MDC's fixed
+  // height) keeps every button the same size regardless of whether its own label
+  // needs one line or two.
+  .doc-toolbar button.mat-mdc-raised-button {
+    --mdc-protected-button-container-color: var(--panel-2);
+    --mdc-protected-button-label-text-color: var(--ink);
+    background-color: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: none;
+    border-radius: 4px;
+    height: auto;
+    min-height: 44px;
+    padding: 8px 10px;
+    white-space: normal;
+    line-height: 1.25;
+
+    .mdc-button__label {
+      white-space: normal;
+      overflow-wrap: break-word;
+      text-align: start;
+    }
+
+    .mat-icon {
+      color: var(--ink);
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      border-color: var(--accent);
+    }
+  }
+
+  // The one admin/password-gated action gets the "danger" treatment from the wireframe
+  .doc-toolbar button.btn-lock {
+    --mdc-protected-button-container-color: var(--panel-2);
+    --mdc-protected-button-label-text-color: var(--danger);
+    border-color: var(--danger);
+    color: var(--danger);
+
+    .mat-icon {
+      color: var(--danger);
+    }
+  }
+
+  // Outlined form fields -> dark "box" look (panel-2 fill, line-colored outline)
+  .doc-panel .mat-mdc-form-field {
+    --mdc-outlined-text-field-outline-color: var(--line);
+    --mdc-outlined-text-field-hover-outline-color: var(--accent);
+    --mdc-outlined-text-field-focus-outline-color: var(--accent);
+    --mdc-outlined-text-field-label-text-color: var(--ink-dim);
+    --mdc-outlined-text-field-focus-label-text-color: var(--accent);
+    --mdc-outlined-text-field-input-text-color: var(--ink);
+    --mat-select-enabled-trigger-text-color: var(--ink);
+    --mat-select-placeholder-text-color: var(--ink-dim);
+  }
+
+  // The hint/error subscript row reserves 16px by default via this ::before spacer
+  // (Material's own _form-field-chunk.mjs) — trimmed by 5px for a more compact field.
+  .doc-panel .mat-mdc-form-field-bottom-align::before {
+    height: 5px;
+  }
+
+  .doc-panel .mat-mdc-text-field-wrapper {
+    background-color: var(--panel-2);
+    border-radius: 4px;
+  }
+
+  .doc-panel .mdc-floating-label,
+  .doc-panel .mat-mdc-floating-label {
+    color: var(--ink-dim);
+  }
+
+  .doc-panel input.mat-mdc-input-element,
+  .doc-panel textarea.mat-mdc-input-element {
+    color: var(--ink);
+    caret-color: var(--accent);
+  }
+
+  .doc-panel .mat-mdc-select-arrow,
+  .doc-panel .mat-mdc-select-value-text {
+    color: var(--ink);
+  }
+
+  // Document/translation source are autocomplete inputs, not native <select>s, so the
+  // browser defaults to a text (I-beam) cursor. A pointer cursor signals "click to pick
+  // from a list" the same way the mat-select fields already do.
+  .doc-panel input.periodical-lookup-input,
+  .doc-panel .periodical-lookup-suffix {
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  // Rotates the static arrow_drop_down glyph to point up when open, instead of
+  // swapping the icon's text content — mutating that text via interpolation
+  // triggered a real bug: MatAutocompleteTrigger.closePanel() calls
+  // ChangeDetectorRef.detectChanges() synchronously, which would rewrite this
+  // icon's own text node while its own mousedown event was still mid-dispatch,
+  // corrupting the following click/focus cascade and reopening the panel.
+  .doc-panel .periodical-lookup-suffix-open {
+    transform: rotate(180deg);
+  }
+
+  // Authors grid + digital-files grid: render as the wireframe's bordered "grid-mock"
+  .doc-panel table.mat-mdc-table,
+  app-digital-files-grid table.mat-mdc-table {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .doc-panel .mat-mdc-header-row,
+  app-digital-files-grid .mat-mdc-header-row {
+    background: var(--panel-2);
+  }
+
+  .doc-panel .mat-mdc-header-cell,
+  app-digital-files-grid .mat-mdc-header-cell {
+    color: var(--ink-dim);
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: .02em;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .doc-panel .mat-mdc-cell,
+  app-digital-files-grid .mat-mdc-cell {
+    color: var(--ink);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .doc-panel .no-data-cell {
+    color: var(--ink-dim);
+    font-style: italic;
+    text-align: center;
+  }
+
+  .doc-panel .mat-mdc-row,
+  app-digital-files-grid .mat-mdc-row {
+    background: transparent;
+
+    &:hover {
+      background: var(--panel-2);
+    }
+  }
+
+  .doc-panel button.mat-mdc-icon-button .mat-icon,
+  app-digital-files-grid button.mat-mdc-icon-button .mat-icon {
+    color: var(--ink-dim);
+  }
+
+  .doc-panel button.mat-mdc-icon-button:hover .mat-icon,
+  app-digital-files-grid button.mat-mdc-icon-button:hover .mat-icon {
+    color: var(--ink);
+  }
+}

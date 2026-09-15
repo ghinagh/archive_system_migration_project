@@ -1,0 +1,132 @@
+<mat-sidenav-container class="layout-container">
+
+  <mat-sidenav
+    [opened]="sidenavOpened()"
+    mode="side"
+    class="sidenav"
+    position="start">
+
+    <div class="sidenav-header">
+      <mat-icon class="app-logo">local_library</mat-icon>
+      <span class="app-title">{{ 'APP.TITLE' | translate }}</span>
+    </div>
+
+    <mat-nav-list>
+      @for (item of visibleNavItems(); track item.labelKey) {
+        @if (item.children) {
+          <a mat-list-item class="nav-group-header depth-0"
+             cdkOverlayOrigin #lvl1Origin="cdkOverlayOrigin"
+             (mouseenter)="onTopEnter(item)" (mouseleave)="onTopLeave()">
+            @if (item.icon) {
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            }
+            <span matListItemTitle>{{ item.labelKey | translate }}</span>
+          </a>
+
+          <ng-template cdkConnectedOverlay
+                       [cdkConnectedOverlayOrigin]="lvl1Origin"
+                       [cdkConnectedOverlayOpen]="hoveredTopItem() === item"
+                       [cdkConnectedOverlayPositions]="flyoutPositions()"
+                       [cdkConnectedOverlayHasBackdrop]="false">
+            <mat-nav-list class="flyout-panel flyout-level-1" (mouseenter)="cancelTopClose()" (mouseleave)="onTopLeave()">
+              @for (child of item.children; track child.labelKey) {
+                @if (child.children) {
+                  <a mat-list-item class="depth-1"
+                     cdkOverlayOrigin #lvl2Origin="cdkOverlayOrigin"
+                     (mouseenter)="onSecondEnter(child)" (mouseleave)="onSecondLeave()">
+                    @if (child.icon) {
+                      <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+                    }
+                    <span matListItemTitle>{{ child.labelKey | translate }}</span>
+                  </a>
+
+                  <ng-template cdkConnectedOverlay
+                               [cdkConnectedOverlayOrigin]="lvl2Origin"
+                               [cdkConnectedOverlayOpen]="hoveredSecondItem() === child"
+                               [cdkConnectedOverlayPositions]="flyoutPositions()"
+                               [cdkConnectedOverlayHasBackdrop]="false">
+                    <mat-nav-list class="flyout-panel flyout-level-2" (mouseenter)="cancelSecondClose()" (mouseleave)="onSecondLeave()">
+                      @for (grandchild of child.children; track grandchild.labelKey) {
+                        <a mat-list-item [routerLink]="grandchild.route" [queryParams]="grandchild.queryParams" routerLinkActive="active-link" class="depth-2">
+                          @if (grandchild.icon) {
+                            <mat-icon matListItemIcon>{{ grandchild.icon }}</mat-icon>
+                          }
+                          <span matListItemTitle>{{ grandchild.labelKey | translate }}</span>
+                        </a>
+                      }
+                    </mat-nav-list>
+                  </ng-template>
+                } @else if (child.disabled) {
+                  <div mat-list-item class="nav-disabled depth-1" [matTooltip]="'NAV.COMING_SOON' | translate">
+                    @if (child.icon) {
+                      <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+                    }
+                    <span matListItemTitle>{{ child.labelKey | translate }}</span>
+                    <mat-icon class="lock-icon">lock_clock</mat-icon>
+                  </div>
+                } @else {
+                  <a mat-list-item [routerLink]="child.route" [queryParams]="child.queryParams" routerLinkActive="active-link" class="depth-1">
+                    @if (child.icon) {
+                      <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+                    }
+                    <span matListItemTitle>{{ child.labelKey | translate }}</span>
+                  </a>
+                }
+              }
+            </mat-nav-list>
+          </ng-template>
+        } @else if (item.disabled) {
+          <div mat-list-item class="nav-disabled depth-0" [matTooltip]="'NAV.COMING_SOON' | translate">
+            @if (item.icon) {
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            }
+            <span matListItemTitle>{{ item.labelKey | translate }}</span>
+            <mat-icon class="lock-icon">lock_clock</mat-icon>
+          </div>
+        } @else {
+          <a mat-list-item [routerLink]="item.route" [queryParams]="item.queryParams" routerLinkActive="active-link" class="depth-0">
+            @if (item.icon) {
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            }
+            <span matListItemTitle>{{ item.labelKey | translate }}</span>
+          </a>
+        }
+      }
+    </mat-nav-list>
+
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content-area">
+
+    <mat-toolbar color="primary" class="top-toolbar">
+      <button mat-icon-button (click)="toggleSidenav()">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <app-global-search class="toolbar-search"></app-global-search>
+
+      <button mat-icon-button [routerLink]="['/catalogue/search']"
+              [matTooltip]="'SEARCH.FULL_PAGE_TOOLTIP' | translate">
+        <mat-icon>manage_search</mat-icon>
+      </button>
+
+      <span class="toolbar-spacer"></span>
+
+      <span class="user-name">{{ username() }}</span>
+
+      <button mat-button (click)="toggleLanguage()" class="lang-toggle">
+        {{ currentLang() === 'ar' ? 'EN' : 'AR' }}
+      </button>
+
+      <button mat-icon-button (click)="logout()" [matTooltip]="'NAV.LOGOUT' | translate">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

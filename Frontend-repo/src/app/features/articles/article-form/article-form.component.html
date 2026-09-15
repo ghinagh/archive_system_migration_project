@@ -1,0 +1,102 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="cancel()"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ (isEdit() ? 'ARTICLES.EDIT_TITLE' : 'ARTICLES.ADD_NEW') | translate }}</h1>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-card class="form-section">
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.APP_NO' | translate }}</mat-label>
+              <input matInput formControlName="appNo" [readonly]="isEdit()">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.YEAR' | translate }}</mat-label>
+              <input matInput formControlName="year" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.VOLUME' | translate }}</mat-label>
+              <input matInput formControlName="volume" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.ARTICLE_NO' | translate }}</mat-label>
+              <input matInput formControlName="articleNo" type="number">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.DATE' | translate }}</mat-label>
+              <input matInput formControlName="date" type="date">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.PERIODICAL' | translate }}</mat-label>
+              <input matInput [formControl]="periodicalCtrl" [matAutocomplete]="periodicalAuto">
+              <mat-autocomplete #periodicalAuto [displayWith]="displayPeriodical" (optionSelected)="onPeriodicalSelected($event)">
+                @for (opt of periodicalOptions(); track opt.perNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.SUBJECT_TYPE' | translate }}</mat-label>
+              <input matInput formControlName="subjectType">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.PAGE_NO' | translate }}</mat-label>
+              <input matInput formControlName="pageNo">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.COTE' | translate }}</mat-label>
+              <input matInput formControlName="cote">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.SERIAL' | translate }}</mat-label>
+              <input matInput formControlName="serial">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.FILM_NO' | translate }}</mat-label>
+              <input matInput formControlName="filmNo">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.TYPE' | translate }}</mat-label>
+              <input matInput formControlName="type" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.LANGUAGE' | translate }}</mat-label>
+              <mat-select formControlName="lang">
+                <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+                <mat-option value="A">{{ 'ARTICLES.LANG_AR' | translate }}</mat-option>
+                <mat-option value="F">{{ 'ARTICLES.LANG_FR' | translate }}</mat-option>
+                <mat-option value="E">{{ 'ARTICLES.LANG_EN' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.CHOICE' | translate }}</mat-label>
+              <input matInput formControlName="choice" type="number">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'ARTICLES.PICTURE_CODE' | translate }}</mat-label>
+              <input matInput formControlName="pictureCode">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="form-actions">
+        <button mat-button type="button" (click)="cancel()">{{ 'APP.CANCEL' | translate }}</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isSaving()">
+          {{ 'APP.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

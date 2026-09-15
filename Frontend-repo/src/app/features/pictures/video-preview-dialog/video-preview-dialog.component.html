@@ -1,0 +1,30 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon>videocam</mat-icon>
+  {{ data.title || ('PICTURES.VIDEO_PREVIEW' | translate) }}
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  @if (isLoading()) {
+    <div class="dialog-loading">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>{{ 'APP.LOADING' | translate }}</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="dialog-error">
+      <mat-icon color="warn">error_outline</mat-icon>
+      <p>{{ 'PICTURES.MEDIA_LOAD_ERROR' | translate }}</p>
+    </div>
+  } @else if (blobUrl()) {
+    <app-video-preview
+      [videoUrl]="blobUrl()!"
+      [title]="data.title">
+    </app-video-preview>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">
+    <mat-icon>close</mat-icon>
+    {{ 'APP.CLOSE' | translate }}
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,22 @@
+<div class="list-section">
+  <div class="section-header">
+    <mat-form-field appearance="outline" class="filter-field"><mat-label>{{ 'REPORTS.USER' | translate }}</mat-label><input matInput [value]="filterUser()" (input)="filterUser.set($any($event.target).value)" (keyup.enter)="applyFilter()"></mat-form-field>
+    <button mat-raised-button color="primary" (click)="openAssign()"><mat-icon>add</mat-icon> {{ 'REPORTS.ASSIGN_OUTPUT' | translate }}</button>
+  </div>
+  @if (isLoading()) { <app-loading-spinner></app-loading-spinner> } @else {
+    <table mat-table [dataSource]="items()" class="full-width">
+      <ng-container matColumnDef="userNo"><th mat-header-cell *matHeaderCellDef>{{ 'REPORTS.USER' | translate }}</th><td mat-cell *matCellDef="let r">{{ r.userNo }}</td></ng-container>
+      <ng-container matColumnDef="institutionNo"><th mat-header-cell *matHeaderCellDef>{{ 'REPORTS.INSTITUTION' | translate }}</th><td mat-cell *matCellDef="let r">{{ r.institutionNo }}</td></ng-container>
+      <ng-container matColumnDef="outputNum"><th mat-header-cell *matHeaderCellDef>{{ 'REPORTS.OUTPUT_NUM' | translate }}</th><td mat-cell *matCellDef="let r">{{ r.outputNum }}</td></ng-container>
+      <ng-container matColumnDef="outputChoice"><th mat-header-cell *matHeaderCellDef>{{ 'REPORTS.CHOICE' | translate }}</th><td mat-cell *matCellDef="let r">{{ r.outputChoice }}</td></ng-container>
+      <ng-container matColumnDef="userIndex"><th mat-header-cell *matHeaderCellDef>{{ 'REPORTS.INDEX' | translate }}</th><td mat-cell *matCellDef="let r">{{ r.userIndex }}</td></ng-container>
+      <ng-container matColumnDef="sign"><th mat-header-cell *matHeaderCellDef>{{ 'REPORTS.SIGN' | translate }}</th><td mat-cell *matCellDef="let r">{{ r.sign }}</td></ng-container>
+      <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th><td mat-cell *matCellDef="let r">
+        <button mat-icon-button color="warn" (click)="onDelete(r)"><mat-icon>delete</mat-icon></button>
+      </td></ng-container>
+      <tr mat-header-row *matHeaderRowDef="cols"></tr><tr mat-row *matRowDef="let r; columns: cols;"></tr>
+    </table>
+    @if (items().length === 0) { <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p> }
+    <mat-paginator [length]="total()" [pageSize]="pageSize()" [pageIndex]="pageIndex()" [pageSizeOptions]="[5,10,25]" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+  }
+</div>

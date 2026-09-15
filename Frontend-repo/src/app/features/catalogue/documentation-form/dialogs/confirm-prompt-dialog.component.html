@@ -1,0 +1,5 @@
+<h2 mat-dialog-title>{{ data.messageKey | translate }}</h2>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onNo()">{{ 'DOC_FORM.CANCEL_COMMAND' | translate }}</button>
+  <button mat-raised-button color="warn" (click)="onYes()">{{ 'DOC_FORM.EXECUTE' | translate }}</button>
+</mat-dialog-actions>

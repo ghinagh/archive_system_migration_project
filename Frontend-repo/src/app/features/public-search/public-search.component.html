@@ -1,0 +1,106 @@
+<div class="search-page">
+  <!-- Header bar -->
+  <div class="search-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">local_library</mat-icon>
+      <span class="header-title">{{ 'PUBLIC_SEARCH.TITLE' | translate }}</span>
+      <span class="spacer"></span>
+      <button mat-stroked-button class="login-btn" (click)="goToLogin()">
+        <mat-icon>login</mat-icon>
+        {{ 'AUTH.LOGIN' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Search area -->
+  <div class="search-area">
+    <mat-card class="search-card">
+      <mat-card-content>
+        <div class="search-bar-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>{{ 'PUBLIC_SEARCH.PLACEHOLDER' | translate }}</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput
+                   [value]="queryInput()"
+                   (input)="queryInput.set($any($event.target).value)"
+                   (keyup.enter)="onSearch()">
+          </mat-form-field>
+          <button mat-raised-button color="primary" class="search-btn"
+                  (click)="onSearch()" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+            } @else {
+              {{ 'PUBLIC_SEARCH.SEARCH_BTN' | translate }}
+            }
+          </button>
+        </div>
+
+        <!-- Type filter chips -->
+        <div class="type-filters">
+          @for (filter of typeFilters; track filter.value) {
+            <button mat-flat-button
+                    [color]="selectedType() === filter.value ? 'primary' : undefined"
+                    [class.active-filter]="selectedType() === filter.value"
+                    class="filter-chip"
+                    (click)="selectType(filter.value)">
+              {{ filter.labelKey | translate }}
+            </button>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Results area -->
+  <div class="results-area">
+    <!-- Loading skeleton -->
+    @if (isLoading()) {
+      <div class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>{{ 'APP.LOADING' | translate }}</p>
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (isEmpty()) {
+      <div class="empty-state">
+        <mat-icon>search_off</mat-icon>
+        <p>{{ 'PUBLIC_SEARCH.NO_RESULTS' | translate }}</p>
+      </div>
+    }
+
+    <!-- Result cards -->
+    @if (!isLoading() && results().length > 0) {
+      <div class="results-list">
+        @for (item of results(); track item.id) {
+          <mat-card class="result-card">
+            <mat-card-content>
+              <div class="result-header">
+                <span class="type-badge type-{{ item.type }}">
+                  {{ typeLabel(item.type) | translate }}
+                </span>
+                @if (item.date) {
+                  <span class="result-date">{{ item.date | date:'yyyy-MM-dd' }}</span>
+                }
+              </div>
+              <h3 class="result-title">{{ item.title || ('APP.UNTITLED' | translate) }}</h3>
+              @if (item.additionalTitle) {
+                <p class="result-subtitle">{{ item.additionalTitle }}</p>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Paginator -->
+        <mat-paginator
+          [length]="totalElements()"
+          [pageSize]="pageSize()"
+          [pageIndex]="pageIndex()"
+          [pageSizeOptions]="[10, 20, 50]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+    }
+  </div>
+</div>

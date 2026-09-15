@@ -1,0 +1,118 @@
+<div class="form-page">
+  <div class="header"><button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button><h1>{{ (isEditMode() ? 'USERS.EDIT_TITLE' : 'USERS.ADD_NEW') | translate }}</h1></div>
+
+  @if (pageLoading()) { <app-loading-spinner></app-loading-spinner> } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-accordion multi>
+
+        <!-- General -->
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'USERS.SECTION_GENERAL' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.USER_NO' | translate }}</mat-label>
+              <input matInput formControlName="userNo" maxlength="3" style="text-transform: uppercase">
+              @if (form.get('userNo')?.hasError('required') && form.get('userNo')?.touched) {
+                <mat-error>{{ 'APP.REQUIRED' | translate }}</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.USER_NAME' | translate }}</mat-label>
+              <input matInput formControlName="userName" maxlength="50">
+            </mat-form-field>
+
+            @if (!isEditMode()) {
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'USERS.PASSWORD' | translate }}</mat-label>
+                <input matInput type="password" formControlName="userPassword">
+              </mat-form-field>
+            }
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.LEVEL' | translate }}</mat-label>
+              <mat-select formControlName="userLevel">
+                <mat-option value="A">{{ 'USERS.LEVEL_ADMIN' | translate }}</mat-option>
+                <mat-option value="U">{{ 'USERS.LEVEL_USER' | translate }}</mat-option>
+                <mat-option value="G">{{ 'USERS.LEVEL_GUEST' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.ENTITY' | translate }}</mat-label>
+              <input matInput formControlName="userEnt" maxlength="2">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.DOC_CODE' | translate }}</mat-label>
+              <input matInput formControlName="userDoc" maxlength="2">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.PERMISSION' | translate }}</mat-label>
+              <input matInput type="number" formControlName="userPermission">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.PASSWORD_CHANGE_FLAG' | translate }}</mat-label>
+              <input matInput type="number" formControlName="passwordChangeFlag">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.START_PAGE' | translate }}</mat-label>
+              <input matInput type="number" formControlName="startPage">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.COMPANY' | translate }}</mat-label>
+              <input matInput type="number" formControlName="company">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'USERS.WILAYA_SCOPE' | translate }}</mat-label>
+              <input matInput type="number" formControlName="wilayaScope">
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Advanced: Paths & Video -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'USERS.SECTION_ADVANCED' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="form-grid">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'USERS.CONFIG_PATH' | translate }}</mat-label>
+              <input matInput formControlName="configPath" maxlength="100">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'USERS.COMPRESSED_VIDEO_PATH' | translate }}</mat-label>
+              <input matInput formControlName="compressedVideoPath" maxlength="100">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'USERS.VIDEO_PATH' | translate }}</mat-label>
+              <input matInput formControlName="videoPath" maxlength="100">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'USERS.SECONDARY_VIDEO_PATH' | translate }}</mat-label>
+              <input matInput formControlName="secondaryVideoPath" maxlength="100">
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+      </mat-accordion>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+          @if (isLoading()) { <mat-spinner diameter="20"></mat-spinner> } @else { {{ 'APP.SAVE' | translate }} }
+        </button>
+        <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+      </div>
+    </form>
+  }
+</div>

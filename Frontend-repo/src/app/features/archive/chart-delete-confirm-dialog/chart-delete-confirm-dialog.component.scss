@@ -1,0 +1,31 @@
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.warning-text {
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: #b3261e;
+}
+
+.operations-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.extra-count {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.875rem;
+  padding: 4px 0 8px;
+}
+
+.confirm-checkbox {
+  display: block;
+  margin-top: 16px;
+}

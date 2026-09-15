@@ -1,0 +1,90 @@
+<div class="form-page">
+  <div class="header">
+    <button mat-icon-button (click)="onCancel()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ 'BORROWING.ADD_NEW' | translate }}</h1>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'BORROWING.BORROW_NO' | translate }}</mat-label>
+            <input matInput formControlName="iarNo" maxlength="6">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'BORROWING.TYPE' | translate }}</mat-label>
+            <mat-select formControlName="borrowingType">
+              <mat-option [value]="1">1 - {{ 'BORROWING.TYPE_INTERNAL' | translate }}</mat-option>
+              <mat-option [value]="2">2 - {{ 'BORROWING.TYPE_EXTERNAL' | translate }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'BORROWING.PERSON' | translate }}</mat-label>
+            <input matInput [matAutocomplete]="personAuto" [formControl]="personSearch">
+            <mat-autocomplete #personAuto="matAutocomplete" [displayWith]="displayPerson"
+                              (optionSelected)="onPersonSelected($event.option.value)">
+              @for (person of filteredPersons$ | async; track person.prsNo) {
+                <mat-option [value]="person">{{ person.prsNo }} - {{ person.name }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'BORROWING.BOOK' | translate }}</mat-label>
+            <input matInput [matAutocomplete]="catalogueAuto" [formControl]="catalogueSearch">
+            <mat-autocomplete #catalogueAuto="matAutocomplete" [displayWith]="displayCatalogue"
+                              (optionSelected)="onCatalogueSelected($event.option.value)">
+              @for (item of filteredCatalogues$ | async; track item.appNo) {
+                <mat-option [value]="item">{{ item.appNo }} - {{ item.activeTitleAr }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'BORROWING.BORROW_DATE' | translate }}</mat-label>
+            <input matInput type="date" formControlName="borrowDate">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'BORROWING.PERIOD' | translate }} ({{ 'BORROWING.DAYS' | translate }})</mat-label>
+            <input matInput type="number" formControlName="period" min="1">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'BORROWING.DUE_DATE' | translate }}</mat-label>
+            <input matInput [value]="dueDate()" disabled>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'BORROWING.CAUSE' | translate }}</mat-label>
+            <input matInput formControlName="cause" maxlength="2">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'BORROWING.ENTITY' | translate }}</mat-label>
+            <input matInput formControlName="entity" maxlength="3">
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              {{ 'APP.SAVE' | translate }}
+            }
+          </button>
+          <button mat-button type="button" (click)="onCancel()">
+            {{ 'APP.CANCEL' | translate }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

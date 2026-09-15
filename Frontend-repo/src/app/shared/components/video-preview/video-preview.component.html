@@ -1,0 +1,27 @@
+@if (isSupportedFormat) {
+  <div class="video-container">
+    @if (title) {
+      <p class="video-title">{{ title }}</p>
+    }
+    <div class="video-wrapper">
+      <video #videoEl controls class="video-player">
+        <source [src]="videoUrl" [attr.type]="mimeType || null">
+      </video>
+      <button mat-icon-button
+              class="fullscreen-btn"
+              type="button"
+              [matTooltip]="'SHARED.VIDEO_FULLSCREEN' | translate"
+              (click)="requestFullscreen()">
+        <mat-icon>fullscreen</mat-icon>
+      </button>
+    </div>
+  </div>
+} @else {
+  <div class="unsupported-format">
+    <mat-icon>videocam_off</mat-icon>
+    <p class="unsupported-msg">
+      {{ 'SHARED.VIDEO_UNSUPPORTED_FORMAT' | translate }}: <code>{{ detectedExtension }}</code>
+    </p>
+    <p class="supported-hint">{{ 'SHARED.VIDEO_SUPPORTED_FORMATS' | translate }}</p>
+  </div>
+}

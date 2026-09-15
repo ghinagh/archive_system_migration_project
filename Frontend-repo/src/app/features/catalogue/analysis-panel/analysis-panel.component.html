@@ -1,0 +1,520 @@
+<div class="analysis-stage">
+
+  <!-- توليتبار: matches Form2.frm's Command5/Command1/Command8 -->
+  <div class="analysis-toolbar">
+    <button type="button" mat-raised-button (click)="toggleText()">
+      <mat-icon>article</mat-icon>
+      {{ 'CATALOGUE.ADD_FULL_TEXT' | translate }}
+    </button>
+    <button type="button" mat-raised-button (click)="isTempFilesOpen.set(!isTempFilesOpen())">
+      <mat-icon>attach_file</mat-icon>
+      {{ 'CATALOGUE.PENDING_FILES' | translate }}
+    </button>
+    <button type="button" mat-raised-button (click)="toggleCollapsed()">
+      <mat-icon>{{ isCollapsed() ? 'expand_more' : 'expand_less' }}</mat-icon>
+      {{ (isCollapsed() ? 'CATALOGUE.EXPAND_ANALYSIS' : 'CATALOGUE.CLOSE_PAGE') | translate }}
+    </button>
+  </div>
+
+  <div class="analysis-canvas">
+
+    <!-- Header strip: Form2.frm's رقم / العنوان الفعلي / tit_istext -->
+    <div class="doc-identity">
+      <div class="field"><label>{{ 'CATALOGUE.APP_NO' | translate }}</label><span>{{ appNo }}</span></div>
+      @if (activeTitle) {
+        <div class="field"><label>{{ 'CATALOGUE.ACTIVE_TITLE' | translate }}</label><span>{{ activeTitle }}</span></div>
+      }
+      <span class="text-status" [class.has-text]="hasText()" [class.no-text]="!hasText()">
+        {{ (hasText() ? 'CATALOGUE.TEXT_EXISTS' : 'CATALOGUE.TEXT_MISSING') | translate }}
+      </span>
+    </div>
+
+    @if (!isCollapsed()) {
+
+    <div class="search-mode-row">
+      <mat-radio-group [value]="searchMode()" (change)="searchMode.set($event.value)">
+        <mat-radio-button value="prefix">{{ 'APP.SEARCH_BY_PREFIX' | translate }}</mat-radio-button>
+        <mat-radio-button value="contains">{{ 'APP.SEARCH_BY_WORD' | translate }}</mat-radio-button>
+      </mat-radio-group>
+      <span class="search-mode-hint">{{ 'CATALOGUE.SEARCH_MODE_HINT' | translate }}</span>
+    </div>
+
+    @if (isTextOpen()) {
+      <div class="analysis-panel-box text-popup">
+        <form [formGroup]="textForm">
+          <div class="add-row">
+            <mat-form-field appearance="outline" class="add-field-sm">
+              <mat-label>{{ 'CATALOGUE.TXT_SER_NO' | translate }}</mat-label>
+              <input matInput formControlName="txtSerNo" maxlength="2">
+            </mat-form-field>
+          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'CATALOGUE.TXT_TEXT' | translate }}</mat-label>
+            <textarea matInput formControlName="txtText" rows="5" maxlength="4000"></textarea>
+          </mat-form-field>
+          <div class="form-actions">
+            <button type="button" mat-raised-button color="primary" (click)="onSaveText()" [disabled]="textForm.invalid || !selectedSubject()">
+              <mat-icon>save</mat-icon>
+              {{ 'APP.SAVE' | translate }}
+            </button>
+            <button type="button" mat-stroked-button (click)="isTextOpen.set(false)">
+              <mat-icon>close</mat-icon>
+              {{ 'APP.CANCEL' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (isTempFilesOpen()) {
+      <div class="analysis-panel-box">
+        <app-temp-files [appNo]="appNo"></app-temp-files>
+      </div>
+    }
+
+    <div class="analysis-body">
+
+      <!-- LEFT: relation stepper + the 4 relation-scoped lists + time/date marks -->
+      <div class="analysis-left">
+
+        <!-- Form2.frm's WindowsMediaPlayer1 — no file-hosting backend yet, kept as a
+             spatial placeholder rather than a fake player. -->
+        <div class="media-placeholder">
+          <mat-icon>videocam_off</mat-icon>
+          <span>{{ 'CATALOGUE.NO_MEDIA_LINKED' | translate }}</span>
+        </div>
+
+        <div class="relation-stepper">
+          <button type="button" mat-stroked-button (click)="prevRelative()">{{ 'DOC_FORM.PREVIOUS' | translate }}</button>
+          <div class="relation-no-box">
+            <span class="relation-no-label">{{ 'CATALOGUE.RELATIVE_NO' | translate }}</span>
+            <span class="relation-no-value">{{ activeRelativeNo() }}</span>
+          </div>
+          <button type="button" mat-stroked-button (click)="nextRelative()">{{ 'DOC_FORM.NEXT' | translate }}</button>
+        </div>
+
+        @if (!selectedSubject()) {
+          <p class="hint">{{ 'CATALOGUE.PICK_SUBJECT_FIRST' | translate }}</p>
+        }
+
+        <!-- code 30 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.RELATED_TERMS' | translate }} — 30</div>
+          <div class="list-box-body">
+            @for (r of relationRelated(); track r.id) {
+              <div class="list-row">
+                <span>{{ r.relationNo }} — {{ macnzDescription(r.relationNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteRelated(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingRelatedRelation()) {
+            <form [formGroup]="relatedRelationForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_SUBJECT' | translate }}</mat-label>
+                <input matInput [formControl]="relatedRelationForm.controls.relationPicker" [matAutocomplete]="rrAuto" (focus)="onMacnzFocus(relatedRelationFilteredMacnz)">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-autocomplete #rrAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayMacnz">
+                  @for (opt of relatedRelationFilteredMacnz(); track opt.code) {
+                    <mat-option [value]="opt">{{ opt.code }} — {{ opt.description }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddRelated(true)" [disabled]="relatedRelationForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingRelatedRelation.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingRelatedRelation.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- code 40 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.NARROWER_TERMS' | translate }} — 40</div>
+          <div class="list-box-body">
+            @for (r of relationNarrower(); track r.id) {
+              <div class="list-row">
+                <span>{{ r.narrowerNo }} — {{ macnzDescription(r.narrowerNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteNarrower(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingNarrowerRelation()) {
+            <form [formGroup]="narrowerRelationForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_SUBJECT' | translate }}</mat-label>
+                <input matInput [formControl]="narrowerRelationForm.controls.narrowerPicker" [matAutocomplete]="nrAuto" (focus)="onMacnzFocus(narrowerRelationFilteredMacnz)">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-autocomplete #nrAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayMacnz">
+                  @for (opt of narrowerRelationFilteredMacnz(); track opt.code) {
+                    <mat-option [value]="opt">{{ opt.code }} — {{ opt.description }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddNarrower(true)" [disabled]="narrowerRelationForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingNarrowerRelation.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingNarrowerRelation.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- code 50 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.FOR_IT' | translate }} — 50</div>
+          <div class="list-box-body">
+            @for (r of relationFileFor(); track r.id) {
+              <div class="list-row">
+                <span>{{ formDescription(r.fileNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteFile(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingFileForRelation()) {
+            <form [formGroup]="fileForRelationForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
+                <input matInput [formControl]="fileForRelationForm.controls.filePicker" [matAutocomplete]="ffrAuto">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
+                <mat-autocomplete #ffrAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
+                  @for (opt of fileForRelationFilteredForms(); track opt.formNo) {
+                    <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddFile(true, false)" [disabled]="fileForRelationForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingFileForRelation.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingFileForRelation.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- code 60 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.ABOUT_IT' | translate }} — 60</div>
+          <div class="list-box-body">
+            @for (r of relationFileAbout(); track r.id) {
+              <div class="list-row">
+                <span>{{ formDescription(r.fileNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteFile(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingFileAboutRelation()) {
+            <form [formGroup]="fileAboutRelationForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
+                <input matInput [formControl]="fileAboutRelationForm.controls.filePicker" [matAutocomplete]="farAuto">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
+                <mat-autocomplete #farAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
+                  @for (opt of fileAboutRelationFilteredForms(); track opt.formNo) {
+                    <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddFile(true, true)" [disabled]="fileAboutRelationForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingFileAboutRelation.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingFileAboutRelation.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- Time marks + validity date range for the active descriptor+relation -->
+        <div class="time-date-row">
+          <div class="analysis-panel-box">
+            <div class="list-box-header">{{ 'CATALOGUE.TIME_MARKS' | translate }}</div>
+            @if (activeTimeMark(); as tm) {
+              <div class="list-row">
+                <span>{{ (tm.startHour ?? 0) | number:'2.0-0' }}:{{ (tm.startMinute ?? 0) | number:'2.0-0' }}:{{ (tm.startSecond ?? 0) | number:'2.0-0' }}
+                  — {{ (tm.endHour ?? 0) | number:'2.0-0' }}:{{ (tm.endMinute ?? 0) | number:'2.0-0' }}:{{ (tm.endSecond ?? 0) | number:'2.0-0' }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteTime(tm.serNo, tm.rltvNo)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @else {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+            @if (isAddingTime()) {
+              <form [formGroup]="timeForm" class="time-form-grid">
+                <mat-form-field appearance="outline" class="add-field-sm"><mat-label>{{ 'CATALOGUE.TM_START' | translate }} {{ 'CATALOGUE.TM_HOUR' | translate }}</mat-label><input matInput type="number" formControlName="tmO"></mat-form-field>
+                <mat-form-field appearance="outline" class="add-field-sm"><mat-label>{{ 'CATALOGUE.TM_MINUTE' | translate }}</mat-label><input matInput type="number" formControlName="tmM"></mat-form-field>
+                <mat-form-field appearance="outline" class="add-field-sm"><mat-label>{{ 'CATALOGUE.TM_SECOND' | translate }}</mat-label><input matInput type="number" formControlName="tmS"></mat-form-field>
+                <mat-form-field appearance="outline" class="add-field-sm"><mat-label>{{ 'CATALOGUE.TM_END' | translate }} {{ 'CATALOGUE.TM_HOUR' | translate }}</mat-label><input matInput type="number" formControlName="tmO1"></mat-form-field>
+                <mat-form-field appearance="outline" class="add-field-sm"><mat-label>{{ 'CATALOGUE.TM_MINUTE' | translate }}</mat-label><input matInput type="number" formControlName="tmM1"></mat-form-field>
+                <mat-form-field appearance="outline" class="add-field-sm"><mat-label>{{ 'CATALOGUE.TM_SECOND' | translate }}</mat-label><input matInput type="number" formControlName="tmS1"></mat-form-field>
+                <button type="button" mat-icon-button color="primary" (click)="onSaveTime()"><mat-icon>check</mat-icon></button>
+                <button type="button" mat-icon-button (click)="isAddingTime.set(false)"><mat-icon>close</mat-icon></button>
+              </form>
+            } @else {
+              <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingTime.set(true)">
+                <mat-icon>add</mat-icon>
+              </button>
+            }
+          </div>
+
+          <div class="analysis-panel-box">
+            <div class="list-box-header">{{ 'CATALOGUE.DATE_SUBJECTS' | translate }}</div>
+            @if (activeDateSubject(); as ds) {
+              <div class="list-row">
+                <span>{{ ds.dteDteDeb | date:'yyyy-MM-dd' }} — {{ ds.dteDteFin | date:'yyyy-MM-dd' }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteDateSubject(ds.dteSerNo, ds.dteRelNo)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @else {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+            @if (isAddingDateSubject()) {
+              <form [formGroup]="dateSubjectForm" class="add-row">
+                <mat-form-field appearance="outline" class="add-field"><mat-label>{{ 'CATALOGUE.DTE_DTE_DEB' | translate }}</mat-label><input matInput type="date" formControlName="dteDteDeb"></mat-form-field>
+                <mat-form-field appearance="outline" class="add-field"><mat-label>{{ 'CATALOGUE.DTE_DTE_FIN' | translate }}</mat-label><input matInput type="date" formControlName="dteDteFin"></mat-form-field>
+                <button type="button" mat-icon-button color="primary" (click)="onSaveDateSubject()"><mat-icon>check</mat-icon></button>
+                <button type="button" mat-icon-button (click)="isAddingDateSubject.set(false)"><mat-icon>close</mat-icon></button>
+              </form>
+            } @else {
+              <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingDateSubject.set(true)">
+                <mat-icon>add</mat-icon>
+              </button>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: the 6 document-wide descriptor lists -->
+      <div class="analysis-right">
+
+        <!-- code 10 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.SUBJECTS' | translate }} — 10</div>
+          <div class="list-box-body">
+            @for (s of subjects(); track s.id) {
+              <div class="list-row selectable" [class.selected]="selectedSubject()?.id === s.id" (click)="selectSubject(s)">
+                <span>{{ s.descriptorNo }} — {{ macnzDescription(s.descriptorNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="$event.stopPropagation(); onDeleteSubject(s.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingSubject()) {
+            <form [formGroup]="subjectForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_SUBJECT' | translate }}</mat-label>
+                <input matInput [formControl]="subjectForm.controls.descriptorPicker" [matAutocomplete]="subAuto" (focus)="onMacnzFocus(subjectFilteredMacnz)">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-autocomplete #subAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayMacnz">
+                  @for (opt of subjectFilteredMacnz(); track opt.code) {
+                    <mat-option [value]="opt">{{ opt.code }} — {{ opt.description }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddSubject()" [disabled]="subjectForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingSubject.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" (click)="isAddingSubject.set(true)">
+              <mat-icon>add</mat-icon> {{ 'CATALOGUE.ADD_SUBJECT' | translate }}
+            </button>
+          }
+        </div>
+
+        <!-- code 20 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.GEO_TERMS' | translate }} — 20</div>
+          <div class="list-box-body">
+            @for (r of overallGeo(); track r.id) {
+              <div class="list-row">
+                <span>{{ formDescription(r.geoNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteGeo(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingGeo()) {
+            <form [formGroup]="geoForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
+                <input matInput [formControl]="geoForm.controls.geoPicker" [matAutocomplete]="geoAuto">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
+                <mat-autocomplete #geoAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
+                  @for (opt of geoFilteredForms(); track opt.formNo) {
+                    <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddGeo()" [disabled]="geoForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingGeo.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingGeo.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- code 01 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.RELATED_TERMS' | translate }} — 01</div>
+          <div class="list-box-body">
+            @for (r of overallRelated(); track r.id) {
+              <div class="list-row">
+                <span>{{ r.relationNo }} — {{ macnzDescription(r.relationNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteRelated(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingRelatedOverall()) {
+            <form [formGroup]="relatedOverallForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_SUBJECT' | translate }}</mat-label>
+                <input matInput [formControl]="relatedOverallForm.controls.relationPicker" [matAutocomplete]="roAuto" (focus)="onMacnzFocus(relatedOverallFilteredMacnz)">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-autocomplete #roAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayMacnz">
+                  @for (opt of relatedOverallFilteredMacnz(); track opt.code) {
+                    <mat-option [value]="opt">{{ opt.code }} — {{ opt.description }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddRelated(false)" [disabled]="relatedOverallForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingRelatedOverall.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingRelatedOverall.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- code 02 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.NARROWER_TERMS' | translate }} — 02</div>
+          <div class="list-box-body">
+            @for (r of overallNarrower(); track r.id) {
+              <div class="list-row">
+                <span>{{ r.narrowerNo }} — {{ macnzDescription(r.narrowerNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteNarrower(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingNarrowerOverall()) {
+            <form [formGroup]="narrowerOverallForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_SUBJECT' | translate }}</mat-label>
+                <input matInput [formControl]="narrowerOverallForm.controls.narrowerPicker" [matAutocomplete]="noAuto" (focus)="onMacnzFocus(narrowerOverallFilteredMacnz)">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-autocomplete #noAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayMacnz">
+                  @for (opt of narrowerOverallFilteredMacnz(); track opt.code) {
+                    <mat-option [value]="opt">{{ opt.code }} — {{ opt.description }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddNarrower(false)" [disabled]="narrowerOverallForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingNarrowerOverall.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingNarrowerOverall.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- code 03 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.FOR_IT' | translate }} — 03</div>
+          <div class="list-box-body">
+            @for (r of overallFileFor(); track r.id) {
+              <div class="list-row">
+                <span>{{ formDescription(r.fileNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteFile(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingFileForOverall()) {
+            <form [formGroup]="fileForOverallForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
+                <input matInput [formControl]="fileForOverallForm.controls.filePicker" [matAutocomplete]="ffoAuto">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
+                <mat-autocomplete #ffoAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
+                  @for (opt of fileForOverallFilteredForms(); track opt.formNo) {
+                    <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddFile(false, false)" [disabled]="fileForOverallForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingFileForOverall.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingFileForOverall.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- code 04 -->
+        <div class="analysis-panel-box list-box">
+          <div class="list-box-header">{{ 'CATALOGUE.ABOUT_IT' | translate }} — 04</div>
+          <div class="list-box-body">
+            @for (r of overallFileAbout(); track r.id) {
+              <div class="list-row">
+                <span>{{ formDescription(r.fileNo) }}</span>
+                <button type="button" mat-icon-button color="warn" (click)="onDeleteFile(r.id)"><mat-icon>delete</mat-icon></button>
+              </div>
+            } @empty {
+              <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+            }
+          </div>
+          @if (isAddingFileAboutOverall()) {
+            <form [formGroup]="fileAboutOverallForm" class="add-row">
+              <mat-form-field appearance="outline" class="add-field">
+                <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
+                <input matInput [formControl]="fileAboutOverallForm.controls.filePicker" [matAutocomplete]="faoAuto">
+                <mat-icon matSuffix>arrow_drop_down</mat-icon>
+                <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
+                <mat-autocomplete #faoAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
+                  @for (opt of fileAboutOverallFilteredForms(); track opt.formNo) {
+                    <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <button type="button" mat-icon-button color="primary" (click)="onAddFile(false, true)" [disabled]="fileAboutOverallForm.invalid"><mat-icon>check</mat-icon></button>
+              <button type="button" mat-icon-button (click)="isAddingFileAboutOverall.set(false)"><mat-icon>close</mat-icon></button>
+            </form>
+          } @else {
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingFileAboutOverall.set(true)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </div>
+
+      </div>
+    </div>
+    }
+  </div>
+</div>

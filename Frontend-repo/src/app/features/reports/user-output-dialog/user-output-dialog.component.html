@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>{{ 'REPORTS.ASSIGN_OUTPUT' | translate }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid">
+    <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.USER' | translate }}</mat-label><input matInput formControlName="userNo" maxlength="3"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.INSTITUTION' | translate }}</mat-label><input matInput formControlName="institutionNo" maxlength="2"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.OUTPUT_NUM' | translate }}</mat-label><input matInput type="number" formControlName="outputNum"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.CHOICE' | translate }}</mat-label><input matInput type="number" formControlName="outputChoice"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.INDEX' | translate }}</mat-label><input matInput formControlName="userIndex" maxlength="3"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'REPORTS.SIGN' | translate }}</mat-label><input matInput formControlName="sign" maxlength="1"></mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isLoading()">{{ 'APP.SAVE' | translate }}</button>
+</mat-dialog-actions>

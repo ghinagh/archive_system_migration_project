@@ -1,0 +1,41 @@
+// Inherits --bg/--panel/--panel-2/--line/--ink/--ink-dim/--accent from the documentation-form
+// host that always wraps this component — see documentation-form.component.scss.
+
+.toolbar {
+  margin-bottom: 12px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.no-data {
+  color: var(--ink-dim, rgba(0, 0, 0, 0.5));
+  font-style: italic;
+  margin: 8px 0;
+}
+
+::ng-deep .no-data-cell {
+  color: var(--ink-dim, rgba(0, 0, 0, 0.5));
+  font-style: italic;
+  text-align: center;
+}
+
+::ng-deep {
+  .toolbar button.mat-mdc-raised-button {
+    --mdc-protected-button-container-color: var(--panel-2, #1976d2);
+    --mdc-protected-button-label-text-color: var(--ink, #fff);
+    background-color: var(--panel-2, #1976d2);
+    color: var(--ink, #fff);
+    border: 1px solid var(--line, transparent);
+    box-shadow: none;
+
+    .mat-icon {
+      color: var(--ink, #fff);
+    }
+  }
+}

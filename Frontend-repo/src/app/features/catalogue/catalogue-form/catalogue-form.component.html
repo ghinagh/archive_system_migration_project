@@ -1,0 +1,86 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      {{ (isEditMode() ? 'APP.EDIT' : 'CATALOGUE.ADD_NEW') | translate }}
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.APP_NO' | translate }}</mat-label>
+          <input matInput formControlName="appNo" maxlength="7">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.TYPE' | translate }}</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="B">{{ 'NAV.BOOKS' | translate }}</mat-option>
+            <mat-option value="A">{{ 'NAV.ARTICLES' | translate }}</mat-option>
+            <mat-option value="N">{{ 'NAV.NEWS' | translate }}</mat-option>
+            <mat-option value="P">{{ 'NAV.PERIODICALS' | translate }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'CATALOGUE.ACTIVE_TITLE' | translate }}</mat-label>
+          <input matInput formControlName="activeTitleAr" maxlength="125">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'CATALOGUE.ADDITIONAL_TITLE' | translate }}</mat-label>
+          <input matInput formControlName="additionalTitle" maxlength="125">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.ENTRY_DATE' | translate }}</mat-label>
+          <input matInput type="datetime-local" formControlName="entryDate">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.WRITE_DATE' | translate }}</mat-label>
+          <input matInput type="datetime-local" formControlName="writeDate">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.DATA_ENTRY' | translate }}</mat-label>
+          <input matInput formControlName="dataEntry" maxlength="2">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.APP_DOC' | translate }}</mat-label>
+          <input matInput formControlName="appDoc" maxlength="2">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.REVISION' | translate }}</mat-label>
+          <input matInput formControlName="appRevision" maxlength="2">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.TRANS' | translate }}</mat-label>
+          <input matInput type="number" formControlName="trans">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'CATALOGUE.RESULT' | translate }}</mat-label>
+          <textarea matInput formControlName="result" rows="3" maxlength="1000"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            {{ 'APP.SAVE' | translate }}
+          }
+        </button>
+        <button mat-button type="button" (click)="onCancel()">
+          {{ 'APP.CANCEL' | translate }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

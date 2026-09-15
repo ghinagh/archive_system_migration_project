@@ -1,0 +1,258 @@
+<h2 mat-dialog-title>{{ (isEdit ? 'APP.EDIT' : 'SITES.ADD_FORM') | translate }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-grid">
+    <mat-form-field appearance="outline"><mat-label>{{ 'SITES.FORM_NO' | translate }}</mat-label><input matInput formControlName="formNo" maxlength="8"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'SITES.FORM_TYPE' | translate }}</mat-label><input matInput formControlName="formType" maxlength="2"></mat-form-field>
+    <mat-form-field appearance="outline" class="full-width"><mat-label>{{ 'SITES.FORM_NAME' | translate }}</mat-label><input matInput formControlName="name" maxlength="60"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'ARCHIVE.DATE' | translate }}</mat-label><input matInput type="datetime-local" formControlName="date"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ 'SITES.USER' | translate }}</mat-label><input matInput formControlName="user" maxlength="3"></mat-form-field>
+  </form>
+
+  @if (isEdit) {
+    <!-- Subject Links -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>label</mat-icon>
+          {{ 'SITES.SUBJECT_LINKS' | translate }} ({{ subjects().length }})
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      @if (subjects().length === 0) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <table mat-table [dataSource]="subjects()" class="full-width">
+          <ng-container matColumnDef="mcnzCode">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.MCNZ_CODE' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.mcnzCode }}</td>
+          </ng-container>
+          <ng-container matColumnDef="mcnzDesc">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.MCNZ_DESC' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.mcnzDesc }}</td>
+          </ng-container>
+          <ng-container matColumnDef="subRel">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.REL' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.subRel }}</td>
+          </ng-container>
+          <ng-container matColumnDef="period">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.PERIOD' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.subDte || '—' }} → {{ r.subDte1 || '—' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let r">
+              <button mat-icon-button [matTooltip]="'APP.EDIT' | translate" (click)="onEditSubject(r)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="onDeleteSubject(r.mcnzCode)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['mcnzCode','mcnzDesc','subRel','period','actions']"></tr>
+          <tr mat-row *matRowDef="let r; columns: ['mcnzCode','mcnzDesc','subRel','period','actions']"></tr>
+        </table>
+      }
+
+      @if (editingSubjectCode()) {
+        <form [formGroup]="subjectEditForm" class="add-row">
+          <span class="edit-row-label">{{ 'SITES.EDITING' | translate }} {{ editingSubjectCode() }}</span>
+          <mat-form-field appearance="outline" class="add-field-sm">
+            <mat-label>{{ 'SITES.REL' | translate }}</mat-label>
+            <input matInput formControlName="subRel" maxlength="2">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.START_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="subDte">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.END_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="subDte1">
+          </mat-form-field>
+          <button mat-icon-button color="primary" (click)="onSaveSubjectEdit()" [disabled]="subjectEditForm.invalid">
+            <mat-icon>check</mat-icon>
+          </button>
+          <button mat-icon-button (click)="onCancelSubjectEdit()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </form>
+      }
+
+      @if (isAddingSubject()) {
+        <form [formGroup]="subjectAddForm" class="add-row">
+          <mat-form-field appearance="outline" class="add-field">
+            <mat-label>{{ 'SITES.MCNZ_CODE' | translate }}</mat-label>
+            <input matInput formControlName="mcnzCode" maxlength="9">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-sm">
+            <mat-label>{{ 'SITES.REL' | translate }}</mat-label>
+            <input matInput formControlName="subRel" maxlength="2">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.START_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="subDte">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.END_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="subDte1">
+          </mat-form-field>
+          <button mat-icon-button color="primary" (click)="onAddSubject()" [disabled]="subjectAddForm.invalid">
+            <mat-icon>check</mat-icon>
+          </button>
+          <button mat-icon-button (click)="isAddingSubject.set(false); subjectAddForm.reset()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </form>
+      } @else {
+        <button mat-stroked-button class="add-btn" (click)="isAddingSubject.set(true)">
+          <mat-icon>add</mat-icon>
+          {{ 'SITES.ADD_SUBJECT' | translate }}
+        </button>
+      }
+    </mat-expansion-panel>
+
+    <!-- Related Forms -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>link</mat-icon>
+          {{ 'SITES.RELATED_FORMS' | translate }} ({{ relatedForms().length }})
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      @if (relatedForms().length === 0) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <table mat-table [dataSource]="relatedForms()" class="full-width">
+          <ng-container matColumnDef="form2No">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.FORM_NO' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.form2No }}</td>
+          </ng-container>
+          <ng-container matColumnDef="form2Name">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.FORM_NAME' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.form2Name }}</td>
+          </ng-container>
+          <ng-container matColumnDef="rlfRel">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.REL' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.rlfRel }}</td>
+          </ng-container>
+          <ng-container matColumnDef="period">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.PERIOD' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.rlfDte || '—' }} → {{ r.rlfDte1 || '—' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let r">
+              <button mat-icon-button [matTooltip]="'APP.EDIT' | translate" (click)="onEditRelatedForm(r)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="onDeleteRelatedForm(r.form2No)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['form2No','form2Name','rlfRel','period','actions']"></tr>
+          <tr mat-row *matRowDef="let r; columns: ['form2No','form2Name','rlfRel','period','actions']"></tr>
+        </table>
+      }
+
+      @if (editingRelatedFormCode()) {
+        <form [formGroup]="relatedFormEditForm" class="add-row">
+          <span class="edit-row-label">{{ 'SITES.EDITING' | translate }} {{ editingRelatedFormCode() }}</span>
+          <mat-form-field appearance="outline" class="add-field-sm">
+            <mat-label>{{ 'SITES.REL' | translate }}</mat-label>
+            <input matInput formControlName="rlfRel" maxlength="2">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.START_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="rlfDte">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.END_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="rlfDte1">
+          </mat-form-field>
+          <button mat-icon-button color="primary" (click)="onSaveRelatedFormEdit()" [disabled]="relatedFormEditForm.invalid">
+            <mat-icon>check</mat-icon>
+          </button>
+          <button mat-icon-button (click)="onCancelRelatedFormEdit()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </form>
+      }
+
+      @if (isAddingRelatedForm()) {
+        <form [formGroup]="relatedFormAddForm" class="add-row">
+          <mat-form-field appearance="outline" class="add-field">
+            <mat-label>{{ 'SITES.FORM_NO' | translate }}</mat-label>
+            <input matInput formControlName="form2No" maxlength="10">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-sm">
+            <mat-label>{{ 'SITES.REL' | translate }}</mat-label>
+            <input matInput formControlName="rlfRel" maxlength="2">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.START_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="rlfDte">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="add-field-date">
+            <mat-label>{{ 'SITES.END_DATE' | translate }}</mat-label>
+            <input matInput type="datetime-local" formControlName="rlfDte1">
+          </mat-form-field>
+          <button mat-icon-button color="primary" (click)="onAddRelatedForm()" [disabled]="relatedFormAddForm.invalid">
+            <mat-icon>check</mat-icon>
+          </button>
+          <button mat-icon-button (click)="isAddingRelatedForm.set(false); relatedFormAddForm.reset()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </form>
+      } @else {
+        <button mat-stroked-button class="add-btn" (click)="isAddingRelatedForm.set(true)">
+          <mat-icon>add</mat-icon>
+          {{ 'SITES.ADD_RELATED_FORM' | translate }}
+        </button>
+      }
+    </mat-expansion-panel>
+
+    <!-- Position Assignments (posts) -->
+    <mat-expansion-panel class="section-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>military_tech</mat-icon>
+          {{ 'SITES.POSTS' | translate }} ({{ posts().length }})
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      @if (posts().length === 0) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <table mat-table [dataSource]="posts()" class="full-width">
+          <ng-container matColumnDef="serial">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.SERIAL' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.serial }}</td>
+          </ng-container>
+          <ng-container matColumnDef="siteNo">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.SITE_NO' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.siteNo }}</td>
+          </ng-container>
+          <ng-container matColumnDef="period">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SITES.PERIOD' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.startDate || '—' }} → {{ r.endDate || '—' }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="['serial','siteNo','period']"></tr>
+          <tr mat-row *matRowDef="let r; columns: ['serial','siteNo','period']"></tr>
+        </table>
+      }
+      <p class="posts-hint">{{ 'SITES.POSTS_HINT' | translate }}</p>
+      <button mat-stroked-button class="add-btn" (click)="onAddPost()">
+        <mat-icon>add</mat-icon>
+        {{ 'SITES.ADD_POST' | translate }}
+      </button>
+    </mat-expansion-panel>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isLoading()">{{ 'APP.SAVE' | translate }}</button>
+</mat-dialog-actions>

@@ -1,0 +1,20 @@
+<div class="form-page">
+  <div class="header"><button mat-icon-button (click)="onCancel()"><mat-icon>arrow_back</mat-icon></button><h1>{{ 'DIGITIZATION.ADD_DEMAND' | translate }}</h1></div>
+  <mat-card><mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.DEMAND_NO' | translate }}</mat-label><input matInput formControlName="demandNo" maxlength="7"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.SERIAL' | translate }}</mat-label><input matInput type="number" formControlName="serial"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.USER' | translate }}</mat-label><input matInput formControlName="userNo" maxlength="3"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'ARCHIVE.DATE' | translate }}</mat-label><input matInput type="datetime-local" formControlName="date"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.DOCUMENT' | translate }}</mat-label><input matInput formControlName="machineNo" maxlength="7"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ 'DIGITIZATION.COTE' | translate }}</mat-label><input matInput formControlName="cote" maxlength="50"></mat-form-field>
+        <mat-form-field appearance="outline" class="full-width"><mat-label>{{ 'SITES.DESCRIPTION' | translate }}</mat-label><textarea matInput formControlName="description" rows="2"></textarea></mat-form-field>
+      </div>
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">{{ 'APP.SAVE' | translate }}</button>
+        <button mat-button type="button" (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
+      </div>
+    </form>
+  </mat-card-content></mat-card>
+</div>

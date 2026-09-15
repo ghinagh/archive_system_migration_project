@@ -1,0 +1,30 @@
+.maintenance-shell {
+  h1 { margin: 0 0 16px; }
+
+  mat-card { margin: 16px 0; }
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+
+  mat-form-field { flex: 1; min-width: 160px; }
+}
+
+.link-add-row { margin-top: 16px; }
+
+.full-width { width: 100%; }
+
+.no-data { text-align: center; padding: 32px; color: #999; }
+
+.success-msg {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.error-msg {
+  color: #c62828;
+  font-weight: 600;
+}

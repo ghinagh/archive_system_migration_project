@@ -1,0 +1,55 @@
+<div class="transactions-tab">
+  <div class="tab-header">
+    <button mat-raised-button color="primary" (click)="onAdd()">
+      <mat-icon>add</mat-icon>
+      {{ 'TRANSACTIONS.ADD_NEW' | translate }}
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else {
+    <table mat-table [dataSource]="items()" class="full-width">
+      <ng-container matColumnDef="trsOpno">
+        <th mat-header-cell *matHeaderCellDef>{{ 'TRANSACTIONS.OPERATION_NO' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.trsOpno }}</td>
+      </ng-container>
+      <ng-container matColumnDef="trsDte">
+        <th mat-header-cell *matHeaderCellDef>{{ 'TRANSACTIONS.DATE' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.trsDte | date:'yyyy-MM-dd' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="trsNum">
+        <th mat-header-cell *matHeaderCellDef>{{ 'TRANSACTIONS.NUMBER' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.trsNum }}</td>
+      </ng-container>
+      <ng-container matColumnDef="trsNb">
+        <th mat-header-cell *matHeaderCellDef>{{ 'TRANSACTIONS.COUNT' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.trsNb }}</td>
+      </ng-container>
+      <ng-container matColumnDef="trsYear">
+        <th mat-header-cell *matHeaderCellDef>{{ 'TRANSACTIONS.YEAR' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.trsYear }}</td>
+      </ng-container>
+      <ng-container matColumnDef="trsTyp">
+        <th mat-header-cell *matHeaderCellDef>{{ 'TRANSACTIONS.TYPE' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.trsTyp }}</td>
+      </ng-container>
+      <ng-container matColumnDef="trsDte1">
+        <th mat-header-cell *matHeaderCellDef>{{ 'TRANSACTIONS.END_DATE' | translate }}</th>
+        <td mat-cell *matCellDef="let r">{{ r.trsDte1 | date:'yyyy-MM-dd' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th>
+        <td mat-cell *matCellDef="let r">
+          <button mat-icon-button color="warn" (click)="onDelete(r)" [matTooltip]="'APP.DELETE' | translate">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let r; columns: displayedColumns;"></tr>
+    </table>
+    @if (items().length === 0) { <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p> }
+    <mat-paginator [length]="totalElements()" [pageSize]="pageSize()" [pageIndex]="pageIndex()" [pageSizeOptions]="[5,10,25]" (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+  }
+</div>

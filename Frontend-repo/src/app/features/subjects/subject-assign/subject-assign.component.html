@@ -1,0 +1,30 @@
+<div class="subject-assign">
+  <div class="assign-header">
+    <h3>{{ 'SUBJECTS.ASSIGNED' | translate }}</h3>
+    <button mat-mini-fab color="primary" (click)="openAddDialog()"
+            [matTooltip]="'APP.ADD' | translate">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-spinner></app-loading-spinner>
+  } @else if (assignedSubjects().length === 0) {
+    <p class="muted">{{ 'APP.NO_DATA' | translate }}</p>
+  } @else {
+    <mat-list>
+      @for (subject of assignedSubjects(); track subject.id) {
+        <mat-list-item>
+          <span matListItemTitle>
+            <span class="code-badge">{{ subject.descriptorNo }}</span>
+            {{ subject.serialNo }}
+          </span>
+          <button matListItemMeta mat-icon-button color="warn" (click)="removeSubject(subject.id)"
+                  [matTooltip]="'APP.DELETE' | translate">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-list-item>
+      }
+    </mat-list>
+  }
+</div>

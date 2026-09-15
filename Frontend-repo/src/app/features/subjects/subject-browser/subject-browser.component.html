@@ -1,0 +1,273 @@
+<div class="subject-browser">
+  <h1>{{ 'SUBJECTS.TITLE' | translate }}</h1>
+
+  <div class="browser-layout">
+    <div class="tree-panel">
+      <div class="tree-panel-header">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'APP.SEARCH' | translate }}</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [value]="searchTerm()"
+                 (input)="searchTerm.set($any($event.target).value)">
+        </mat-form-field>
+        <ng-container *appRequiresLevel="'A'">
+          <button mat-stroked-button color="primary" class="add-root-btn"
+                  (click)="openSubjectDialog('create')">
+            <mat-icon>add</mat-icon>
+            {{ 'SUBJECTS.FORM.ADD_ROOT' | translate }}
+          </button>
+        </ng-container>
+      </div>
+
+      @if (isLoading()) {
+        <app-loading-spinner></app-loading-spinner>
+      } @else {
+        <mat-accordion multi>
+          @for (node of filteredTree(); track node.code) {
+            <ng-container *ngTemplateOutlet="treeNode; context: { $implicit: node, depth: 0 }">
+            </ng-container>
+          }
+        </mat-accordion>
+        @if (filteredTree().length === 0) {
+          <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+        }
+      }
+    </div>
+
+    <div class="detail-panel">
+      @if (selectedSubject()) {
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ selectedSubject()!.description }}</mat-card-title>
+            <mat-card-subtitle>{{ 'SUBJECTS.CODE' | translate }}: {{ selectedSubject()!.code }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="detail-section">
+              <h3>{{ 'SUBJECTS.LEVEL' | translate }}</h3>
+              <p>{{ selectedSubject()!.level }}</p>
+            </div>
+
+            <ng-container *appRequiresLevel="'A'">
+              <div class="admin-actions-row">
+                @if (selectedSubject()!.level !== '3') {
+                  <button mat-stroked-button color="primary"
+                          (click)="openSubjectDialog('create', undefined, selectedSubject()!.code)">
+                    <mat-icon>add</mat-icon>
+                    {{ 'SUBJECTS.FORM.ADD_CHILD' | translate }}
+                  </button>
+                }
+                <button mat-stroked-button
+                        (click)="openSubjectDialog('edit', selectedSubject()!.code)">
+                  <mat-icon>edit</mat-icon>
+                  {{ 'APP.EDIT' | translate }}
+                </button>
+                <button mat-stroked-button color="warn"
+                        (click)="onDeleteSubject(selectedSubject()!.code)">
+                  <mat-icon>delete</mat-icon>
+                  {{ 'APP.DELETE' | translate }}
+                </button>
+              </div>
+            </ng-container>
+
+            <div class="detail-section">
+              <h3>{{ 'SUBJECTS.NARROWER_TERMS' | translate }}</h3>
+              @if (getNarrowerTerms().length > 0) {
+                <mat-list>
+                  @for (term of getNarrowerTerms(); track term.code) {
+                    <mat-list-item (click)="onSelectSubject(term)" class="clickable">
+                      <span matListItemTitle>{{ term.code }} - {{ term.description }}</span>
+                    </mat-list-item>
+                  }
+                </mat-list>
+              } @else {
+                <p class="muted">{{ 'APP.NO_DATA' | translate }}</p>
+              }
+            </div>
+
+            <div class="detail-section">
+              <h3>{{ 'SUBJECTS.RELATED_TERMS' | translate }}</h3>
+              @if (getRelatedTerms().length > 0) {
+                <mat-list>
+                  @for (term of getRelatedTerms(); track term.code) {
+                    <mat-list-item (click)="onSelectSubject(term)" class="clickable">
+                      <span matListItemTitle>{{ term.code }} - {{ term.description }}</span>
+                    </mat-list-item>
+                  }
+                </mat-list>
+              } @else {
+                <p class="muted">{{ 'APP.NO_DATA' | translate }}</p>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- ── Related Archive Items ─────────────────────────────────── -->
+        <mat-expansion-panel class="archive-panel" [expanded]="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title class="archive-panel-title">
+              <mat-icon>folder_open</mat-icon>
+              {{ 'SUBJECTS.RELATED_ARCHIVE' | translate }}
+              @if (!isLoadingCharts() && relatedCharts().length > 0) {
+                <span class="chart-count-badge">{{ relatedCharts().length }}</span>
+              }
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          @if (isLoadingCharts()) {
+            <app-loading-spinner></app-loading-spinner>
+          } @else if (relatedCharts().length === 0) {
+            <p class="muted archive-empty">{{ 'SUBJECTS.RELATED_ARCHIVE_EMPTY' | translate }}</p>
+          } @else {
+            <mat-nav-list class="chart-list">
+              @for (chart of relatedCharts(); track chart.id) {
+                <a mat-list-item [routerLink]="['/archive', chart.id]">
+                  <span matListItemTitle>
+                    <span class="code-badge">{{ chart.chaNo }}</span>
+                    {{ chart.title }}
+                  </span>
+                  <span matListItemLine>
+                    {{ chart.date | date:'mediumDate' }}
+                    @if (chart.stock != null) {
+                      &nbsp;·&nbsp; {{ 'ARCHIVE.STOCK' | translate }}: {{ chart.stock }}
+                    }
+                  </span>
+                </a>
+              }
+            </mat-nav-list>
+          }
+        </mat-expansion-panel>
+
+      } @else {
+        <div class="empty-detail">
+          <mat-icon>category</mat-icon>
+          <p>{{ 'SUBJECTS.SELECT_HINT' | translate }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ── Coding Management (Admin only) ──────────────────────────────────────── -->
+<ng-container *appRequiresLevel="'A'">
+  <mat-card class="coding-admin-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>tune</mat-icon>
+        {{ 'SUBJECTS.CODING.TITLE' | translate }}
+      </mat-card-title>
+      <div class="card-header-action">
+        <button mat-raised-button color="primary" (click)="openCodingDialog('create')">
+          <mat-icon>add</mat-icon>
+          {{ 'SUBJECTS.CODING.ADD' | translate }}
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (codingEntries().length === 0) {
+        <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+      } @else {
+        <table mat-table [dataSource]="codingEntries()" class="full-width">
+
+          <ng-container matColumnDef="level">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SUBJECTS.CODING.LEVEL' | translate }}</th>
+            <td mat-cell *matCellDef="let r">
+              <span class="code-badge">{{ r.level }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SUBJECTS.CODING.CODE' | translate }}</th>
+            <td mat-cell *matCellDef="let r">
+              <span class="code-badge">{{ r.code }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>{{ 'SUBJECTS.CODING.DESCRIPTION' | translate }}</th>
+            <td mat-cell *matCellDef="let r">{{ r.description }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let r" class="actions-cell">
+              <button mat-icon-button color="primary"
+                      [matTooltip]="'SUBJECTS.CODING.EDIT_TITLE' | translate"
+                      (click)="openCodingDialog('edit', r)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn"
+                      [matTooltip]="'APP.DELETE' | translate"
+                      (click)="onDeleteCoding(r.level, r.code)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="codingCols"></tr>
+          <tr mat-row *matRowDef="let r; columns: codingCols;"></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+
+<!-- ── Tree node template ──────────────────────────────────────────────────── -->
+<ng-template #treeNode let-node let-depth="depth">
+  @if (node.children.length > 0) {
+    <mat-expansion-panel [class.nested]="depth > 0">
+      <mat-expansion-panel-header>
+        <mat-panel-title (click)="onSelectSubject(node); $event.stopPropagation()" class="node-title-row">
+          <span class="code-badge">{{ node.code }}</span>
+          <span class="node-desc">{{ node.description }}</span>
+          <ng-container *appRequiresLevel="'A'">
+            <span class="node-actions">
+              @if (node.level !== '3') {
+                <button mat-icon-button [matTooltip]="'SUBJECTS.FORM.ADD_CHILD' | translate"
+                        (click)="$event.stopPropagation(); openSubjectDialog('create', undefined, node.code)">
+                  <mat-icon>add</mat-icon>
+                </button>
+              }
+              <button mat-icon-button [matTooltip]="'APP.EDIT' | translate"
+                      (click)="$event.stopPropagation(); openSubjectDialog('edit', node.code)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" [matTooltip]="'APP.DELETE' | translate"
+                      (click)="$event.stopPropagation(); onDeleteSubject(node.code)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </span>
+          </ng-container>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      @for (child of node.children; track child.code) {
+        <ng-container *ngTemplateOutlet="treeNode; context: { $implicit: child, depth: depth + 1 }">
+        </ng-container>
+      }
+    </mat-expansion-panel>
+  } @else {
+    <div class="leaf-node" [style.padding-inline-start.px]="16 + depth * 16"
+         (click)="onSelectSubject(node)">
+      <span class="code-badge">{{ node.code }}</span>
+      <span class="node-desc">{{ node.description }}</span>
+      <ng-container *appRequiresLevel="'A'">
+        <span class="node-actions">
+          @if (node.level !== '3') {
+            <button mat-icon-button [matTooltip]="'SUBJECTS.FORM.ADD_CHILD' | translate"
+                    (click)="$event.stopPropagation(); openSubjectDialog('create', undefined, node.code)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+          <button mat-icon-button [matTooltip]="'APP.EDIT' | translate"
+                  (click)="$event.stopPropagation(); openSubjectDialog('edit', node.code)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" [matTooltip]="'APP.DELETE' | translate"
+                  (click)="$event.stopPropagation(); onDeleteSubject(node.code)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </span>
+      </ng-container>
+    </div>
+  }
+</ng-template>
