@@ -35,11 +35,12 @@ services:
       context: ./Backend-repo
       dockerfile: docker/Dockerfile
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/macnz_manar
       - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_FLYWAY_ENABLED=true
     depends_on:
       db:
         condition: service_healthy

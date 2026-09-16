@@ -1,9 +1,91 @@
 .usage-request-list { .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; h1 { margin: 0; } } }
 .filter-card { margin-bottom: 16px; }
-.filter-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; mat-form-field { flex: 1; min-width: 200px; } .filter-actions { display: flex; gap: 8px; padding-top: 4px; } }
+
+// Legacy f_result.frm: search fields occupy the right side of the screen (in DOM
+// first, so RTL flex places it on the right), a vertical button rail sits on the left.
+.section1-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap-reverse;
+}
+
+.search-fields {
+  flex: 1 1 480px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// One legacy Top-coordinate group per row: either two fields side by side
+// (dates, permit/cote, digitNo/type) or a single wide field (title, person,
+// type1, resultNo) — never a flat grid of all 10.
+.filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  mat-form-field { flex: 1; min-width: 160px; }
+  mat-form-field.wide { flex: 1 1 100%; }
+}
+
+.button-rail {
+  flex: 0 0 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  button { width: 100%; justify-content: center; }
+
+  // Soft, light action-button look — clearly distinct from the input fields
+  // above, without competing with them (subtle neutral/blue-gray, not a
+  // strong/dark Material primary fill).
+  ::ng-deep .s1-btn {
+    background-color: #eef2f7 !important;
+    border: 1px solid #c7d2de !important;
+    border-radius: 8px !important;
+    padding: 0 18px !important;
+    color: #33475b !important;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background-color: #dfe7f0 !important;
+      border-color: #b3c2d1 !important;
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+}
+
+// "معالجة طلبات معينة" — legacy Frame2, an in-page panel (not a route/modal).
+.manage-panel {
+  margin-bottom: 16px;
+  .manage-panel-title { text-align: center; font-weight: 700; margin: 0 0 16px; }
+  .filter-row { margin-bottom: 12px; }
+}
+.manage-panel-actions {
+  justify-content: flex-start;
+  ::ng-deep .s1-btn {
+    background-color: #eef2f7 !important;
+    border: 1px solid #c7d2de !important;
+    border-radius: 8px !important;
+    padding: 0 18px !important;
+    color: #33475b !important;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+    &:hover:not(:disabled) { background-color: #dfe7f0 !important; border-color: #b3c2d1 !important; }
+  }
+}
+
 .full-width { width: 100%; }
 .no-data { text-align: center; padding: 32px; color: #999; }
-.table-scroll { overflow-x: auto; }
+// Legacy DataGrid1 had a fixed viewport (Height=3975 twips) with its own
+// scrollbar — bound height here too, scrolling both axes as needed.
+.table-scroll { overflow-x: auto; overflow-y: auto; max-height: 480px; }
 
 .status-badge {
   display: inline-block;

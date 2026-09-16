@@ -110,24 +110,28 @@ public final class DigitizationSpecification {
         };
     }
 
+    /** legacy: "RES_DIG_NO like '%'+m_dig_dig_no.Text+'%'" / "dig_dig_no like ..." — substring, not exact. */
     public static Specification<ResultEntity> resultHasDigitNo(String digitNo) {
         return (root, query, cb) ->
-                digitNo == null ? null : cb.equal(root.get("digitNo"), digitNo);
+                digitNo == null ? null : cb.like(cb.lower(root.get("digitNo")), "%" + digitNo.toLowerCase() + "%");
     }
 
+    /** legacy: "RES_typ like '%'+M_DIG_TYP.Text+'%'" — substring, not exact. */
     public static Specification<ResultEntity> resultHasType(String type) {
         return (root, query, cb) ->
-                type == null ? null : cb.equal(root.get("type"), type);
+                type == null ? null : cb.like(cb.lower(root.get("type")), "%" + type.toLowerCase() + "%");
     }
 
+    /** legacy: "RES_Typ1 = Mid(m_dig_typ1.BoundText,3,2)" — exact match against a DataCombo-picked code. */
     public static Specification<ResultEntity> resultHasType1(String type1) {
         return (root, query, cb) ->
                 type1 == null ? null : cb.equal(root.get("type1"), type1);
     }
 
+    /** legacy: "res_no like '%'+m_res_no.Text+'%'" — substring, not exact. */
     public static Specification<ResultEntity> resultHasResultNo(String resultNo) {
         return (root, query, cb) ->
-                resultNo == null ? null : cb.equal(root.get("resultNo"), resultNo);
+                resultNo == null ? null : cb.like(cb.lower(root.get("resultNo")), "%" + resultNo.toLowerCase() + "%");
     }
 
     public static Specification<ResultEntity> resultPersonContains(String person) {

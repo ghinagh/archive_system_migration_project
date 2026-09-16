@@ -11,6 +11,7 @@ import com.startupstack.app.modules.digitization.dto.DemandTestResult;
 import com.startupstack.app.modules.digitization.dto.DigitRequest;
 import com.startupstack.app.modules.digitization.dto.LogUsageRequestBatch;
 import com.startupstack.app.modules.digitization.dto.LogUsageRequestItem;
+import com.startupstack.app.modules.digitization.dto.ManageResultRequest;
 import com.startupstack.app.modules.digitization.dto.DigitResponse;
 import com.startupstack.app.modules.digitization.dto.ResultRequest;
 import com.startupstack.app.modules.digitization.dto.ResultResponse;
@@ -609,5 +610,43 @@ public class DigitizationService {
             throw new ResourceNotFoundException("Result not found: " + id);
         }
         resultRepository.deleteById(id);
+    }
+
+    /**
+     * "معالجة طلبات معينة" Frame2 تعديل (Command9) — legacy upd_result1 keys on res_no, not
+     * the unique id, and updates every row sharing that request number (a multi-serial
+     * request has several rows). No validation beyond "رقم الطلب not empty", exactly as
+     * legacy only guards with "If Not v_res_no.Text = """.
+     */
+    @Transactional
+    public List<ResultResponse> updateResultByResultNo(String resultNo, ManageResultRequest request) {
+        List<ResultEntity> rows = resultRepository.findByResultNo(resultNo);
+        if (rows.isEmpty()) {
+            throw new ResourceNotFoundException("Result not found: " + resultNo);
+        }
+        for (ResultEntity entity : rows) {
+            entity.setPerson(request.getPerson());
+            entity.setCote(request.getCote());
+            entity.setPermit(request.getPermit());
+            entity.setSubject(request.getSubject());
+        }
+        return resultRepository.saveAll(rows).stream().map(resultMapper::toResponse).toList();
+    }
+
+    /**
+     * "معالجة طلبات معينة" Frame2 الغاء الطلب (Command6) — legacy del_result keys on res_no
+     * and deletes every row sharing it. Legacy gated this to a single hardcoded user code
+     * ("244"); modern equivalent is a real admin-role check (same pattern as deleteResult()).
+     */
+    @Transactional
+    public void deleteResultByResultNo(String resultNo) {
+        if (!SecurityUtils.isAdmin()) {
+            throw new BusinessException("Only an administrator can cancel a usage request");
+        }
+        List<ResultEntity> rows = resultRepository.findByResultNo(resultNo);
+        if (rows.isEmpty()) {
+            throw new ResourceNotFoundException("Result not found: " + resultNo);
+        }
+        resultRepository.deleteAll(rows);
     }
 }

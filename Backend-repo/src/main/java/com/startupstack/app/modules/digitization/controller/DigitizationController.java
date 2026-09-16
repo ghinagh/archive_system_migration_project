@@ -15,6 +15,7 @@ import com.startupstack.app.modules.digitization.dto.DeliveryJobStatus;
 import com.startupstack.app.modules.digitization.dto.DigitRequest;
 import com.startupstack.app.modules.digitization.dto.DigitResponse;
 import com.startupstack.app.modules.digitization.dto.LogUsageRequestBatch;
+import com.startupstack.app.modules.digitization.dto.ManageResultRequest;
 import com.startupstack.app.modules.digitization.dto.ResultRequest;
 import com.startupstack.app.modules.digitization.dto.ResultResponse;
 import com.startupstack.app.modules.digitization.service.DigitizationService;
@@ -25,6 +26,8 @@ import com.startupstack.app.shared.response.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -242,7 +245,9 @@ public class DigitizationController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo,
-            Pageable pageable) {
+            // legacy: "... order by RES_dte" (tmp_dmd_result, f_result.frm Command1_Click) — no
+            // explicit direction in the legacy SQL means ascending.
+            @PageableDefault(sort = "date", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(digitizationService.findAllResults(
                 digitNo, type, type1, resultNo, person, cote, permit, subject, title, dateFrom, dateTo, pageable)));
     }
@@ -280,6 +285,25 @@ public class DigitizationController {
     @DeleteMapping("/results/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteResult(@PathVariable Integer id) {
         digitizationService.deleteResult(id);
+        return ResponseEntity.ok(ApiResponse.error("Result deleted successfully"));
+    }
+
+    /** "معالجة طلبات معينة" Frame2 تعديل (Command9) — legacy upd_result1 keys on رقم الطلب
+     *  (res_no), not a single row's id; updates every row sharing that request number. */
+    @Permission(PermissionConstants.PERM_UPDATE)
+    @PutMapping("/results/by-number/{resultNo}")
+    public ResponseEntity<ApiResponse<List<ResultResponse>>> updateResultByResultNo(
+            @PathVariable String resultNo,
+            @RequestBody ManageResultRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(digitizationService.updateResultByResultNo(resultNo, request)));
+    }
+
+    /** "معالجة طلبات معينة" Frame2 الغاء الطلب (Command6) — legacy del_result keys on رقم
+     *  الطلب (res_no); deletes every row sharing it. */
+    @Permission(PermissionConstants.PERM_DELETE)
+    @DeleteMapping("/results/by-number/{resultNo}")
+    public ResponseEntity<ApiResponse<Void>> deleteResultByResultNo(@PathVariable String resultNo) {
+        digitizationService.deleteResultByResultNo(resultNo);
         return ResponseEntity.ok(ApiResponse.error("Result deleted successfully"));
     }
 }

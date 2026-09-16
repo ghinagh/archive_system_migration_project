@@ -173,4 +173,17 @@ export class DigitizationService {
   deleteResult(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.api}/api/digitization/results/${id}`);
   }
+
+  /** "معالجة طلبات معينة" Frame2 تعديل (Command9) — legacy upd_result1 keys on رقم الطلب,
+   *  updating every row sharing that request number at once. */
+  updateResultByResultNo(resultNo: string, req: { person: string; cote: string; permit: string; subject: string }):
+      Observable<ApiResponse<DigitResult[]>> {
+    return this.http.put<ApiResponse<DigitResult[]>>(`${this.api}/api/digitization/results/by-number/${resultNo}`, req);
+  }
+
+  /** "معالجة طلبات معينة" Frame2 الغاء الطلب (Command6) — legacy del_result keys on رقم
+   *  الطلب, deleting every row sharing it. */
+  deleteResultByResultNo(resultNo: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.api}/api/digitization/results/by-number/${resultNo}`);
+  }
 }
