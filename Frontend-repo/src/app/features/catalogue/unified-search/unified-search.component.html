@@ -1,150 +1,216 @@
-<div class="unified-search-page" [formGroup]="filters">
+<div class="unified-search-page">
 
   <div class="header">
     <h1>{{ 'SEARCH_SCREEN.TITLE' | translate }}</h1>
   </div>
 
+  <!-- ==================================================================
+       SECTION 1 — rebuilt from user_inetrface.frm's verified 22-control
+       inventory. Four physical zones, matching the verified Left-coordinate
+       clusters exactly (button rail Left=240 / wide-text column Left=1680+
+       label Left=6720 / radio Left=8880 + middle column Left=8400 / right
+       column Left=11040-18240), each stacked top-to-bottom in verified order.
+       ================================================================== -->
   <mat-card class="filter-card">
     <mat-card-content>
+      <div class="s1-grid" [formGroup]="form">
 
-      <div class="filter-row">
-        <mat-radio-group class="search-mode" [value]="searchMode()" (change)="searchMode.set($event.value)">
-          <mat-radio-button value="STARTS_WITH">{{ 'SEARCH_SCREEN.MODE_STARTS_WITH' | translate }}</mat-radio-button>
-          <mat-radio-button value="CONTAINS">{{ 'SEARCH_SCREEN.MODE_CONTAINS' | translate }}</mat-radio-button>
-        </mat-radio-group>
-      </div>
+        <!-- Zone A — button rail (Left=240), exact legacy top-to-bottom order -->
+        <div class="zone zone-buttons">
+          <button mat-flat-button type="button" class="s1-btn" (click)="openReports()">{{ 'SEARCH_SCREEN.PRINT_FILE' | translate }}</button>
+          <button mat-flat-button type="button" class="s1-btn" (click)="clearFilter()">{{ 'SEARCH_SCREEN.NEW_SEARCH' | translate }}</button>
+          <button mat-flat-button type="button" class="s1-btn" (click)="countArticles()">{{ 'SEARCH_SCREEN.COUNT_ARTICLES' | translate }}</button>
+          <button mat-flat-button type="button" class="s1-btn" (click)="search()">{{ 'SEARCH_SCREEN.RUN_SEARCH' | translate }}</button>
+          <button mat-flat-button type="button" class="s1-btn" (click)="onExit()">{{ 'SEARCH_SCREEN.EXIT' | translate }}</button>
+        </div>
 
-      <div class="filter-row">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.WORD' | translate }}</mat-label>
-          <input matInput formControlName="word" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.FULL_TEXT' | translate }}</mat-label>
-          <input matInput formControlName="fullText" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.ABSTRACT_WORD' | translate }}</mat-label>
-          <input matInput formControlName="abstractWord" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.DESCRIPTOR_NO' | translate }}</mat-label>
-          <input matInput formControlName="descriptorNo" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.RELATED_NO' | translate }}</mat-label>
-          <input matInput formControlName="relatedDescriptorNo" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.NARROWER_NO' | translate }}</mat-label>
-          <mat-select formControlName="narrowerDescriptorNo">
-            <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
-            <mat-option *ngFor="let opt of narrowerDescriptorOptions()" [value]="opt.code">{{ opt.description }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.GENERAL_INDEX_NO' | translate }}</mat-label>
-          <input matInput formControlName="generalIndexNo" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.RELATED_FILE_NO' | translate }}</mat-label>
-          <input matInput formControlName="relatedFileNo" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.GEO_LOCATION' | translate }}</mat-label>
-          <input matInput formControlName="geoLocation" (keyup.enter)="search()">
-        </mat-form-field>
-      </div>
+        <!-- Zone B — wide text column (Left=1680, labels Left=6720): the 6 lookup-popup
+             fields (m_desc_no/m_rel_text/m_nar_text/m_file_no/m_geo_text/m_geo_chrt), then
+             the 2 bottom-left dropdowns (m_dig_typ1/m_mn_data_en) which sit just left of
+             them at Left=360, verified rows Top=3360/3840. -->
+        <div class="zone zone-wide">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.SUBJECT' | translate }}</mat-label>
+            <input matInput [formControl]="subjectDescriptorControl" [matAutocomplete]="subjectAuto">
+            <mat-autocomplete #subjectAuto="matAutocomplete" [displayWith]="displayMacnz" (optionSelected)="lockControl(subjectDescriptorControl)">
+              @for (opt of subjectDescriptorOptions(); track opt.code) { <mat-option [value]="opt">{{ opt.description }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
 
-      <div class="filter-row">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.DOC_DATE_FROM' | translate }}</mat-label>
-          <input matInput type="date" formControlName="dateFrom">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.DOC_DATE_TO' | translate }}</mat-label>
-          <input matInput type="date" formControlName="dateTo">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.ENTRY_DATE_FROM' | translate }}</mat-label>
-          <input matInput type="date" formControlName="entryDateFrom">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.ENTRY_DATE_TO' | translate }}</mat-label>
-          <input matInput type="date" formControlName="entryDateTo">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.LANGUAGE' | translate }}</mat-label>
-          <input matInput formControlName="language" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.ARTICLE_TYPE' | translate }}</mat-label>
-          <mat-select formControlName="articleType">
-            <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
-            <mat-option *ngFor="let opt of articleTypeOptions()" [value]="opt.code">{{ opt.description }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.RELATED' | translate }}</mat-label>
+            <input matInput [formControl]="relatedDescriptorControl" [matAutocomplete]="relatedAuto">
+            <mat-autocomplete #relatedAuto="matAutocomplete" [displayWith]="displayMacnz" (optionSelected)="lockControl(relatedDescriptorControl)">
+              @for (opt of relatedDescriptorOptions(); track opt.code) { <mat-option [value]="opt">{{ opt.description }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
 
-      <div class="filter-row">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.PERIODICAL_NO' | translate }}</mat-label>
-          <input matInput type="number" formControlName="periodicalNo" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.RESPONSIBLE_PERSON_NO' | translate }}</mat-label>
-          <input matInput formControlName="responsiblePersonNo" [matAutocomplete]="responsiblePersonAuto" (keyup.enter)="search()" placeholder="Search or enter person ID">
-          <mat-autocomplete #responsiblePersonAuto="matAutocomplete" [displayWith]="displayResponsiblePerson.bind(this)">
-            <mat-option *ngFor="let person of (filteredResponsiblePersons$ | async)" [value]="person.id">
-              {{ person.name }}
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.PAGE_NO' | translate }}</mat-label>
-          <input matInput formControlName="pageNo" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.DOCUMENT_TYPE' | translate }}</mat-label>
-          <input matInput formControlName="documentType" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.DIGIT_ASSET_NO' | translate }}</mat-label>
-          <input matInput formControlName="digitAssetNo" (keyup.enter)="search()">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.CHART_NO' | translate }}</mat-label>
-          <input matInput formControlName="chartNo" (keyup.enter)="search()">
-        </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.NARROWER' | translate }}</mat-label>
+            <input matInput [formControl]="narrowerDescriptorControl" [matAutocomplete]="narrowerAuto">
+            <mat-autocomplete #narrowerAuto="matAutocomplete" [displayWith]="displayMacnz" (optionSelected)="lockControl(narrowerDescriptorControl)">
+              @for (opt of narrowerDescriptorOptions(); track opt.code) { <mat-option [value]="opt">{{ opt.description }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.ADDITIONAL_FILE' | translate }}</mat-label>
+            <input matInput [formControl]="additionalFileControl" [matAutocomplete]="fileAuto">
+            <mat-autocomplete #fileAuto="matAutocomplete" [displayWith]="displayForm" (optionSelected)="lockControl(additionalFileControl)">
+              @for (opt of additionalFileOptions(); track opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.GEO_LOCATION' | translate }}</mat-label>
+            <input matInput [formControl]="geoLocationControl" [matAutocomplete]="geoAuto">
+            <mat-autocomplete #geoAuto="matAutocomplete" [displayWith]="displayForm" (optionSelected)="lockControl(geoLocationControl)">
+              @for (opt of geoLocationOptions(); track opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.PHOTO_PLACE' | translate }}</mat-label>
+            <input matInput [formControl]="photoPlaceControl" [matAutocomplete]="photoAuto">
+            <mat-autocomplete #photoAuto="matAutocomplete" [displayWith]="displayForm" (optionSelected)="lockControl(photoPlaceControl)">
+              @for (opt of photoPlaceOptions(); track opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <!-- Legacy Top=3360/3840 — these two stack vertically in the same column as the
+               6 fields above (NOT a side-by-side pair; that was this rebuild's own layout
+               bug, and squeezing them to half-width was also clipping their labels). -->
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.DOCUMENT_TYPE' | translate }}</mat-label>
+            <mat-select formControlName="documentType" (selectionChange)="commitField('documentType')">
+              <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+              @for (opt of documentTypeOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.DATA_ENTRY_OPERATOR' | translate }}</mat-label>
+            <mat-select formControlName="dataEntryOperator" (selectionChange)="commitField('dataEntryOperator')">
+              <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+              @for (opt of dataEntryOperatorOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Zone C — radio group (Left=8880) + middle text column (Left=8400) -->
+        <div class="zone zone-middle">
+          <mat-radio-group class="search-mode" [value]="searchMode()" (change)="searchMode.set($event.value)">
+            <mat-radio-button value="STARTS_WITH">{{ 'SEARCH_SCREEN.MODE_STARTS_WITH' | translate }}</mat-radio-button>
+            <mat-radio-button value="CONTAINS">{{ 'SEARCH_SCREEN.MODE_CONTAINS' | translate }}</mat-radio-button>
+          </mat-radio-group>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.ABSTRACT_WORD' | translate }}</mat-label>
+            <input matInput formControlName="abstractWord" (keyup.enter)="commitField('abstractWord')">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.FULL_TEXT' | translate }}</mat-label>
+            <input matInput formControlName="fullText" (keyup.enter)="commitField('fullText')">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.PAGE_NO' | translate }}</mat-label>
+            <input matInput formControlName="pageNo" (keyup.enter)="commitField('pageNo')">
+          </mat-form-field>
+        </div>
+
+        <!-- Zone D — right column (Left=11040-18240), verified Top order -->
+        <div class="zone zone-right">
+          <div class="date-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'SEARCH_SCREEN.DATE_FROM' | translate }}</mat-label>
+              <input matInput type="date" formControlName="dateFrom" (keyup.enter)="commitField('dateFrom')">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'SEARCH_SCREEN.DATE_TO' | translate }}</mat-label>
+              <input matInput type="date" formControlName="dateTo" (keyup.enter)="commitField('dateTo')">
+            </mat-form-field>
+          </div>
+
+          <div class="date-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'SEARCH_SCREEN.ENTRY_DATE_FROM' | translate }}</mat-label>
+              <input matInput type="date" formControlName="entryDateFrom" (keyup.enter)="commitField('entryDateFrom')">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'SEARCH_SCREEN.ENTRY_DATE_TO' | translate }}</mat-label>
+              <input matInput type="date" formControlName="entryDateTo" (keyup.enter)="commitField('entryDateTo')">
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.TITLE_WORD' | translate }}</mat-label>
+            <input matInput formControlName="titleWord" (keyup.enter)="commitField('titleWord')">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.LANGUAGE' | translate }}</mat-label>
+            <mat-select formControlName="language" (selectionChange)="commitField('language')">
+              <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+              @for (opt of languageOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.ARTICLE_TYPE' | translate }}</mat-label>
+            <mat-select formControlName="articleType" (selectionChange)="commitField('articleType')">
+              <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
+              @for (opt of articleTypeOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.PERIODICAL' | translate }}</mat-label>
+            <input matInput [formControl]="periodicalControl" [matAutocomplete]="periodicalAuto">
+            <mat-autocomplete #periodicalAuto="matAutocomplete" [displayWith]="displayPeriodical" (optionSelected)="lockControl(periodicalControl)">
+              @for (opt of periodicalOptions(); track opt.perNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.RESPONSIBLE_PERSON' | translate }}</mat-label>
+            <input matInput [formControl]="responsiblePersonControl" [matAutocomplete]="personAuto">
+            <mat-autocomplete #personAuto="matAutocomplete" [displayWith]="displayAuthor" (optionSelected)="lockControl(responsiblePersonControl)">
+              @for (opt of responsiblePersonOptions(); track opt.id) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.DIGIT_ASSET_NO' | translate }}</mat-label>
+            <input matInput formControlName="digitAssetNo" (keyup.enter)="commitField('digitAssetNo')">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'SEARCH_SCREEN.OLD_ARCHIVE_NO' | translate }}</mat-label>
+            <input matInput formControlName="oldArchiveNo" (keyup.enter)="commitField('oldArchiveNo')">
+          </mat-form-field>
+        </div>
       </div>
 
       <div class="filter-actions">
         @if (hasSearched() && !isLoading()) {
           <span class="result-count">{{ 'SEARCH_SCREEN.RESULT_COUNT' | translate: { count: totalElements() } }}</span>
         }
-        <button mat-stroked-button [disabled]="results().length === 0" (click)="exportCsv()">{{ 'SEARCH_SCREEN.PRINT_FILE' | translate }}</button>
-        <button mat-stroked-button (click)="clearFilters()">{{ 'SEARCH_SCREEN.NEW_SEARCH' | translate }}</button>
-        <button mat-raised-button color="primary" (click)="search()">{{ 'SEARCH_SCREEN.RUN_SEARCH' | translate }}</button>
       </div>
     </mat-card-content>
   </mat-card>
 
-  @if (previewUrl()) {
-    <mat-card class="preview-card">
-      <div class="preview-header">
-        <span>{{ previewTitle() }}</span>
-        <button mat-icon-button (click)="closePreview()"><mat-icon>close</mat-icon></button>
-      </div>
-      <app-video-preview [videoUrl]="previewUrl()!" [title]="previewTitle()"></app-video-preview>
-    </mat-card>
-  }
-
-  @if (hasSelection()) {
-    <div class="bulk-bar">
-      <span>{{ 'SEARCH_SCREEN.SELECTED_COUNT' | translate: { count: selected().size } }}</span>
-      <button mat-stroked-button color="accent" (click)="openLogRequestForSelected()">{{ 'SEARCH_SCREEN.LOG_REQUEST_SELECTED' | translate }}</button>
-    </div>
-  }
+  <!-- ==================================================================
+       SECTION 2 — "جدول استرجاع المعلومات" (DataGrid1, :1163-1503). REBUILT from
+       scratch: exactly the 9 visible legacy columns in legacy order, no invented
+       select/actions columns. Behavior traced from DataGrid1_KeyDown/KeyUp and
+       datagrid1_DblClick:
+         - Click a row  → focuses it (the web equivalent of DataGrid1.Row)
+         - F9           → toggles "الاختيار" (dig_choice) for the focused row
+         - F2           → opens the record, only when its app-no starts with "ق"
+         - F3           → logs a usage request for every "الاختيار"-flagged row
+         - Double-click → opens the row's digitized asset (scan/wave/photo/private)
+       ================================================================== -->
 
   @if (logRequestRows().length > 0) {
     <mat-card class="log-request-card" [formGroup]="logRequestForm">
@@ -169,7 +235,7 @@
           <input matInput formControlName="permit">
         </mat-form-field>
         <mat-form-field appearance="outline" class="span-2">
-          <mat-label>{{ 'SEARCH_SCREEN.SUBJECT' | translate }}</mat-label>
+          <mat-label>{{ 'SEARCH_SCREEN.SUBJECT_FIELD' | translate }}</mat-label>
           <input matInput formControlName="subject">
         </mat-form-field>
         <div class="log-request-actions">
@@ -180,18 +246,23 @@
     </mat-card>
   }
 
+  <!-- Legacy DataGrid1 is part of the static form layout (no Visible=0 on it, unlike Frame2)
+       — it is on screen from the moment the screen loads, empty until a search runs. Caption,
+       hint and the 9 column headers must therefore render unconditionally; only the row data
+       depends on results(), and only the spinner depends on isLoading(). -->
+  <div class="grid-caption">{{ 'SEARCH_SCREEN.GRID_CAPTION' | translate }}</div>
+
+  <!-- Legacy DataGrid1 ToolTipText (:1168), preserved verbatim. -->
+  <div class="grid-hint">{{ 'SEARCH_SCREEN.GRID_HINT' | translate }}</div>
+
   @if (isLoading()) {
     <app-loading-spinner></app-loading-spinner>
-  } @else if (hasSearched()) {
-    <div class="table-scroll">
+  } @else {
+    <div class="table-scroll" tabindex="0" (keydown)="onGridKeydown($event)">
       <table mat-table [dataSource]="results()">
-        <ng-container matColumnDef="select">
-          <th mat-header-cell *matHeaderCellDef>
-            <mat-checkbox [checked]="hasSelection() && selected().size === results().length" (change)="toggleSelectAll()"></mat-checkbox>
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <mat-checkbox [checked]="isSelected(row.appNo)" (click)="$event.stopPropagation()" (change)="toggleSelected(row.appNo)"></mat-checkbox>
-          </td>
+        <ng-container matColumnDef="responsiblePersonName">
+          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.AUTHOR' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.responsiblePersonName }}</td>
         </ng-container>
         <ng-container matColumnDef="appNo">
           <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.APP_NO' | translate }}</th>
@@ -213,43 +284,27 @@
           <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.DOC_DATE' | translate }}</th>
           <td mat-cell *matCellDef="let row">{{ row.articleDate | date:'yyyy-MM-dd' }}</td>
         </ng-container>
-        <ng-container matColumnDef="pageNo">
-          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.PAGE_NO' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.pageNo }}</td>
-        </ng-container>
         <ng-container matColumnDef="periodicalName">
           <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.PERIODICAL' | translate }}</th>
           <td mat-cell *matCellDef="let row">{{ row.periodicalName }}</td>
         </ng-container>
-        <ng-container matColumnDef="responsiblePersonName">
-          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.RESPONSIBLE_PERSON' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.responsiblePersonName }}</td>
-        </ng-container>
-        <ng-container matColumnDef="language">
-          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.LANGUAGE' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.language }}</td>
-        </ng-container>
         <ng-container matColumnDef="digitNo">
-          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.DIGIT_ASSET_NO' | translate }}</th>
+          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.GRID_DIGIT_NO' | translate }}</th>
           <td mat-cell *matCellDef="let row">{{ row.digitNo }}</td>
         </ng-container>
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>{{ 'APP.ACTIONS' | translate }}</th>
+        <ng-container matColumnDef="choice">
+          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.CHOICE' | translate }}</th>
           <td mat-cell *matCellDef="let row">
-            <button mat-icon-button color="primary" (click)="openRecord(row)" [matTooltip]="'SEARCH_SCREEN.OPEN_RECORD' | translate">
-              <mat-icon>open_in_new</mat-icon>
-            </button>
-            <button mat-icon-button [disabled]="!row.machineStock" (click)="preview(row)" [matTooltip]="'SEARCH_SCREEN.PREVIEW' | translate">
-              <mat-icon>play_circle</mat-icon>
-            </button>
-            <button mat-icon-button color="accent" (click)="openLogRequest(row)" [matTooltip]="'SEARCH_SCREEN.LOG_REQUEST' | translate">
-              <mat-icon>assignment_turned_in</mat-icon>
-            </button>
+            <mat-checkbox [checked]="row.choice === 1" [disabled]="!row.digitNo || !row.documentType1"
+              (click)="$event.stopPropagation()" (change)="toggleChoice(row)"></mat-checkbox>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (dblclick)="openRecord(row)"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+          [class.focused-row]="isFocused(row)"
+          (click)="focusRow(row)"
+          (dblclick)="openAssetOnDblClick(row)"></tr>
       </table>
 
       @if (results().length === 0) {
@@ -257,8 +312,10 @@
       }
     </div>
 
-    <mat-paginator [length]="totalElements()" [pageSize]="pageSize()" [pageIndex]="pageIndex()"
-      [pageSizeOptions]="[10, 25, 50]" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+    @if (hasSearched()) {
+      <mat-paginator [length]="totalElements()" [pageSize]="pageSize()" [pageIndex]="pageIndex()"
+        [pageSizeOptions]="[10, 25, 50]" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+    }
   }
 
 </div>

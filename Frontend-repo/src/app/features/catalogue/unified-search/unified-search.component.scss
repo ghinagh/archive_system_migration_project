@@ -9,17 +9,76 @@
   margin: 0 0 8px;
 }
 
-.filter-card .filter-row {
+// Section 1 — 4 physical zones matching the verified Left-coordinate clusters
+// from user_inetrface.frm (button rail Left=240 / wide-text column Left=1680 /
+// radio+middle column Left=8400-8880 / right column Left=11040-18240). Explicit
+// LTR column order reproduces legacy's physical left-to-right placement; Arabic
+// text within each field still renders RTL via the page's own direction.
+.s1-grid {
+  display: grid;
+  grid-template-columns: 150px 1fr 1fr 1.4fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.zone {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.zone-buttons {
+  button.s1-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.date-row {
+  display: flex;
+  gap: 8px;
   flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 4px;
+
+  // min-width keeps the outline label ("من تاريخ الادخال" etc.) from being clipped
+  // when the column narrows, instead of shrinking the field to fit.
+  mat-form-field { flex: 1 1 150px; min-width: 150px; }
+}
+
+@media (max-width: 1100px) {
+  .s1-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .zone-buttons {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    button.s1-btn { width: auto; flex: 1 1 140px; }
+  }
 }
 
 .search-mode {
   display: flex;
   gap: 16px;
+  padding: 4px 0;
+}
+
+::ng-deep .s1-btn {
+  background-color: #eef2f7 !important;
+  border: 1px solid #c7d2de !important;
+  border-radius: 8px !important;
+  color: #33475b !important;
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    background-color: #dfe7f0 !important;
+    border-color: #b3c2d1 !important;
+  }
 }
 
 .filter-actions {
@@ -36,13 +95,22 @@
   }
 }
 
-.bulk-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--mat-sys-primary-container, #e3f2fd);
-  border-radius: 8px;
-  padding: 8px 16px;
+// Section 2 — legacy DataGrid1 caption + ToolTipText (:1168, 1199), preserved verbatim.
+.grid-caption {
+  font-weight: 700;
+  text-align: center;
+  padding: 6px 0;
+}
+
+.grid-hint {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  background: #fdf6e3;
+  border: 1px solid #e8dcb0;
+  border-radius: 4px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+  display: inline-block;
 }
 
 .preview-card {
@@ -93,9 +161,16 @@
   background: var(--mat-sys-surface-container-low, #fff);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 8px;
+  outline: none;
 
   table {
     width: 100%;
+  }
+
+  // Web stand-in for DataGrid1.Row (the legacy grid cursor) — set by clicking a
+  // row, read by the F2/F9 keyboard handlers.
+  tr.focused-row {
+    background: var(--mat-sys-secondary-container, #e8f0fe);
   }
 }
 
