@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -86,7 +87,7 @@ public class PeriodicalEntity {
     private String geo1;
 
     @Column(name = "PER_TAH1")
-    private String editor1;
+    private String editingManager;
 
     @Column(name = "PER_FAX")
     private String fax;
@@ -94,8 +95,11 @@ public class PeriodicalEntity {
     @Column(name = "PER_CREAT")
     private String creator;
 
+    // Legacy stores date-only ("Format(m_per_dte.Text, "DD/MM/YY")"), never a time
+    // component — LocalDate matches both the semantics and what Angular's
+    // <input type="date"> actually sends ("YYYY-MM-DD", not a full ISO datetime).
     @Column(name = "PER_DTE")
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Column(name = "per_email")
     private String email;

@@ -105,4 +105,20 @@ export class AutocompleteService {
   getFormByCode(formNo: string): Observable<ApiResponse<FormOption>> {
     return this.http.get<ApiResponse<FormOption>>(`${environment.apiUrl}/api/forms/${formNo}`);
   }
+
+  /**
+   * Legacy PERIOD1.frm مكان الصدور 1/2 (PER_GEO1/PER_GEO) DBCombo lookup source:
+   * RecordSource "select * from pays_form order by sub_name", ListField=SUB_NAME,
+   * BoundColumn=SUB_NO — a distinct table from the generic "form" lookup above.
+   */
+  searchPaysForm(query: string): Observable<ApiResponse<PageResponse<FormOption>>> {
+    const params = new HttpParams().set('name', query).set('page', '0').set('size', '20');
+    return this.http.get<ApiResponse<PageResponse<FormOption>>>(
+      `${environment.apiUrl}/api/pays-form`, { params }
+    );
+  }
+
+  getPaysFormByCode(formNo: string): Observable<ApiResponse<FormOption>> {
+    return this.http.get<ApiResponse<FormOption>>(`${environment.apiUrl}/api/pays-form/${formNo}`);
+  }
 }

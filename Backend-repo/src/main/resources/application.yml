@@ -5,6 +5,11 @@ spring:
   application:
     name: startupstack
 
+  servlet:
+    multipart:
+      max-file-size: ${MEDIA_MAX_UPLOAD_SIZE:512MB}
+      max-request-size: ${MEDIA_MAX_UPLOAD_SIZE:512MB}
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -47,6 +52,7 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   media:
     base-path: ${MEDIA_BASE_PATH:/media}
+    picture-path: ${MEDIA_PICTURE_PATH:/media/pictures}
     extension: ${MEDIA_EXTENSION:}
     archive-path: ${MEDIA_ARCHIVE_PATH:/media/archive}
     volumes:

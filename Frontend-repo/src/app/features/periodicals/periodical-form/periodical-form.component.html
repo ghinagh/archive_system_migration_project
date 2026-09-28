@@ -1,7 +1,6 @@
 <div class="form-page">
   <div class="header">
-    <button mat-icon-button (click)="cancel()"><mat-icon>arrow_back</mat-icon></button>
-    <h1>{{ (isEdit() ? 'PERIODICALS.EDIT_TITLE' : 'PERIODICALS.ADD_NEW') | translate }}</h1>
+    <h1>{{ 'PERIODICALS.FORM_TITLE' | translate }}</h1>
   </div>
 
   @if (isLoading()) {
@@ -9,22 +8,174 @@
   } @else {
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-      <!-- Basic Info -->
+      <!-- Shape1: Header + Contact -->
       <mat-card class="form-section">
-        <mat-card-header><mat-card-title>{{ 'PERIODICALS.TAB_INFO' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-header><mat-card-title>{{ 'PERIODICALS.SECTION_HEADER' | translate }}</mat-card-title></mat-card-header>
         <mat-card-content>
           <div class="form-row">
             <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PER_NO' | translate }}</mat-label>
+              <input matInput [value]="perNoParam()" readonly>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
               <mat-label>{{ 'PERIODICALS.NAME' | translate }}</mat-label>
               <input matInput formControlName="name" dir="rtl">
             </mat-form-field>
+          </div>
+          <div class="form-row">
             <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.PUB_LOCATION' | translate }}</mat-label>
-              <input matInput formControlName="publishLocation" type="number">
+              <mat-label>{{ 'PERIODICALS.GEO1' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.geo1" [matAutocomplete]="geo1Auto" #geo1Trigger="matAutocompleteTrigger" #geo1Input dir="rtl">
+              <button mat-icon-button matSuffix type="button" (click)="geo1Input.focus(); browsePaysForm('geo1', geo1Trigger)">
+                <mat-icon>arrow_drop_down</mat-icon>
+              </button>
+              <mat-autocomplete #geo1Auto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('geo1', $event)">
+                @for (opt of formLookupOptions.geo1(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
             </mat-form-field>
             <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.START_DATE' | translate }}</mat-label>
-              <input matInput formControlName="startDate" type="date">
+              <mat-label>{{ 'PERIODICALS.GEO' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.geo" [matAutocomplete]="geoAuto" #geoTrigger="matAutocompleteTrigger" #geoInput dir="rtl">
+              <button mat-icon-button matSuffix type="button" (click)="geoInput.focus(); browsePaysForm('geo', geoTrigger)">
+                <mat-icon>arrow_drop_down</mat-icon>
+              </button>
+              <mat-autocomplete #geoAuto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('geo', $event)">
+                @for (opt of formLookupOptions.geo(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PHONE' | translate }}</mat-label>
+              <input matInput formControlName="phone">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'PERIODICALS.ADDRESS' | translate }}</mat-label>
+              <input matInput formControlName="address">
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.WEBSITE' | translate }}</mat-label>
+              <input matInput formControlName="website">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.EMAIL' | translate }}</mat-label>
+              <input matInput formControlName="email" type="email">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Shape2: People / roles -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>{{ 'PERIODICALS.SECTION_PEOPLE' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.DIRCT' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.director" [matAutocomplete]="directorAuto" dir="rtl">
+              <mat-autocomplete #directorAuto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('director', $event)">
+                @for (opt of formLookupOptions.director(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.MOASS' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.institution" [matAutocomplete]="institutionAuto" dir="rtl">
+              <mat-autocomplete #institutionAuto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('institution', $event)">
+                @for (opt of formLookupOptions.institution(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.TAHRIR' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.editor" [matAutocomplete]="editorAuto" dir="rtl">
+              <mat-autocomplete #editorAuto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('editor', $event)">
+                @for (opt of formLookupOptions.editor(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.TAH1' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.editingManager" [matAutocomplete]="editingManagerAuto" dir="rtl">
+              <mat-autocomplete #editingManagerAuto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('editingManager', $event)">
+                @for (opt of formLookupOptions.editingManager(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PRESD' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.president" [matAutocomplete]="presidentAuto" dir="rtl">
+              <mat-autocomplete #presidentAuto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('president', $event)">
+                @for (opt of formLookupOptions.president(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PUB' | translate }}</mat-label>
+              <input matInput [formControl]="formLookupCtrls.pub" [matAutocomplete]="pubAuto" dir="rtl">
+              <mat-autocomplete #pubAuto [displayWith]="displayFormOption" (optionSelected)="onFormLookupSelected('pub', $event)">
+                @for (opt of formLookupOptions.pub(); track opt.formNo) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Shape3: Classification / logistics -->
+      <mat-card class="form-section">
+        <mat-card-header><mat-card-title>{{ 'PERIODICALS.SECTION_CLASSIFICATION' | translate }}</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PUBLISHER' | translate }}</mat-label>
+              <input matInput [formControl]="publisherCtrl" [matAutocomplete]="publisherAuto" #publisherTrigger="matAutocompleteTrigger" #publisherInput dir="rtl">
+              <button mat-icon-button matSuffix type="button" (click)="publisherInput.focus(); browseAuthors(publisherTrigger)">
+                <mat-icon>arrow_drop_down</mat-icon>
+              </button>
+              <mat-autocomplete #publisherAuto [displayWith]="displayAuthor" (optionSelected)="onPublisherSelected($event)">
+                @for (opt of publisherOptions(); track opt.id) {
+                  <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.FREQUENCY' | translate }}</mat-label>
+              <mat-select formControlName="frequency">
+                @for (opt of frequencyOptions(); track opt.code) {
+                  <mat-option [value]="opt.code.slice(-2)">{{ opt.description }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.TYPE1' | translate }}</mat-label>
+              <mat-select formControlName="type1">
+                @for (opt of type1Options(); track opt.code) {
+                  <mat-option [value]="opt.code.slice(-2)">{{ opt.description }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'PERIODICALS.PRICE' | translate }}</mat-label>
+              <input matInput formControlName="price" type="number">
             </mat-form-field>
           </div>
           <div class="form-row">
@@ -38,117 +189,25 @@
               </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.TYPE' | translate }}</mat-label>
-              <input matInput formControlName="type" type="number">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.TYPE1' | translate }}</mat-label>
-              <input matInput formControlName="type1">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.FREQUENCY' | translate }}</mat-label>
-              <input matInput formControlName="frequency">
-            </mat-form-field>
-          </div>
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.GEO' | translate }}</mat-label>
-              <input matInput formControlName="geo">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.GEO1' | translate }}</mat-label>
-              <input matInput formControlName="geo1">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.REMARK' | translate }}</mat-label>
+              <mat-label>{{ 'PERIODICALS.RDMD' | translate }}</mat-label>
               <input matInput formControlName="rdmd">
-            </mat-form-field>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Contact -->
-      <mat-card class="form-section">
-        <mat-card-header><mat-card-title>Contact</mat-card-title></mat-card-header>
-        <mat-card-content>
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>{{ 'PERIODICALS.ADDRESS' | translate }}</mat-label>
-              <input matInput formControlName="address">
-            </mat-form-field>
-          </div>
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.PHONE' | translate }}</mat-label>
-              <input matInput formControlName="phone">
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>{{ 'PERIODICALS.FAX' | translate }}</mat-label>
               <input matInput formControlName="fax">
             </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.EMAIL' | translate }}</mat-label>
-              <input matInput formControlName="email" type="email">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.WEBSITE' | translate }}</mat-label>
-              <input matInput formControlName="website">
-            </mat-form-field>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <!-- Editorial -->
-      <mat-card class="form-section">
-        <mat-card-header><mat-card-title>Editorial</mat-card-title></mat-card-header>
-        <mat-card-content>
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.PUBLISHER' | translate }}</mat-label>
-              <input matInput formControlName="publisher" type="number">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.MOASS' | translate }}</mat-label>
-              <input matInput formControlName="institution">
-            </mat-form-field>
-          </div>
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.TAHRIR' | translate }}</mat-label>
-              <input matInput formControlName="editor">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.TAH1' | translate }}</mat-label>
-              <input matInput formControlName="tah1">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.DIRCT' | translate }}</mat-label>
-              <input matInput formControlName="director">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.PRESD' | translate }}</mat-label>
-              <input matInput formControlName="president">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.CREAT' | translate }}</mat-label>
-              <input matInput formControlName="creator">
-            </mat-form-field>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Financial / Misc -->
-      <mat-card class="form-section">
-        <mat-card-header><mat-card-title>Financial &amp; Classification</mat-card-title></mat-card-header>
+      <!-- Shape4: Subscription (pink-highlighted, matches legacy BackColor=&H00FFC0C0&) -->
+      <mat-card class="form-section subscription-section">
+        <mat-card-header><mat-card-title>{{ 'PERIODICALS.SECTION_SUBSCRIPTION' | translate }}</mat-card-title></mat-card-header>
         <mat-card-content>
           <div class="form-row">
             <mat-form-field appearance="outline">
               <mat-label>{{ 'PERIODICALS.AMOUNT' | translate }}</mat-label>
               <input matInput formControlName="amount" type="number">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.PRICE' | translate }}</mat-label>
-              <input matInput formControlName="price" type="number">
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>{{ 'PERIODICALS.PRICE1' | translate }}</mat-label>
@@ -162,21 +221,70 @@
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>{{ 'PERIODICALS.UTILS' | translate }}</mat-label>
-              <input matInput formControlName="utils">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>{{ 'PERIODICALS.PUB' | translate }}</mat-label>
-              <input matInput formControlName="pub">
+              <mat-select formControlName="utils">
+                <mat-option [value]="1">{{ 'APP.YES' | translate }}</mat-option>
+                <mat-option [value]="0">{{ 'APP.NO' | translate }}</mat-option>
+              </mat-select>
             </mat-form-field>
           </div>
         </mat-card-content>
       </mat-card>
 
+      <!-- Command10 (بحث): inline number-entry popup -->
+      @if (showSearchByNo()) {
+        <mat-card class="inline-search-popup">
+          <mat-card-content>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'PERIODICALS.ENTER_NO' | translate }}</mat-label>
+                <input matInput type="number" [formControl]="searchNoCtrl" (keydown.enter)="searchByNumber()">
+              </mat-form-field>
+              <button mat-raised-button color="primary" type="button" (click)="searchByNumber()">{{ 'PERIODICALS.GO' | translate }}</button>
+              <button mat-button type="button" (click)="toggleSearchByNo()">{{ 'APP.CLOSE' | translate }}</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- Command8 (البحث بالعنوان): inline title-entry popup + match picker -->
+      @if (showSearchByTitle()) {
+        <mat-card class="inline-search-popup">
+          <mat-card-content>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>{{ 'PERIODICALS.ENTER_TITLE' | translate }}</mat-label>
+                <input matInput [formControl]="searchTitleCtrl" dir="rtl" (keydown.enter)="searchByTitle()">
+              </mat-form-field>
+              <button mat-raised-button color="primary" type="button" (click)="searchByTitle()">{{ 'PERIODICALS.GO' | translate }}</button>
+              <button mat-button type="button" (click)="toggleSearchByTitle()">{{ 'APP.CLOSE' | translate }}</button>
+            </div>
+            @if (titleSearchAttempted()) {
+              @if (titleSearchResults().length === 0) {
+                <p>{{ 'PERIODICALS.NO_MATCHES' | translate }}</p>
+              } @else {
+                <mat-nav-list>
+                  @for (m of titleSearchResults(); track m.perNo) {
+                    <a mat-list-item (click)="selectTitleMatch(m)">{{ m.perNo }} — {{ m.name }}</a>
+                  }
+                </mat-nav-list>
+              }
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- All 8 legacy PERIOD1.frm buttons: اضافة / تسجيل / بحث / الغاء / سابق / لاحق / البحث بالعنوان / خروج -->
       <div class="form-actions">
-        <button mat-button type="button" (click)="cancel()">{{ 'APP.CANCEL' | translate }}</button>
-        <button mat-raised-button color="primary" type="submit" [disabled]="isSaving()">
-          {{ 'APP.SAVE' | translate }}
+        <button mat-raised-button type="button" (click)="addNew()">{{ 'PERIODICALS.ADD' | translate }}</button>
+        <button mat-raised-button type="submit">
+          {{ 'PERIODICALS.SAVE' | translate }}
         </button>
+        <button mat-raised-button type="button" (click)="toggleSearchByNo()">{{ 'PERIODICALS.SEARCH_BY_NO' | translate }}</button>
+        <button mat-raised-button type="button" (click)="onDelete()">{{ 'PERIODICALS.CANCEL' | translate }}</button>
+        <button mat-raised-button type="button" (click)="goToPrevious()">{{ 'PERIODICALS.PREVIOUS' | translate }}</button>
+        <button mat-raised-button type="button" (click)="goToNext()">{{ 'PERIODICALS.NEXT' | translate }}</button>
+        <button mat-raised-button type="button" (click)="toggleSearchByTitle()">{{ 'PERIODICALS.SEARCH_BY_TITLE' | translate }}</button>
+        <button mat-raised-button type="button" (click)="exit()">{{ 'PERIODICALS.EXIT' | translate }}</button>
       </div>
     </form>
   }

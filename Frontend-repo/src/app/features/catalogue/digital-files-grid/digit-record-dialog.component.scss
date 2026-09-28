@@ -19,6 +19,28 @@
   width: 100%;
 }
 
+.file-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  grid-template-columns: unset;
+  padding: 4px 0;
+}
+
+.selected-file-name {
+  font-size: 0.9em;
+}
+
+.file-hint {
+  font-size: 0.9em;
+  opacity: 0.6;
+}
+
+.file-error {
+  font-size: 0.85em;
+  color: var(--mat-sys-error, #b3261e);
+}
+
 // Color comes from the global .doc-form-dialog rule (styles.scss), applied via
 // panelClass on dialog.open() — this stylesheet only owns layout.
 h4 {

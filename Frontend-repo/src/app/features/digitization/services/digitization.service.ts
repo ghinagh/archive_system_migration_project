@@ -27,6 +27,28 @@ export class DigitizationService {
     return this.http.post<ApiResponse<DigitRecord>>(`${this.api}/api/digitization/records`, req);
   }
 
+  /**
+   * Legacy Form6.frm DataGrid1 Column04 space-bar → CommonDialog1.ShowOpen (:3568-3624).
+   * DIG_DIG_NO and the file extension are generated server-side; this only sends the
+   * classification fields and the file itself as multipart/form-data. Do not set a
+   * Content-Type header here — the browser must set its own multipart boundary.
+   */
+  uploadRecord(docNo: string, serial: number, type1: string, file: File, extra?: Partial<DigitRecordRequest>): Observable<ApiResponse<DigitRecord>> {
+    const form = new FormData();
+    form.set('docNo', docNo);
+    form.set('serial', String(serial));
+    form.set('type1', type1);
+    form.set('file', file, file.name);
+    if (extra) {
+      Object.entries(extra).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          form.set(key, String(value));
+        }
+      });
+    }
+    return this.http.post<ApiResponse<DigitRecord>>(`${this.api}/api/digitization/records/upload`, form);
+  }
+
   updateRecord(docNo: string, serial: number, req: DigitRecordRequest): Observable<ApiResponse<DigitRecord>> {
     const p = new HttpParams().set('docNo', docNo).set('serial', serial);
     return this.http.put<ApiResponse<DigitRecord>>(`${this.api}/api/digitization/records`, req, { params: p });

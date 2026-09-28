@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -48,6 +49,8 @@ public class PeriodicalRequest {
 
     private Double price;
 
+    private Double price1;
+
     private Double publisher;
 
     @Size(max = 10)
@@ -76,4 +79,16 @@ public class PeriodicalRequest {
 
     @Size(max = 60)
     private String website;
+
+    private Double utils;
+
+    @Size(max = 10)
+    private String geo1;
+
+    @Size(max = 10)
+    private String editingManager;
+
+    // PER_DTE is date-only in legacy (Format(...,"DD/MM/YY")) — LocalDate accepts the
+    // bare "YYYY-MM-DD" Angular's <input type="date"> sends; LocalDateTime rejected it.
+    private LocalDate date;
 }

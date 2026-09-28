@@ -41,6 +41,15 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/macnz_manar
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_FLYWAY_ENABLED=true
+      # application-dev.yml hardcodes Windows paths (C:/media/...) for local IDE runs outside
+      # Docker; these env vars win over that profile file (OS env vars outrank in-jar
+      # application-{profile}.yml in Spring's property precedence) so the container always
+      # resolves against the mounted media_data volume below, regardless of active profile.
+      - MEDIA_BASE_PATH=/media
+      - MEDIA_PICTURE_PATH=/media/pictures
+      - MEDIA_ARCHIVE_PATH=/media/archive
+    volumes:
+      - media_data:/media
     depends_on:
       db:
         condition: service_healthy
@@ -59,3 +68,4 @@ services:
 
 volumes:
   pgdata:
+  media_data:

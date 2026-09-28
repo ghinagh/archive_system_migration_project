@@ -6,6 +6,7 @@ import com.startupstack.app.shared.exception.BusinessException;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -188,6 +189,82 @@ public class MediaService {
 
     public Resource loadAssetAsResource(String digitNo, String type1, String extension) {
         return asReadableResource(Paths.get(resolveAssetPath(digitNo, type1, extension)));
+    }
+
+    /**
+     * Extracts a filesystem-safe extension from an uploaded filename, matching legacy's
+     * {@code datagrid1_KeyPress} (Form6.frm:3580-3585) — grabs the trailing extension and drops
+     * the dot — but derived correctly for any length rather than legacy's fixed 4-character
+     * offset, and validated so a hostile filename can never influence the destination path.
+     *
+     * @throws BusinessException if the filename has no extension, or the extension is not a
+     *     plain alphanumeric token that fits {@code DIGIT.DIG_TYP} ({@code char(4)})
+     */
+    public String extractExtension(String originalFilename) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            throw new BusinessException("Selected file has no name");
+        }
+        String name = Paths.get(originalFilename).getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        if (dot < 0 || dot == name.length() - 1) {
+            throw new BusinessException("Selected file has no extension");
+        }
+        String ext = name.substring(dot + 1);
+        if (!ext.matches("[A-Za-z0-9]{1,4}")) {
+            throw new BusinessException("Unsupported file extension: " + ext);
+        }
+        return ext.toLowerCase();
+    }
+
+    /**
+     * Writes an uploaded non-video asset to its legacy fan-out destination and returns the
+     * resolved path. Reproduces {@code datagrid1_KeyPress}'s {@code FileCopy}
+     * (Form6.frm:3611-3624): the destination is never trusted from the client — it is entirely
+     * derived from the server-generated {@code digitNo}, the validated {@code type1} class
+     * folder and the server-derived extension, then defensively re-checked to still sit inside
+     * {@code picturePath} before anything touches disk.
+     *
+     * @throws BusinessException if {@code type1} is not a non-video class, the resolved path
+     *     escapes the configured picture root, or a file already exists at the destination
+     *     (legacy's "هذا الملف مدخل سابقا" duplicate guard, Form6.frm:3613-3614)
+     */
+    public String writeAssetFile(MultipartFile file, String digitNo, String type1, String extension) {
+        if (!isNonVideoAssetClass(type1)) {
+            throw new BusinessException("Not a non-video asset class: " + type1);
+        }
+        String resolved = resolveAssetPath(digitNo, type1, extension);
+        Path target = Paths.get(resolved).normalize();
+        Path root = Paths.get(properties.getPicturePath()).normalize();
+        if (!target.startsWith(root)) {
+            throw new BusinessException("Resolved destination escapes the configured media root");
+        }
+        if (Files.exists(target)) {
+            throw new BusinessException("A file already exists for digit number " + digitNo);
+        }
+        try {
+            Files.createDirectories(target.getParent());
+            file.transferTo(target);
+            return target.toString();
+        } catch (IOException e) {
+            throw new BusinessException("Failed to store uploaded file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Best-effort cleanup of a partially-written asset when the database write that should
+     * follow it fails. A plain {@code @Transactional} only rolls back the database side — it
+     * cannot undo a filesystem write, so callers that write the file before persisting the row
+     * must call this explicitly on failure (see {@code DigitizationService.uploadDigitFile}).
+     */
+    public void deleteQuietly(String path) {
+        if (path == null) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(Paths.get(path));
+        } catch (IOException ignored) {
+            // best-effort — an orphaned file with no DB row is safe; the reverse is not
+        }
     }
 
     /** Returns the resource only when it is a real, readable file — otherwise {@code null}. */

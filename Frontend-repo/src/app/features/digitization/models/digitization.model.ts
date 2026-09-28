@@ -20,6 +20,10 @@ export interface DigitRecord {
   chartNo1: string;
   materialType: string;
   highType: string;
+  /** Resolved CODING domain '24' description for type1 ("شكل الوثيقة") — see DigitizationService.resolveDescriptions. */
+  type1Description?: string | null;
+  /** Resolved "form" table name for chartGeo ("مكان التصوير/النشر"). */
+  chartGeoName?: string | null;
 }
 
 export interface DigitRecordRequest {

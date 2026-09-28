@@ -32,6 +32,8 @@ public class ArticleResponse {
     private String lang;
     private LocalDateTime date1;
     private Double periodical1;
+    /** PERIOD.PER_PER_NA for {@code periodical1} — the "مصدر الترجمة" display text (art_per1 is only a number). */
+    private String periodical1Name;
     private Double choice;
     private String picture;
     private String lang1;

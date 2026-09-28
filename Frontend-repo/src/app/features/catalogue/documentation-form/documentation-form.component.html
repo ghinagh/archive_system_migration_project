@@ -79,7 +79,7 @@
               <mat-label>{{ 'DOC_FORM.DATA_ENTRY' | translate }}</mat-label>
               <mat-select formControlName="dataEntry" panelClass="doc-form-panel">
                 @if (dataEntryOptions().length === 0) {
-                  <mat-option disabled>جاري التحميل...</mat-option>
+                  <mat-option disabled>{{ 'APP.NO_DATA' | translate }}</mat-option>
                 } @else {
                   @for (opt of dataEntryOptions(); track opt.code) {
                     <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
@@ -91,7 +91,7 @@
               <mat-label>{{ 'DOC_FORM.DOCUMENTER' | translate }}</mat-label>
               <mat-select formControlName="appDoc" panelClass="doc-form-panel">
                 @if (appDocOptions().length === 0) {
-                  <mat-option disabled>جاري التحميل...</mat-option>
+                  <mat-option disabled>{{ 'APP.NO_DATA' | translate }}</mat-option>
                 } @else {
                   @for (opt of appDocOptions(); track opt.code) {
                     <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
@@ -112,6 +112,8 @@
               <mat-autocomplete #sourceAuto="matAutocomplete" class="doc-form-panel" autoActiveFirstOption [displayWith]="displayPeriodical" (optionSelected)="onSourceSelected($event)">
                 @for (opt of sourceOptions(); track opt.perNo) {
                   <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                } @empty {
+                  <mat-option disabled>{{ 'APP.NO_DATA' | translate }}</mat-option>
                 }
               </mat-autocomplete>
             </mat-form-field>
@@ -131,6 +133,8 @@
               <mat-autocomplete #translationAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayPeriodical" (optionSelected)="onTranslationSourceSelected($event)">
                 @for (opt of translationSourceOptions(); track opt.perNo) {
                   <mat-option [value]="opt">{{ opt.name }}</mat-option>
+                } @empty {
+                  <mat-option disabled>{{ 'APP.NO_DATA' | translate }}</mat-option>
                 }
               </mat-autocomplete>
             </mat-form-field>
@@ -170,6 +174,9 @@
             <mat-form-field appearance="outline">
               <mat-label>{{ 'DOC_FORM.LANGUAGE' | translate }}</mat-label>
               <mat-select formControlName="lang1" panelClass="doc-form-panel">
+                @if (articleLangOptions().length === 0) {
+                  <mat-option disabled>{{ 'APP.NO_DATA' | translate }}</mat-option>
+                }
                 @for (opt of articleLangOptions(); track opt.code) {
                   <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
                 }
@@ -197,9 +204,8 @@
       <!-- Authors / responsibility grid -->
       <div class="doc-panel">
         <p class="doc-panel-title doc-panel-title-lg">{{ 'DOC_FORM.AUTHORS_GRID' | translate }}</p>
-        @if (!savedAppNo()) {
-          <p class="no-data">{{ 'DOC_FORM.SAVE_FIRST' | translate }}</p>
-        } @else {
+        <!-- Always rendered: legacy DataGrid2 is never hidden, only its actions are guarded
+             (Form6.frm:3795). Nothing in this panel may sit behind a saved-record check. -->
           @if (isAddingAuthor()) {
             <div [formGroup]="authorRoleForm" class="add-row">
               <mat-form-field appearance="outline" class="add-field">
@@ -227,7 +233,7 @@
               </button>
             </div>
           } @else {
-            <button type="button" mat-stroked-button class="add-btn" [disabled]="isLocked()" (click)="isAddingAuthor.set(true)">
+            <button type="button" mat-stroked-button class="add-btn" [disabled]="isLocked()" (click)="onStartAddAuthor()">
               <mat-icon>add</mat-icon>
               {{ 'DOC_FORM.ADD_AUTHOR' | translate }}
             </button>
@@ -263,17 +269,14 @@
               <td class="mat-mdc-cell no-data-cell" colspan="3">{{ 'APP.NO_DATA' | translate }}</td>
             </tr>
           </table>
-        }
       </div>
 
-      <!-- Digital-file linking grid -->
+      <!-- Digital-file linking grid: always rendered for the same reason (legacy DataGrid1 is
+           never hidden). With no record yet its add action shows the legacy empty-number
+           message instead of opening the dialog. -->
       <div class="doc-panel">
         <p class="doc-panel-title doc-panel-title-lg">{{ 'DOC_FORM.FILES_GRID' | translate }}</p>
-        @if (!savedAppNo()) {
-          <p class="no-data">{{ 'DOC_FORM.SAVE_FIRST' | translate }}</p>
-        } @else {
-          <app-digital-files-grid #filesGrid [docNo]="savedAppNo()!"></app-digital-files-grid>
-        }
+        <app-digital-files-grid #filesGrid [docNo]="savedAppNo()" [blockedMessageKey]="gridBlockedKey()"></app-digital-files-grid>
       </div>
 
       <!-- Abstract -->
@@ -283,6 +286,12 @@
           <textarea matInput formControlName="result" rows="4" maxlength="1000"></textarea>
         </mat-form-field>
       </div>
+
+        <!-- Legacy tit_istext (Form6.frm:2390, 2784-2789): a status label at the form's lower-left
+             showing whether the loaded record has any text1 rows. -->
+        @if (hasText() !== null) {
+          <div class="doc-text-indicator">{{ (hasText() ? 'DOC_FORM.HAS_TEXT' : 'DOC_FORM.NO_TEXT') | translate }}</div>
+        }
 
       </form>
 

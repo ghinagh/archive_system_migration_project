@@ -9,6 +9,7 @@ import com.startupstack.app.modules.digitization.dto.DemandStatsResponse;
 import com.startupstack.app.modules.digitization.dto.DeliveryJobStatus;
 import com.startupstack.app.modules.digitization.dto.DemandTestResult;
 import com.startupstack.app.modules.digitization.dto.DigitRequest;
+import com.startupstack.app.modules.digitization.dto.DigitUploadRequest;
 import com.startupstack.app.modules.digitization.dto.LogUsageRequestBatch;
 import com.startupstack.app.modules.digitization.dto.LogUsageRequestItem;
 import com.startupstack.app.modules.digitization.dto.ManageResultRequest;
@@ -28,6 +29,7 @@ import com.startupstack.app.modules.digitization.repository.ResultRepository;
 import com.startupstack.app.modules.digitization.specification.DigitizationSpecification;
 import com.startupstack.app.modules.lookups.entity.CodingEntity;
 import com.startupstack.app.modules.lookups.repository.CodingRepository;
+import com.startupstack.app.modules.sites.repository.FormRepository;
 import com.startupstack.app.modules.users.entity.UserEntity;
 import com.startupstack.app.modules.users.repository.UserRepository;
 import com.startupstack.app.shared.exception.BusinessException;
@@ -37,11 +39,13 @@ import com.startupstack.app.shared.media.MediaService;
 import com.startupstack.app.shared.media.StockTier;
 import com.startupstack.app.shared.util.FilenameSanitiser;
 import com.startupstack.app.shared.util.SecurityUtils;
+import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -64,8 +68,10 @@ public class DigitizationService {
     private final MediaService mediaService;
     private final FfmpegService ffmpegService;
     private final CodingRepository codingRepository;
+    private final FormRepository formRepository;
     private final DemandProperties demandProperties;
     private final DeliveryJobService deliveryJobService;
+    private final EntityManager entityManager;
 
     public DigitizationService(DigitRepository digitRepository,
                                DemandRepository demandRepository,
@@ -78,8 +84,10 @@ public class DigitizationService {
                                MediaService mediaService,
                                FfmpegService ffmpegService,
                                CodingRepository codingRepository,
+                               FormRepository formRepository,
                                DemandProperties demandProperties,
-                               DeliveryJobService deliveryJobService) {
+                               DeliveryJobService deliveryJobService,
+                               EntityManager entityManager) {
         this.deliveryJobService = deliveryJobService;
         this.demandProperties = demandProperties;
         this.digitRepository = digitRepository;
@@ -88,11 +96,31 @@ public class DigitizationService {
         this.catalogueRepository = catalogueRepository;
         this.userRepository = userRepository;
         this.codingRepository = codingRepository;
+        this.formRepository = formRepository;
         this.digitMapper = digitMapper;
         this.demandMapper = demandMapper;
         this.resultMapper = resultMapper;
         this.mediaService = mediaService;
         this.ffmpegService = ffmpegService;
+        this.entityManager = entityManager;
+    }
+
+    /**
+     * Legacy Form6.frm DataGrid1 Column02 "شكل الوثيقة" — CODING domain '24' (proven).
+     * Column16 "مكان التصوير/النشر" — resolved via the "form" table (proven, same source as
+     * شاشة البحث's DBList12 geo/file lookups). Both are display-only resolutions; the stored
+     * DIGIT.dig_typ1 / dig_geochrt code is never overwritten.
+     */
+    private DigitResponse resolveDescriptions(DigitResponse response) {
+        if (response.getType1() != null && !response.getType1().isBlank()) {
+            codingRepository.findFirstBySubCode("24" + response.getType1().trim())
+                    .ifPresent(c -> response.setType1Description(c.getSubDesc()));
+        }
+        if (response.getChartGeo() != null && !response.getChartGeo().isBlank()) {
+            formRepository.findById(response.getChartGeo().trim())
+                    .ifPresent(f -> response.setChartGeoName(f.getName()));
+        }
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -101,7 +129,7 @@ public class DigitizationService {
         Specification<DigitEntity> spec = DigitizationSpecification.digitBelongsToUserEntity(userEnt)
                 .and(DigitizationSpecification.digitHasDocNo(docNo))
                 .and(DigitizationSpecification.digitHasType(type));
-        return digitRepository.findAll(spec, pageable).map(digitMapper::toResponse);
+        return digitRepository.findAll(spec, pageable).map(digitMapper::toResponse).map(this::resolveDescriptions);
     }
 
     @Transactional(readOnly = true)
@@ -111,7 +139,7 @@ public class DigitizationService {
         id.setSerial(serial);
         DigitEntity entity = digitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Digit record not found: " + docNo + "/" + serial));
-        return digitMapper.toResponse(entity);
+        return resolveDescriptions(digitMapper.toResponse(entity));
     }
 
     @Transactional
@@ -119,7 +147,113 @@ public class DigitizationService {
         catalogueRepository.findById(request.getDocNo())
                 .orElseThrow(() -> new ResourceNotFoundException("Catalogue record not found: " + request.getDocNo()));
         DigitEntity entity = digitMapper.toEntity(request);
-        return digitMapper.toResponse(digitRepository.save(entity));
+        return resolveDescriptions(digitMapper.toResponse(digitRepository.save(entity)));
+    }
+
+    /**
+     * Creates a digit row from an uploaded physical file — the migrated equivalent of Form6.frm
+     * DataGrid1 Column04 space-bar → {@code CommonDialog1.ShowOpen} → {@code max_digit}/
+     * {@code op_digit} → {@code FileCopy} (:3568-3624).
+     *
+     * <p>{@code DIG_DIG_NO} and the extension in {@code DIG_TYP} are never trusted from the
+     * client, exactly as legacy never let the operator type either. Legacy itself never runs
+     * this flow for {@code DIG_TYP1 = "04"} (:3574, {@code If m_dig_typ1 <> "04" Then}) — video
+     * is ingested through the tape/ranjpath pipeline, not this dialog — so the same class gate
+     * {@link MediaService#isNonVideoAssetClass} already enforces for playback is enforced here
+     * for upload too.
+     *
+     * <p>Legacy's {@code max_digit}/{@code op_digit} pair reads then writes the next number
+     * without any locking, which is race-prone under concurrent operators. The resulting
+     * business rule — the next number is scoped per {@code DIG_TYP1} — is preserved, but made
+     * safe here with a transaction-scoped Postgres advisory lock keyed on the class, so two
+     * concurrent uploads of the same class can never compute the same number; different classes
+     * still proceed in parallel, matching legacy's own per-type1 scoping.
+     *
+     * <p>The file is written before the database row so a failed write never produces a
+     * dangling DB record; if the subsequent save fails, the just-written file is deleted so a
+     * failed insert never leaves an orphaned file with no record pointing at it (a plain
+     * {@code @Transactional} only rolls back the database side).
+     */
+    @Transactional
+    public DigitResponse uploadDigitFile(DigitUploadRequest request, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("No file was selected");
+        }
+        String type1 = request.getType1() == null ? null : request.getType1().trim();
+        if (!mediaService.isNonVideoAssetClass(type1)) {
+            throw new BusinessException("Type1 '" + type1 + "' cannot be uploaded through this dialog — "
+                    + "video (04) is ingested through the tape archive, not a direct upload");
+        }
+        catalogueRepository.findById(request.getDocNo())
+                .orElseThrow(() -> new ResourceNotFoundException("Catalogue record not found: " + request.getDocNo()));
+
+        // digitRepository.save() upserts on this composite key (Spring Data treats a
+        // manually-assigned, non-null id as "not new" and merges instead of inserting) — without
+        // this guard, resubmitting an existing (docNo, serial) would silently overwrite that
+        // row's fields with this upload's and orphan whatever file its old digitNo pointed to,
+        // exactly the row-exists-but-file-doesn't/file-exists-but-row-doesn't inconsistency this
+        // endpoint exists to prevent. insr_digit1 (DDL :6297) is a bare INSERT with no such path.
+        DigitId id = new DigitId();
+        id.setDocNo(request.getDocNo());
+        id.setSerial(request.getSerial());
+        if (digitRepository.existsById(id)) {
+            throw new BusinessException("A digit record already exists for " + request.getDocNo()
+                    + "/" + request.getSerial() + " — refresh and try again");
+        }
+
+        String extension = mediaService.extractExtension(file.getOriginalFilename());
+
+        // Held for the rest of this transaction — serializes next-number generation per type1
+        // (DDL max_digit :7018 / op_digit :7332 scope the same way) without locking other
+        // classes out.
+        entityManager.createNativeQuery("SELECT pg_advisory_xact_lock(hashtext(:type1))")
+                .setParameter("type1", type1)
+                .getResultList();
+
+        int next = digitRepository.findMaxNumericDigitNoByType1(type1) + 1;
+        // Legacy numbers each class on its own (max_digit/op_digit filter on dig_typ1) and its DDL has
+        // no unique constraint on DIG_DIG_NO. The migrated schema does (uq_digit_dig_no, also the
+        // target of result.res_dig_no), so the first upload of a class whose next number another
+        // class already uses would fail with a 500. And cancelling a record deletes its DIGIT rows
+        // (del_digit1) but never the archive files, so the maximum can also fall back onto a number
+        // whose file still exists. Step past both: still max+1 for the class in the normal case,
+        // never a duplicate number, never an overwritten file.
+        while (digitRepository.existsByDigitNo(String.format("%06d", next))
+                || mediaService.assetExists(String.format("%06d", next), type1, extension)) {
+            next++;
+        }
+        String digitNo = String.format("%06d", next);
+
+        String writtenPath = mediaService.writeAssetFile(file, digitNo, type1, extension);
+        try {
+            DigitEntity entity = new DigitEntity();
+            entity.setDocNo(request.getDocNo());
+            entity.setSerial(request.getSerial());
+            entity.setDigitNo(digitNo);
+            entity.setType(extension);
+            entity.setType1(type1);
+            entity.setHighType(request.getHighType());
+            entity.setDurationHours(request.getDurationHours());
+            entity.setDurationMinutes(request.getDurationMinutes());
+            entity.setDurationSeconds(request.getDurationSeconds());
+            entity.setDurationHours1(request.getDurationHours1());
+            entity.setDurationMinutes1(request.getDurationMinutes1());
+            entity.setDurationSeconds1(request.getDurationSeconds1());
+            entity.setChartNo(request.getChartNo());
+            entity.setNewChartNo(request.getNewChartNo());
+            entity.setChartType(request.getChartType());
+            entity.setChartGeo(request.getChartGeo());
+            entity.setChoice(request.getChoice());
+            entity.setChartNo1(request.getChartNo1());
+            entity.setMaterialType(request.getMaterialType());
+
+            DigitEntity saved = digitRepository.save(entity);
+            digitRepository.flush();
+            return resolveDescriptions(digitMapper.toResponse(saved));
+        } catch (RuntimeException e) {
+            mediaService.deleteQuietly(writtenPath);
+            throw e;
+        }
     }
 
     @Transactional
@@ -130,7 +264,7 @@ public class DigitizationService {
         DigitEntity entity = digitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Digit record not found: " + docNo + "/" + serial));
         digitMapper.updateEntity(request, entity);
-        return digitMapper.toResponse(digitRepository.save(entity));
+        return resolveDescriptions(digitMapper.toResponse(digitRepository.save(entity)));
     }
 
     @Transactional

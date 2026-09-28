@@ -12,13 +12,27 @@ export class PeriodicalsService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/api/periodicals`;
 
-  getAll(page: number, size: number, name?: string, lang?: string, type?: number, frequency?: string): Observable<ApiResponse<PageResponse<Periodical>>> {
+  /**
+   * name doubles as the legacy "البحث بالعنوان" (search by title) filter — the
+   * controller/specification only support name + lang server-side, matching what
+   * PERIOD1.frm's بحث/البحث بالعنوان buttons actually query (per_per_no exact lookup
+   * is handled separately via getById()).
+   */
+  getAll(page: number, size: number, name?: string, lang?: string): Observable<ApiResponse<PageResponse<Periodical>>> {
     let params = new HttpParams().set('page', page).set('size', size);
     if (name) params = params.set('name', name);
     if (lang) params = params.set('lang', lang);
-    if (type != null) params = params.set('type', type);
-    if (frequency) params = params.set('frequency', frequency);
     return this.http.get<ApiResponse<PageResponse<Periodical>>>(this.baseUrl, { params });
+  }
+
+  /**
+   * Legacy البحث بالعنوان (Command8 / m_typ_serh=3 -> execute serh_period1):
+   * free-text title search returning candidate matches to pick from, backed by
+   * GET /api/periodicals/search?q=.
+   */
+  searchByTitle(q: string): Observable<ApiResponse<Periodical[]>> {
+    const params = new HttpParams().set('q', q);
+    return this.http.get<ApiResponse<Periodical[]>>(`${this.baseUrl}/search`, { params });
   }
 
   advancedSearch(conditions: SearchCondition[], page: number, size: number): Observable<ApiResponse<PageResponse<Periodical>>> {
@@ -28,6 +42,19 @@ export class PeriodicalsService {
 
   getById(perNo: number): Observable<ApiResponse<Periodical>> {
     return this.http.get<ApiResponse<Periodical>>(`${this.baseUrl}/${perNo}`);
+  }
+
+  /** Legacy اضافة (Add) behavior: next PER_PER_NO = max(existing) + 1. */
+  getNextPerNo(): Observable<ApiResponse<number>> {
+    return this.http.get<ApiResponse<number>>(`${this.baseUrl}/next-no`);
+  }
+
+  getNext(perNo: number): Observable<ApiResponse<Periodical>> {
+    return this.http.get<ApiResponse<Periodical>>(`${this.baseUrl}/${perNo}/next`);
+  }
+
+  getPrevious(perNo: number): Observable<ApiResponse<Periodical>> {
+    return this.http.get<ApiResponse<Periodical>>(`${this.baseUrl}/${perNo}/previous`);
   }
 
   create(data: PeriodicalRequest): Observable<ApiResponse<Periodical>> {

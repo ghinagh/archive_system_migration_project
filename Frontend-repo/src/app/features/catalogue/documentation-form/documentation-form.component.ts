@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { TranslateService } from '@ngx-translate/core';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DocumentationFormService } from '../services/documentation-form.service';
 import { CatalogueService } from '../services/catalogue.service';
@@ -42,6 +42,12 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   isSaving = signal(false);
   isEditMode = signal(false);
   savedAppNo = signal<string | null>(null);
+
+  /**
+   * Legacy tit_istext (Form6.frm:2778-2790): after a record loads, serh_text2 looks for rows in
+   * text1 and the label reads "يوجد نص" or "لا يوجد نص". Null while no record is loaded.
+   */
+  hasText = signal<boolean | null>(null);
 
   linkedAuthors = signal<CatalogueLinkedAuthor[]>([]);
   isAddingAuthor = signal(false);
@@ -188,6 +194,10 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
     });
 
     this.sourceCtrl.valueChanges.pipe(
+      // A DataCombo's BoundText follows the text: typing something that isn't a list item
+      // leaves nothing bound, and typing an item's exact text binds it. Without this, clearing
+      // the box still saved the previously selected periodical.
+      tap(val => this.bindTypedPeriodical(val, this.sourceOptions(), this.selectedSourceId)),
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(val => {
@@ -200,6 +210,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
     ).subscribe(r => this.sourceOptions.set(r.data));
 
     this.translationSourceCtrl.valueChanges.pipe(
+      tap(val => this.bindTypedPeriodical(val, this.translationSourceOptions(), this.selectedTranslationSourceId)),
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(val => {
@@ -216,6 +227,14 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
       distinctUntilChanged(),
       switchMap(val => val && val.length >= 2 ? this.autoSvc.searchAuthors(val) : of({ data: [], success: true, timestamp: '' }))
     ).subscribe(r => this.authorOptions.set(r.data));
+  }
+
+  private bindTypedPeriodical(
+      val: unknown, options: PeriodicalOption[], target: { set(v: number | null): void }): void {
+    if (typeof val !== 'string') return; // an option object — onSourceSelected/onTranslationSourceSelected bind it
+    const text = val.trim();
+    const hit = text ? options.find(o => o.name.trim() === text) : undefined;
+    target.set(hit ? hit.perNo : null);
   }
 
   displayPeriodical(opt: PeriodicalOption | string): string {
@@ -366,25 +385,38 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
     this.existingLang.set(r.lang);
     this.isLocked.set(!!r.locked);
 
-    // Set document source (periodicalNo)
+    // Legacy blanks each source when the record has none (Form6.frm:2681-2695). Leaving the
+    // previous record's value in place meant the next تسجيل attached it to this record.
     if (r.periodicalNo) {
       this.selectedSourceId.set(r.periodicalNo);
       this.sourceCtrl.setValue(r.periodicalName ?? '', { emitEvent: false });
+    } else {
+      this.selectedSourceId.set(null);
+      this.sourceCtrl.setValue('', { emitEvent: false });
     }
 
-    // Set translation source (periodical1)
+    // art_per1 is only a number; its name comes from the backend, not from a list that may
+    // still be loading or may have been narrowed by a search.
     if (r.periodical1) {
       this.selectedTranslationSourceId.set(r.periodical1);
-      const transPeriodical = this.translationSourceOptions().find(p => p.perNo === r.periodical1);
-      if (transPeriodical) {
-        this.translationSourceCtrl.setValue(transPeriodical.name, { emitEvent: false });
-      }
+      this.translationSourceCtrl.setValue(r.periodical1Name ?? '', { emitEvent: false });
+    } else {
+      this.selectedTranslationSourceId.set(null);
+      this.translationSourceCtrl.setValue('', { emitEvent: false });
     }
 
     this.form.get('appNo')?.disable();
     this.isEditMode.set(true);
     this.savedAppNo.set(r.appNo);
     this.loadLinkedAuthors(r.appNo);
+    this.loadHasText(r.appNo);
+  }
+
+  private loadHasText(appNo: string): void {
+    this.catalogueService.getText1(appNo).subscribe({
+      next: res => this.hasText.set((res.data ?? []).length > 0),
+      error: () => this.hasText.set(false)
+    });
   }
 
   loadLinkedAuthors(appNo: string): void {
@@ -392,6 +424,25 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
       next: res => this.linkedAuthors.set(res.data),
       error: () => this.linkedAuthors.set([])
     });
+  }
+
+  /**
+   * Both grids are always on screen, as in legacy. Their action handlers there are guarded by
+   * `If Not m_mn_app_no.Text = ""` and otherwise show "رقم الاستمارة فارغ يجب ان تضغط على سجل
+   * جديد" (Form6.frm:3644, 3717, 3795). A typed-but-unsaved number is a migrated-only state
+   * (legacy's op_article inserts the MAIN row when سجل جديد is pressed), so it gets the
+   * existing save-first message instead.
+   */
+  gridBlockedKey(): string {
+    return this.form.get('appNo')?.value ? 'DOC_FORM.SAVE_FIRST' : 'DOC_FORM.NO_RECORD_LOADED';
+  }
+
+  onStartAddAuthor(): void {
+    if (!this.savedAppNo()) {
+      this.snack.open(this.t.instant(this.gridBlockedKey()), '', { duration: 4000 });
+      return;
+    }
+    this.isAddingAuthor.set(true);
   }
 
   onAddAuthor(): void {
@@ -469,19 +520,39 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   }
 
   // ---- Toolbar: سجل جديد ----
+  /**
+   * Form6.frm Command2_Click (:3113): the number is allocated by op_article/max_article and the
+   * empty ARTICLE + main rows are inserted immediately, so the record — and every grid hanging
+   * off it — is usable before anything is typed or saved.
+   */
   onNewRecord(): void {
+    this.svc.createNext().subscribe({
+      next: res => {
+        this.resetForm();
+        this.patchFromResponse(res.data);
+
+        // Command2_Click then defaults the entry date to today, appDoc/dataEntry to the
+        // logged-in user's own userDoc/userEnt, the language to CODING 3401 (tail "01") and the
+        // document nature to "ع" — Form6.frm:3120-3122, 3137-3138.
+        const user = this.authService.getCurrentUser();
+        this.form.patchValue({
+          entryDate: this.toDatetimeLocal(new Date()),
+          appDoc: user?.user_doc ?? '',
+          dataEntry: user?.user_ent ?? '',
+          lang1: '01',
+          documentNature: 'ع'
+        });
+      },
+      error: () => this.snack.open(this.t.instant('APP.ERROR'), '', { duration: 3000 })
+    });
+  }
+
+  /** Blank form, no record — the state legacy is left in after a confirmed cancel (Form6.frm:2880-2896). */
+  private resetForm(): void {
     this.form.reset();
     this.form.get('appNo')?.enable();
     this.authorRoleForm.reset();
-
-    // Form6.frm Command2_Click: defaults entry date to today, and appDoc/dataEntry to
-    // the logged-in user's own userDoc/userEnt (m_mn_app_doc/m_mn_data_en BoundText).
-    const user = this.authService.getCurrentUser();
-    this.form.patchValue({
-      entryDate: this.toDatetimeLocal(new Date()),
-      appDoc: user?.user_doc ?? '',
-      dataEntry: user?.user_ent ?? ''
-    });
+    this.onCancelAddAuthor();
 
     this.sourceCtrl.setValue('', { emitEvent: false });
     this.translationSourceCtrl.setValue('', { emitEvent: false });
@@ -490,6 +561,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
     this.selectedTranslationSourceId.set(null);
     this.existingLang.set(null);
     this.linkedAuthors.set([]);
+    this.hasText.set(null);
     this.isEditMode.set(false);
     this.savedAppNo.set(null);
   }
@@ -562,7 +634,21 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
       data: { messageKey: 'DOC_FORM.CONFIRM_CANCEL_FORM' }
     });
     ref.afterClosed().subscribe(confirmed => {
-      if (confirmed) this.onNewRecord();
+      if (!confirmed) return;
+      // Command11_Click (:2853) deletes the record and every child row, then leaves the form
+      // blank. With nothing loaded there is nothing to delete.
+      const appNo = this.savedAppNo();
+      if (!appNo) {
+        this.resetForm();
+        return;
+      }
+      this.svc.delete(appNo).subscribe({
+        next: () => {
+          this.resetForm();
+          this.snack.open(this.t.instant('APP.SUCCESS'), '', { duration: 3000 });
+        },
+        error: () => this.snack.open(this.t.instant('APP.ERROR'), '', { duration: 3000 })
+      });
     });
   }
 

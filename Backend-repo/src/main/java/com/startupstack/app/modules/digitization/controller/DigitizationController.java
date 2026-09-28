@@ -14,6 +14,7 @@ import com.startupstack.app.modules.digitization.dto.DeliveryJobRequest;
 import com.startupstack.app.modules.digitization.dto.DeliveryJobStatus;
 import com.startupstack.app.modules.digitization.dto.DigitRequest;
 import com.startupstack.app.modules.digitization.dto.DigitResponse;
+import com.startupstack.app.modules.digitization.dto.DigitUploadRequest;
 import com.startupstack.app.modules.digitization.dto.LogUsageRequestBatch;
 import com.startupstack.app.modules.digitization.dto.ManageResultRequest;
 import com.startupstack.app.modules.digitization.dto.ResultRequest;
@@ -33,6 +34,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,6 +79,21 @@ public class DigitizationController {
             @Valid @RequestBody DigitRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(digitizationService.createRecord(request)));
+    }
+
+    /**
+     * Legacy Form6.frm DataGrid1 Column04 space-bar → CommonDialog1.ShowOpen upload flow
+     * (:3568-3624). DIG_DIG_NO and DIG_TYP (extension) are generated server-side — see
+     * {@link DigitizationService#uploadDigitFile}; the client sends only the classification and
+     * the file itself.
+     */
+    @Permission(PermissionConstants.PERM_CREATE)
+    @PostMapping(value = "/records/upload", consumes = "multipart/form-data")
+    public ResponseEntity<ApiResponse<DigitResponse>> uploadRecord(
+            @Valid @ModelAttribute DigitUploadRequest request,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(digitizationService.uploadDigitFile(request, file)));
     }
 
     @Permission(PermissionConstants.PERM_UPDATE)

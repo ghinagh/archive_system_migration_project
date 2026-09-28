@@ -30,4 +30,16 @@ public class DigitResponse {
     private String chartNo1;
     private String materialType;
     private String highType;
+
+    /** Legacy Form6.frm DataGrid1 Column02 "شكل الوثيقة" (DataField=desc_typ1) is a resolved
+     *  CODING description, not the raw DIG_TYP1 code — resolved via CODING domain '24' (proven:
+     *  user_inetrface.frm Form_Load joins "'24'+ dig_typ1 = CODING.SUB_CODE"). Null when the
+     *  code has no matching CODING row. */
+    private String type1Description;
+
+    /** Legacy Column16 "مكان التصوير/النشر" (DataField=desc_geo) is a resolved name from the
+     *  same "form"/sites table already used for شاشة البحث's geo/file lookups (DBList12,
+     *  ListField=SUB_NAME/BoundColumn=sub_cod) — not the raw stored code. Null when the code
+     *  has no matching form row. */
+    private String chartGeoName;
 }

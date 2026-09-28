@@ -12,18 +12,17 @@ public interface PeriodicalMapper {
 
     PeriodicalResponse toResponse(PeriodicalEntity entity);
 
-    @Mapping(target = "price1", ignore = true)
-    @Mapping(target = "utils", ignore = true)
-    @Mapping(target = "geo1", ignore = true)
-    @Mapping(target = "editor1", ignore = true)
-    @Mapping(target = "date", ignore = true)
+    /**
+     * PER_ST_DTE (startDate) and PER_CREAT (creator) are never among the ~27 parameters
+     * PERIOD1.frm's INSR_period/UPD_period exec calls pass on save (Command4_Click) —
+     * this form never reads or writes them, so the migrated save path must not either.
+     */
+    @Mapping(target = "startDate", ignore = true)
+    @Mapping(target = "creator", ignore = true)
     PeriodicalEntity toEntity(PeriodicalRequest request);
 
     @Mapping(target = "perNo", ignore = true)
-    @Mapping(target = "price1", ignore = true)
-    @Mapping(target = "utils", ignore = true)
-    @Mapping(target = "geo1", ignore = true)
-    @Mapping(target = "editor1", ignore = true)
-    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "startDate", ignore = true)
+    @Mapping(target = "creator", ignore = true)
     void updateEntity(PeriodicalRequest request, @MappingTarget PeriodicalEntity entity);
 }

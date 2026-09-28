@@ -19,8 +19,14 @@ export class DocumentationFormService {
     return this.http.post<ApiResponse<DocumentationFormResponse>>(this.baseUrl, data);
   }
 
+  /** "سجل جديد" — legacy op_article: allocates the next ق###### number and inserts the empty record. */
+  createNext(): Observable<ApiResponse<DocumentationFormResponse>> {
+    return this.http.post<ApiResponse<DocumentationFormResponse>>(`${this.baseUrl}/next`, {});
+  }
+
+  /** تسجيل — writes only what Form6.frm's upd_main/upd_article2 write (see ArticleService). */
   update(appNo: string, data: DocumentationFormRequest): Observable<ApiResponse<DocumentationFormResponse>> {
-    return this.http.put<ApiResponse<DocumentationFormResponse>>(`${this.baseUrl}/${appNo}`, data);
+    return this.http.put<ApiResponse<DocumentationFormResponse>>(`${this.baseUrl}/${appNo}/documentation`, data);
   }
 
   delete(appNo: string): Observable<ApiResponse<void>> {

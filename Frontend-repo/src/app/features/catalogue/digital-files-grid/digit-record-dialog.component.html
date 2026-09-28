@@ -4,51 +4,106 @@
   <form [formGroup]="form" class="dialog-form">
     <div class="dialog-row">
       <mat-form-field appearance="outline">
-        <mat-label>{{ 'CATALOGUE.DIG_DIGIT_NO' | translate }}</mat-label>
-        <input matInput formControlName="digitNo" maxlength="6">
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'CATALOGUE.DIG_TYPE' | translate }}</mat-label>
-        <input matInput formControlName="type" maxlength="4">
+        <mat-label>{{ 'CATALOGUE.DIG_TYPE1' | translate }}</mat-label>
+        <mat-select formControlName="type1">
+          <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
+          @for (opt of type1Options(); track opt.code) {
+            <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+          }
+        </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>{{ 'CATALOGUE.DIG_HIGH_TYPE' | translate }}</mat-label>
         <input matInput formControlName="highType" maxlength="3">
       </mat-form-field>
     </div>
+
+    <!-- Legacy Form6.frm Column04 space-bar: DIG_DIG_NO/DIG_TYP are never typed, only ever
+         generated from a selected file (CommonDialog1.ShowOpen → max_digit/op_digit,
+         :3568-3624). Once generated (edit mode) they are shown read-only, matching Column04's
+         own lock once populated; on a new row a file picker replaces the old free-text box. -->
+    @if (isEditMode) {
+      <div class="dialog-row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.DIG_DIGIT_NO' | translate }}</mat-label>
+          <input matInput [value]="data.record?.digitNo || ''" disabled readonly>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.DIG_TYPE' | translate }}</mat-label>
+          <input matInput formControlName="type" maxlength="4">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.DIG_SIZE' | translate }}</mat-label>
+          <input matInput type="number" formControlName="size">
+        </mat-form-field>
+      </div>
+    } @else {
+      <div class="dialog-row file-picker-row">
+        @if (canAttachFile) {
+          <button type="button" mat-stroked-button (click)="fileInput.click()" [disabled]="isSaving()">
+            {{ 'CATALOGUE.DIG_CHOOSE_FILE' | translate }}
+          </button>
+          <input #fileInput type="file" hidden (change)="onFileSelected($event)">
+          @if (selectedFile) {
+            <span class="selected-file-name">{{ selectedFile.name }}</span>
+            <button type="button" mat-icon-button (click)="clearSelectedFile()" [disabled]="isSaving()">
+              <mat-icon>close</mat-icon>
+            </button>
+          } @else {
+            <span class="file-hint">{{ 'CATALOGUE.DIG_NO_FILE_CHOSEN' | translate }}</span>
+          }
+        } @else if (form.getRawValue().type1 === '04') {
+          <span class="file-hint">{{ 'CATALOGUE.DIG_VIDEO_NOT_UPLOADED_HERE' | translate }}</span>
+        } @else {
+          <span class="file-hint">{{ 'CATALOGUE.DIG_PICK_TYPE1_FIRST' | translate }}</span>
+        }
+        @if (fileError) {
+          <span class="file-error">{{ fileError }}</span>
+        }
+      </div>
+    }
+
     <div class="dialog-row">
       <mat-form-field appearance="outline">
-        <mat-label>{{ 'CATALOGUE.DIG_TYPE1' | translate }}</mat-label>
-        <input matInput formControlName="type1" maxlength="2">
-      </mat-form-field>
-      <mat-form-field appearance="outline">
         <mat-label>{{ 'CATALOGUE.DIG_MATERIAL_TYPE' | translate }}</mat-label>
-        <input matInput formControlName="materialType" maxlength="2">
+        <mat-select formControlName="materialType">
+          <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
+          @for (opt of unresolvedDomainOptions(); track opt.code) {
+            <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+          }
+        </mat-select>
       </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'CATALOGUE.DIG_SIZE' | translate }}</mat-label>
-        <input matInput type="number" formControlName="size">
-      </mat-form-field>
+      @if (!isEditMode) {
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'CATALOGUE.DIG_SIZE' | translate }}</mat-label>
+          <input matInput type="number" formControlName="size">
+        </mat-form-field>
+      }
     </div>
 
-    <h4>{{ 'CATALOGUE.DIG_START' | translate }}</h4>
+    <h4>{{ 'CATALOGUE.DIG_O_FROM' | translate }} / {{ 'CATALOGUE.DIG_M_FROM' | translate }} / {{ 'CATALOGUE.DIG_S_FROM' | translate }}</h4>
     <div class="dialog-row timecode">
-      <mat-form-field appearance="outline"><mat-label>H</mat-label><input matInput type="number" formControlName="durationHours" min="0"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>M</mat-label><input matInput type="number" formControlName="durationMinutes" min="0" max="59"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>S</mat-label><input matInput type="number" formControlName="durationSeconds" min="0" max="59"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>{{ 'CATALOGUE.DIG_O_FROM' | translate }}</mat-label><input matInput type="number" formControlName="durationHours" min="0"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>{{ 'CATALOGUE.DIG_M_FROM' | translate }}</mat-label><input matInput type="number" formControlName="durationMinutes" min="0" max="59"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>{{ 'CATALOGUE.DIG_S_FROM' | translate }}</mat-label><input matInput type="number" formControlName="durationSeconds" min="0" max="59"></mat-form-field>
     </div>
 
-    <h4>{{ 'CATALOGUE.DIG_END' | translate }}</h4>
+    <h4>{{ 'CATALOGUE.DIG_O_TO' | translate }} / {{ 'CATALOGUE.DIG_M_TO' | translate }} / {{ 'CATALOGUE.DIG_S_TO' | translate }}</h4>
     <div class="dialog-row timecode">
-      <mat-form-field appearance="outline"><mat-label>H</mat-label><input matInput type="number" formControlName="durationHours1" min="0"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>M</mat-label><input matInput type="number" formControlName="durationMinutes1" min="0" max="59"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>S</mat-label><input matInput type="number" formControlName="durationSeconds1" min="0" max="59"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>{{ 'CATALOGUE.DIG_O_TO' | translate }}</mat-label><input matInput type="number" formControlName="durationHours1" min="0"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>{{ 'CATALOGUE.DIG_M_TO' | translate }}</mat-label><input matInput type="number" formControlName="durationMinutes1" min="0" max="59"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>{{ 'CATALOGUE.DIG_S_TO' | translate }}</mat-label><input matInput type="number" formControlName="durationSeconds1" min="0" max="59"></mat-form-field>
     </div>
 
     <div class="dialog-row">
       <mat-form-field appearance="outline">
         <mat-label>{{ 'CATALOGUE.DIG_CHART_TYPE' | translate }}</mat-label>
-        <input matInput formControlName="chartType" maxlength="2">
+        <mat-select formControlName="chartType">
+          <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
+          @for (opt of unresolvedDomainOptions(); track opt.code) {
+            <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
+          }
+        </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>{{ 'CATALOGUE.DIG_CHART_NO' | translate }}</mat-label>
@@ -61,14 +116,19 @@
     </div>
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>{{ 'CATALOGUE.DIG_CHART_GEO' | translate }}</mat-label>
-      <input matInput formControlName="chartGeo" maxlength="10">
+      <input matInput [formControl]="chartGeoCtrl" [matAutocomplete]="chartGeoAuto">
+      <mat-autocomplete #chartGeoAuto="matAutocomplete" [displayWith]="displayForm">
+        @for (opt of chartGeoOptions(); track opt.formNo) {
+          <mat-option [value]="opt">{{ opt.name }}</mat-option>
+        }
+      </mat-autocomplete>
     </mat-form-field>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-stroked-button (click)="onCancel()">{{ 'APP.CANCEL' | translate }}</button>
-  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || isSaving">
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || isSaving()">
     {{ 'APP.SAVE' | translate }}
   </button>
 </mat-dialog-actions>

@@ -25,18 +25,23 @@ export interface Periodical {
   email: string;
   website: string;
   date: string | null;
-  utils: string;
+  utils: number | null;
   geo1: string;
-  tah1: string;
+  editingManager: string;
 }
 
+/**
+ * PER_PUB_LO (publishLocation) and PER_TYP (type) are hardcoded to 0 by
+ * PERIOD1.frm on every save (never user-editable); PER_ST_DTE (startDate)
+ * and PER_CREAT (creator) are never touched at all by this legacy form's
+ * INSR_period/UPD_period calls. None of the four belong in the save payload
+ * this screen sends — the backend now owns hardcoding/ignoring them.
+ */
 export interface PeriodicalRequest {
+  perNo: number;
   name: string;
-  publishLocation: number | null;
-  startDate: string | null;
   lang: string;
   rdmd: string;
-  type: number | null;
   geo: string;
   type1: string;
   frequency: string;
@@ -52,33 +57,10 @@ export interface PeriodicalRequest {
   director: string;
   president: string;
   fax: string;
-  creator: string;
   email: string;
   website: string;
   date: string | null;
-  utils: string;
+  utils: number | null;
   geo1: string;
-  tah1: string;
-}
-
-export interface Transaction {
-  trsOpno: number;
-  trsNo: number;
-  trsDte: string | null;
-  trsNum: string;
-  trsNb: number | null;
-  trsYear: number | null;
-  trsTyp: number | null;
-  trsDte1: string | null;
-}
-
-export interface TransactionRequest {
-  trsOpno: number;
-  trsNo: number;
-  trsDte: string | null;
-  trsNum: string;
-  trsNb: number | null;
-  trsYear: number | null;
-  trsTyp: number | null;
-  trsDte1: string | null;
+  editingManager: string;
 }

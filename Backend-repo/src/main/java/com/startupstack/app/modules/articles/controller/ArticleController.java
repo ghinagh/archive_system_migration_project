@@ -62,6 +62,22 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponse.success(articleService.update(appNo, request)));
     }
 
+    /** "سجل جديد" — allocates the next ق###### number and inserts the empty record (op_article). */
+    @Permission(PermissionConstants.PERM_CREATE)
+    @PostMapping("/next")
+    public ResponseEntity<ApiResponse<ArticleResponse>> createNext() {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(articleService.createNext()));
+    }
+
+    /** "استمارة التوثيق" save — writes only what Form6.frm's upd_main/upd_article2 write. See the service. */
+    @Permission(PermissionConstants.PERM_UPDATE)
+    @PutMapping("/{appNo}/documentation")
+    public ResponseEntity<ApiResponse<ArticleResponse>> updateDocumentationForm(
+            @PathVariable String appNo,
+            @Valid @RequestBody ArticleRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(articleService.updateDocumentationForm(appNo, request)));
+    }
+
     @Permission(PermissionConstants.PERM_DELETE)
     @DeleteMapping("/{appNo}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String appNo) {

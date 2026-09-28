@@ -13,6 +13,12 @@
 
   .form-section { margin-bottom: 20px; }
 
+  // Matches legacy PERIOD1.frm Shape4 BackColor=&H00FFC0C0& (subscription section).
+  .subscription-section {
+    background-color: #ffc0c0;
+    ::ng-deep .mat-mdc-card-title { color: #7a0000; }
+  }
+
   .form-row {
     display: flex;
     gap: 16px;
@@ -22,10 +28,49 @@
     .full-width { flex: 1 1 100%; }
   }
 
+  // The 8 legacy action buttons (اضافة / تسجيل / بحث / الغاء / سابق / لاحق /
+  // البحث بالعنوان / خروج) sit plainly beside each other — no shared toolbar/box
+  // background — each one individually styled as a clearly clickable button with
+  // the same smooth, uniform background color.
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-top: 24px;
+
+    button.mat-mdc-raised-button {
+      min-width: 108px;
+      height: 40px;
+      border-radius: 8px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      background-color: #e8eaed;
+      color: #1f2937;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.08);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #dde0e3;
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+      }
+
+      &:disabled {
+        box-shadow: none;
+        opacity: 0.5;
+      }
+    }
   }
+}
+
+// Command10/Command8 inline popups (legacy Frame2 / Text4 inline search widgets).
+.inline-search-popup {
+  margin-bottom: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }

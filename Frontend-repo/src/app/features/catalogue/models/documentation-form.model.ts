@@ -37,5 +37,7 @@ export interface DocumentationFormResponse {
   lang1: string | null;
   date1: string | null;
   periodical1: number | null;
+  /** PERIOD name for periodical1 — "مصدر الترجمة" display text. */
+  periodical1Name?: string | null;
   locked: boolean | null;
 }

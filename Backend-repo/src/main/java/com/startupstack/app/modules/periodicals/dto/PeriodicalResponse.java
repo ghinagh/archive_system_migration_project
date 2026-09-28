@@ -3,6 +3,7 @@ package com.startupstack.app.modules.periodicals.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,6 +24,7 @@ public class PeriodicalResponse {
     private String phone;
     private Double amount;
     private Double price;
+    private Double price1;
     private Double publisher;
     private String pub;
     private String institution;
@@ -33,4 +35,8 @@ public class PeriodicalResponse {
     private String creator;
     private String email;
     private String website;
+    private Double utils;
+    private String geo1;
+    private String editingManager;
+    private LocalDate date;
 }

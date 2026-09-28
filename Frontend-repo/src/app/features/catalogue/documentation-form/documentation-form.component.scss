@@ -364,3 +364,15 @@
     color: var(--ink);
   }
 }
+
+// Legacy tit_istext: a 1095-twip grey status box at the form's far left (Form6.frm:2390).
+.doc-text-indicator {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 14px;
+  min-width: 96px;
+  text-align: center;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.18));
+  border-radius: 4px;
+  font-size: 0.9em;
+}

@@ -52,9 +52,24 @@ public class PeriodicalController {
         return ResponseEntity.ok(ApiResponse.success(periodicalService.findAll(name, lang, pageable)));
     }
 
+    @GetMapping("/next-no")
+    public ResponseEntity<ApiResponse<Double>> getNextPerNo() {
+        return ResponseEntity.ok(ApiResponse.success(periodicalService.nextPerNo()));
+    }
+
     @GetMapping("/{perNo}")
     public ResponseEntity<ApiResponse<PeriodicalResponse>> getById(@PathVariable Double perNo) {
         return ResponseEntity.ok(ApiResponse.success(periodicalService.findById(perNo)));
+    }
+
+    @GetMapping("/{perNo}/next")
+    public ResponseEntity<ApiResponse<PeriodicalResponse>> getNext(@PathVariable Double perNo) {
+        return ResponseEntity.ok(ApiResponse.success(periodicalService.findNext(perNo)));
+    }
+
+    @GetMapping("/{perNo}/previous")
+    public ResponseEntity<ApiResponse<PeriodicalResponse>> getPrevious(@PathVariable Double perNo) {
+        return ResponseEntity.ok(ApiResponse.success(periodicalService.findPrevious(perNo)));
     }
 
     @Permission(PermissionConstants.PERM_CREATE)
