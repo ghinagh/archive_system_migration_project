@@ -83,6 +83,7 @@ public class RetrievalFieldService {
         entity.setCategory(request.getCategory());
         entity.setLookupEnabled(request.isLookupEnabled());
         entity.setDisplayOrder(request.getDisplayOrder());
+        entity.setLegacySourceTable(request.getLegacySourceTable());
     }
 
     private RetrievalFieldResponse toResponse(RetrievalFieldEntity entity) {
@@ -98,6 +99,7 @@ public class RetrievalFieldService {
         r.setCategory(entity.getCategory());
         r.setLookupEnabled(entity.isLookupEnabled());
         r.setDisplayOrder(entity.getDisplayOrder());
+        r.setLegacySourceTable(entity.getLegacySourceTable());
         r.setCreatedAt(entity.getCreatedAt());
         r.setUpdatedAt(entity.getUpdatedAt());
         return r;

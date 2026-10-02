@@ -1,12 +1,12 @@
 <div class="retrieval-page">
 
   <div class="retrieval-toolbar">
-    <button mat-stroked-button (click)="close()">
+    <button class="btn-close" mat-stroked-button (click)="close()">
       <mat-icon>close</mat-icon>
       {{ 'RETRIEVAL.CLOSE' | translate }}
     </button>
     <h1 class="retrieval-title">{{ 'RETRIEVAL.TITLE' | translate }}</h1>
-    <button mat-raised-button color="primary" (click)="runSearch()">
+    <button class="btn-run-search" mat-raised-button color="primary" (click)="runSearch()">
       <mat-icon>search</mat-icon>
       {{ 'RETRIEVAL.RUN_SEARCH' | translate }}
     </button>
@@ -18,16 +18,22 @@
   </mat-form-field>
 
   <div class="logic-toolbar">
-    <button mat-flat-button color="primary" (click)="addCondition()">
+    <button class="btn-add-condition" mat-flat-button color="primary" (click)="addCondition()">
       <mat-icon>add</mat-icon>{{ 'RETRIEVAL.ADD_CONDITION' | translate }}
     </button>
-    <button mat-stroked-button (click)="clearAll()">
+    <button class="btn-clear" mat-stroked-button (click)="clearAll()">
       <mat-icon>block</mat-icon>{{ 'RETRIEVAL.CLEAR' | translate }}
     </button>
-    <button mat-stroked-button [disabled]="!canOpenGroup()" (click)="addLeftParen()">(</button>
-    <button mat-stroked-button [disabled]="!canCloseGroup()" (click)="addRightParen()">)</button>
-    <button mat-stroked-button [disabled]="!canAddConjunction()" (click)="addAnd()">{{ 'RETRIEVAL.AND_TOKEN' | translate }}</button>
-    <button mat-stroked-button [disabled]="!canAddConjunction()" (click)="addOr()">{{ 'RETRIEVAL.OR_TOKEN' | translate }}</button>
+    <!--
+      BUG FIX: legacy's paren/AND/OR buttons (x_left, x_right, x_and, x_or) are never disabled —
+      invalid clicks show a MsgBox instead (see the comments on addAnd()/addLeftParen() in the
+      component). Disabling these via [disabled] gave no feedback on an invalid click, which
+      looked exactly like "the button doesn't work" in a live browser test. Always enabled now.
+    -->
+    <button class="btn-paren-open" mat-stroked-button (click)="addLeftParen()">(</button>
+    <button class="btn-paren-close" mat-stroked-button (click)="addRightParen()">)</button>
+    <button class="btn-and" mat-stroked-button (click)="addAnd()">{{ 'RETRIEVAL.AND_TOKEN' | translate }}</button>
+    <button class="btn-or" mat-stroked-button (click)="addOr()">{{ 'RETRIEVAL.OR_TOKEN' | translate }}</button>
   </div>
 
   <div class="condition-row">
@@ -37,7 +43,7 @@
       @if (field.fieldType !== 'STRING') {
         <mat-form-field appearance="outline">
           <mat-label>{{ 'RETRIEVAL.OPERATOR_LABEL' | translate }}</mat-label>
-          <mat-select [value]="operator()" (selectionChange)="operator.set($event.value)">
+          <mat-select panelClass="retrieval-tools-panel" [value]="operator()" (selectionChange)="operator.set($event.value)">
             @for (op of numberOperators; track op) {
               <mat-option [value]="op">{{ 'RETRIEVAL.OPERATOR.' + op | translate }}</mat-option>
             }
@@ -48,11 +54,20 @@
           <mat-radio-button value="STARTS_WITH">{{ 'RETRIEVAL.MODE_STARTS_WITH' | translate }} (F8)</mat-radio-button>
           <mat-radio-button value="CONTAINS">{{ 'RETRIEVAL.MODE_CONTAINS' | translate }} (F9)</mat-radio-button>
         </mat-radio-group>
+        @if (!canUseStartsWith(field) && !canUseContains(field)) {
+          <p class="f8-f9-hint">{{ 'RETRIEVAL.F8_F9_UNAVAILABLE' | translate }}</p>
+        }
       }
 
+      <!--
+        F8/F9 keyboard shortcuts mirror legacy c_getcond_KeyDown exactly: the radio buttons
+        above are never disabled (legacy never disabled Option1/Option2 either), only the
+        keyboard-driven mode switch is gated by the field's legacy source-table whitelist.
+      -->
       <mat-form-field appearance="outline">
         <mat-label>{{ 'RETRIEVAL.VALUE' | translate }}</mat-label>
-        <input matInput [value]="value()" (input)="value.set($any($event.target).value)">
+        <input matInput [value]="value()" (input)="value.set($any($event.target).value)"
+               (keydown.F8)="onF8Shortcut()" (keydown.F9)="onF9Shortcut()">
       </mat-form-field>
 
       @if (operator() === 'BETWEEN') {
@@ -66,47 +81,65 @@
     }
   </div>
 
+  <!--
+    Legacy toolbar row above the three list columns (sort_from.frm coordinates, confirmed by
+    Top/Left): Label5 "الادوات" (Left=8520,Top=1800) sits directly above c_operation
+    (Left=7320,Top=2040, width fully contains Label5's) — i.e. "الادوات" is the caption for the
+    comparison-operator ComboBox (decoded embedded list at sort_from.frx offset 0x56: "=", "<>",
+    "<", ">", default "="). Label6 "لوائح لحقول العرض" (Left=10200,Top=2400) sits directly above
+    M_OUT_CAT (Left=9120,Top=2640, right edge 11895 = Label6's right edge exactly) — the existing
+    category selector/"تعليم حقول العرض" bulk-mark action, previously placed inside the
+    "مدخل البحث" column below; moved up here to match legacy's toolbar-row placement. RTL order
+    (smaller Left = renders further right under RightToLeft=-1): الادوات first, then
+    لوائح لحقول العرض + تعليم حقول العرض.
+  -->
+  <div class="tools-toolbar">
+    <mat-form-field appearance="outline" class="tools-operator">
+      <mat-label>{{ 'RETRIEVAL.TOOLS' | translate }}</mat-label>
+      <mat-select panelClass="retrieval-tools-panel" [value]="operator()" (selectionChange)="operator.set($event.value)">
+        @for (op of numberOperators; track op) {
+          <mat-option [value]="op">{{ 'RETRIEVAL.OPERATOR.' + op | translate }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="tools-category">
+      <mat-label>{{ 'RETRIEVAL.DISPLAY_FIELDS_LIST' | translate }}</mat-label>
+      <mat-select panelClass="retrieval-tools-panel" [value]="selectedCategory()" (selectionChange)="onSelectCategory($event.value)">
+        <mat-option [value]="null">{{ 'RETRIEVAL.ALL_CATEGORIES' | translate }}</mat-option>
+        @for (c of categories(); track c) {
+          <mat-option [value]="c">{{ c }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button [disabled]="!selectedCategory()" (click)="markCategoryForDisplay()">
+      {{ 'RETRIEVAL.MARK_CATEGORY' | translate }}
+    </button>
+  </div>
+
+  <!--
+    Section order mirrors the legacy screenshot's RTL layout exactly: "مدخل البحث" (the field
+    picker, rightmost/first in legacy) — "حقول العرض في الجدول" (display-fields config, middle)
+    — "اختيار الاجوبة" (value/answer picker, leftmost/last in legacy). DOM order below is
+    first-to-last matching that right-to-left reading order (the page's RTL direction places
+    the first DOM child on the right), so this is CSS/HTML structure only — no data/behavior
+    change.
+  -->
   <div class="picker-columns">
 
     <div class="picker-col">
-      <p class="picker-title">{{ 'RETRIEVAL.VALUE_PICKER' | translate }}</p>
-      @if (selectedField()?.lookupEnabled) {
-        <mat-form-field appearance="outline" class="full-width">
-          <input matInput [formControl]="lookupControl" [placeholder]="'RETRIEVAL.TYPE_TO_FILTER' | translate">
-        </mat-form-field>
-        <ul class="picker-list">
-          @for (v of lookupResults(); track v) {
-            <li (click)="pickLookupValue(v)">{{ v }}</li>
-          } @empty {
-            <li class="no-data">{{ 'APP.NO_DATA' | translate }}</li>
-          }
-        </ul>
-      } @else {
-        <p class="no-data">{{ 'RETRIEVAL.NO_LOOKUP_FOR_FIELD' | translate }}</p>
-      }
-    </div>
-
-    <div class="picker-col">
-      <p class="picker-title">{{ 'RETRIEVAL.DISPLAY_FIELDS' | translate }}</p>
-      <ul class="picker-list">
-        @for (f of displayFields(); track f.fieldKey) {
-          <li (dblclick)="toggleDisplayField(f)">{{ f.label }}</li>
-        } @empty {
-          <li class="no-data">{{ 'RETRIEVAL.NO_DISPLAY_FIELDS' | translate }}</li>
-        }
-      </ul>
-    </div>
-
-    <div class="picker-col">
-      <div class="picker-title-row">
-        <p class="picker-title">{{ 'RETRIEVAL.ALL_FIELDS' | translate }}</p>
-        <button mat-stroked-button [disabled]="!selectedCategory()" (click)="markCategoryForDisplay()">
-          {{ 'RETRIEVAL.MARK_CATEGORY' | translate }}
-        </button>
-      </div>
+      <!--
+        "تعليم حقول العرض" + its category selector moved to the new .tools-toolbar row above,
+        matching legacy's Command3/M_OUT_CAT toolbar placement (see that row's comment for the
+        coordinate evidence). This column's own category filter stays as an additive convenience
+        (legacy's "مدخل البحث" list is unfiltered) and keeps the same selectedCategory signal, so
+        picking a category here or in the toolbar above stay in sync automatically.
+      -->
+      <p class="picker-title">{{ 'RETRIEVAL.ALL_FIELDS' | translate }}</p>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ 'RETRIEVAL.CATEGORY' | translate }}</mat-label>
-        <mat-select [value]="selectedCategory()" (selectionChange)="onSelectCategory($event.value)">
+        <mat-select panelClass="retrieval-tools-panel" [value]="selectedCategory()" (selectionChange)="onSelectCategory($event.value)">
           <mat-option [value]="null">{{ 'RETRIEVAL.ALL_CATEGORIES' | translate }}</mat-option>
           @for (c of categories(); track c) {
             <mat-option [value]="c">{{ c }}</mat-option>
@@ -124,6 +157,49 @@
           </li>
         }
       </ul>
+    </div>
+
+    <div class="picker-col">
+      <p class="picker-title">{{ 'RETRIEVAL.DISPLAY_FIELDS' | translate }}</p>
+      <!--
+        Legacy "حقول العرض في الجدول" (DBList2, bound to BNKOUT2): dblclick toggles the output
+        column (user_out_choice), F10 toggles the order/sort mark (user_out_choi1, feeds ORDER
+        BY), F2 toggles the cosmetic "#" marker (out_chioce/out_chio1) — three distinct
+        mechanisms on the same list, reproduced as three distinct signals/handlers here.
+      -->
+      <ul class="picker-list">
+        @for (f of displayFields(); track f.fieldKey) {
+          <li
+            tabindex="0"
+            [class.order-marked]="isOrderField(f)"
+            (dblclick)="toggleDisplayField(f)"
+            (keydown.F10)="toggleOrderField(f); $event.preventDefault()"
+            (keydown.F2)="toggleHashMark(f); $event.preventDefault()">
+            @if (isOrderField(f)) { <span class="order-badge" [title]="'RETRIEVAL.ORDER_FIELD_HINT' | translate">↕</span> }
+            {{ isHashMarked(f) ? '# ' : '' }}{{ f.label }}
+          </li>
+        } @empty {
+          <li class="no-data">{{ 'RETRIEVAL.NO_DISPLAY_FIELDS' | translate }}</li>
+        }
+      </ul>
+    </div>
+
+    <div class="picker-col">
+      <p class="picker-title">{{ 'RETRIEVAL.VALUE_PICKER' | translate }}</p>
+      @if (selectedField()?.lookupEnabled) {
+        <mat-form-field appearance="outline" class="full-width">
+          <input matInput [formControl]="lookupControl" [placeholder]="'RETRIEVAL.TYPE_TO_FILTER' | translate">
+        </mat-form-field>
+        <ul class="picker-list">
+          @for (v of lookupResults(); track v) {
+            <li (click)="pickLookupValue(v)">{{ v }}</li>
+          } @empty {
+            <li class="no-data">{{ 'APP.NO_DATA' | translate }}</li>
+          }
+        </ul>
+      } @else {
+        <p class="no-data">{{ 'RETRIEVAL.NO_LOOKUP_FOR_FIELD' | translate }}</p>
+      }
     </div>
 
   </div>

@@ -67,4 +67,30 @@ public class RetrievalFieldEntity extends BaseEntity {
 
     @Column(name = "display_order", nullable = false)
     private int displayOrder = 0;
+
+    /**
+     * Legacy {@code out_slct1} equivalent — the source table/view name sort_form.frm's
+     * {@code c_getcond_KeyDown} checked to gate the F8 ("بحث بالبداية") / F9 ("بحث بكلمة معينة")
+     * keyboard shortcuts. Confirmed legacy values (from sort_from.frm + end_user.frm):
+     * F8 whitelist = {form, macnz, view_form1, main, auther, period}; F9 whitelist adds
+     * {view_form}. NULL means "unknown/unmapped" — the real legacy bnkout.out_slct1 row data
+     * was not recoverable from the provided archive (see migration audit), so this column is
+     * intentionally left unpopulated for the seeded catalogue rather than guessed. The gating
+     * logic in RetrievalService/the frontend is still fully legacy-faithful and will activate
+     * correctly the moment real values are supplied here.
+     */
+    @Column(name = "legacy_source_table", length = 60)
+    private String legacySourceTable;
+
+    /**
+     * Legacy F2 (DBList2_77) "#" marker — toggles bnkout.OUT_CHIOCE (1 unmarked / 2 marked) on
+     * the shared catalogue row itself, not per-user (distinct from retrieval_user_field.display,
+     * legacy's user_out_choice). See V29 migration for the exact legacy evidence.
+     */
+    @Column(name = "hash_marked", nullable = false)
+    private boolean hashMarked = false;
+
+    /** Legacy OUT_CHIO1 — drives the strip-4-vs-strip-2 branch in DBList2_77; 1, 2, or unset. */
+    @Column(name = "hash_chio1")
+    private Integer hashChio1;
 }

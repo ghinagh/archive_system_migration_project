@@ -1,0 +1,14 @@
+-- Adds the metadata column the graphical-retrieval F8/F9 keyboard-shortcut gate needs
+-- (migrated equivalent of legacy sort_from.frm's c_getcond_KeyDown, which only activated
+-- "بحث بالبداية"/F8 and "بحث بكلمة معينة"/F9 when the selected field's bnkout.out_slct1
+-- was one of a fixed whitelist of legacy source tables/views).
+--
+-- KNOWN DATA GAP (see migration audit): the real bnkout.out_slct1 value for each legacy
+-- field is DB-resident row data that was not present anywhere in the provided legacy
+-- source/DDL archive, so it cannot be reconstructed without inventing it. This column is
+-- therefore added but left NULL for every currently-seeded GRAPHICAL_RETRIEVAL field.
+-- The F8/F9 gating logic that consumes it (RetrievalFieldOption.legacySourceTable /
+-- GraphicalRetrievalComponent's F8_SOURCE_TABLES / F9_SOURCE_TABLES) is fully implemented
+-- and legacy-faithful; it will simply evaluate to "not allowed" for every field until real
+-- out_slct1 values are supplied here.
+ALTER TABLE retrieval_field ADD COLUMN legacy_source_table VARCHAR(60);

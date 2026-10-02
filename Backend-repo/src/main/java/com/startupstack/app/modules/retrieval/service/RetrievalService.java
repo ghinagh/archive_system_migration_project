@@ -4,9 +4,13 @@ import com.startupstack.app.modules.retrieval.dto.RetrievalConditionNode;
 import com.startupstack.app.modules.retrieval.dto.RetrievalFieldOption;
 import com.startupstack.app.modules.retrieval.dto.RetrievalSearchRequest;
 import com.startupstack.app.modules.retrieval.dto.RetrievalSearchResponse;
+import com.startupstack.app.modules.retrieval.dto.RetrievalUserFieldState;
+import com.startupstack.app.modules.retrieval.entity.RetrievalUserFieldEntity;
+import com.startupstack.app.modules.retrieval.repository.RetrievalUserFieldRepository;
 import com.startupstack.app.modules.retrievalfields.entity.RetrievalFieldEntity;
 import com.startupstack.app.modules.retrievalfields.repository.RetrievalFieldRepository;
 import com.startupstack.app.shared.exception.BusinessException;
+import com.startupstack.app.shared.util.SecurityUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -52,27 +56,139 @@ public class RetrievalService {
             " FROM CatalogueEntity c " +
             "LEFT JOIN ArticleEntity a ON a.appNo = c.appNo " +
             "LEFT JOIN PeriodicalEntity p ON p.perNo = a.periodicalNo " +
+            // ARTICLE.ART_PER1 (ArticleEntity.periodical1) is a second, distinct periodical
+            // reference confirmed by upd_article2's own column list (art_per1) and, in Form6.frm,
+            // by the DataCombo m_art_per1 (also bound to PERIOD) sitting at the exact form
+            // position of the Label captioned "مصدر الترجمة" ("translation source") — i.e. the
+            // original periodical a translated article came from.
+            "LEFT JOIN PeriodicalEntity p1 ON p1.perNo = a.periodical1 " +
             "LEFT JOIN ResEntity r ON r.appNo = c.appNo " +
             "LEFT JOIN AuthorEntity au ON au.autNo = r.authorNo " +
             "LEFT JOIN SubjectAnalysisEntity sl ON sl.appNo = c.appNo " +
             "LEFT JOIN MacnzEntity sub ON sub.subCode = sl.descriptorNo " +
             "LEFT JOIN FileAddEntity fa ON fa.appNo = c.appNo " +
-            "LEFT JOIN CatalogueEntity rd ON rd.appNo = fa.fileNo ";
+            "LEFT JOIN CatalogueEntity rd ON rd.appNo = fa.fileNo " +
+            // DigitEntity.catalogue is an existing @ManyToOne (DIG_NO=MN_APP_NO) — reused here,
+            // not a new relationship — to surface "نوع المادة"/"نوع الشريط" (DIGIT.dig_typmat /
+            // dig_typchrt), confirmed via Form6.frm's DataGrid DataField bindings + rel_digit_proc.
+            "LEFT JOIN DigitEntity dg ON dg.docNo = c.appNo ";
 
     private final RetrievalFieldRepository fieldRepository;
+    private final RetrievalUserFieldRepository userFieldRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    public RetrievalService(RetrievalFieldRepository fieldRepository) {
+    public RetrievalService(RetrievalFieldRepository fieldRepository, RetrievalUserFieldRepository userFieldRepository) {
         this.fieldRepository = fieldRepository;
+        this.userFieldRepository = userFieldRepository;
     }
 
     @Transactional(readOnly = true)
     public List<RetrievalFieldOption> listFields() {
         return fieldRepository.findByModuleAndEnabledTrueOrderByCategoryAscDisplayOrderAsc(MODULE).stream()
-                .map(f -> new RetrievalFieldOption(f.getFieldKey(), f.getLabel(), f.getCategory(), f.getFieldType(), f.isLookupEnabled()))
+                .map(f -> new RetrievalFieldOption(f.getFieldKey(), f.getLabel(), f.getCategory(), f.getFieldType(),
+                        f.isLookupEnabled(), f.getLegacySourceTable(), f.isHashMarked()))
                 .toList();
+    }
+
+    /**
+     * Legacy sort_from.frm Form_Load (lines 2078-2081): BNKOUT2.sql filters view_user_bnkout to
+     * the current user's rows where user_out_choice is 1 or 2 — i.e. only fields that user has
+     * ever marked. Returns exactly that: the current user's persisted display/order marks.
+     */
+    @Transactional(readOnly = true)
+    public List<RetrievalUserFieldState> myFieldState() {
+        String userNo = currentUserNo();
+        return userFieldRepository.findByUserNo(userNo).stream()
+                .map(e -> new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark()))
+                .toList();
+    }
+
+    /** Legacy DBList2_DblClick — toggles this user's user_out_choice for one field. */
+    @Transactional
+    public RetrievalUserFieldState toggleDisplay(String fieldKey) {
+        requireField(fieldKey, allFieldsByKey());
+        RetrievalUserFieldEntity e = findOrCreate(currentUserNo(), fieldKey);
+        e.setDisplay(!e.isDisplay());
+        userFieldRepository.save(e);
+        return new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark());
+    }
+
+    /** Legacy DBList2_KeyDown (F10) — toggles this user's user_out_choi1 for one field. */
+    @Transactional
+    public RetrievalUserFieldState toggleOrder(String fieldKey) {
+        requireField(fieldKey, allFieldsByKey());
+        RetrievalUserFieldEntity e = findOrCreate(currentUserNo(), fieldKey);
+        e.setOrderMark(!e.isOrderMark());
+        userFieldRepository.save(e);
+        return new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark());
+    }
+
+    /**
+     * Legacy Command3_Click ("تعليم حقول العرض") — bulk-marks every field in the given category
+     * as display=true for the current user (legacy loops f_cat rows for the M_OUT_CAT-selected
+     * category and calls upd_user_bnkout_choice per field).
+     */
+    @Transactional
+    public List<RetrievalUserFieldState> markCategoryForDisplay(String category) {
+        String userNo = currentUserNo();
+        List<RetrievalFieldEntity> inCategory = fieldRepository.findByModuleAndEnabledTrue(MODULE).stream()
+                .filter(f -> category.equals(f.getCategory()))
+                .toList();
+        List<RetrievalUserFieldState> result = new ArrayList<>();
+        for (RetrievalFieldEntity f : inCategory) {
+            RetrievalUserFieldEntity e = findOrCreate(userNo, f.getFieldKey());
+            e.setDisplay(true);
+            userFieldRepository.save(e);
+            result.add(new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark()));
+        }
+        return result;
+    }
+
+    /**
+     * Legacy DBList2_77 (F2) — toggles the GLOBAL (not per-user) bnkout.OUT_CHIOCE/OUT_CHIO1
+     * "#" marker on the catalogue row itself. See the exact state machine quoted in the V29
+     * migration comment and in the frontend's hashMarkState doc comment.
+     */
+    @Transactional
+    public RetrievalFieldOption toggleHashMark(String fieldKey) {
+        RetrievalFieldEntity f = fieldRepository.findByModuleAndFieldKey(MODULE, fieldKey)
+                .orElseThrow(() -> new BusinessException("Unknown retrieval field: " + fieldKey));
+        if (!f.isHashMarked()) {
+            f.setHashMarked(true);
+            f.setHashChio1(2);
+        } else {
+            f.setHashMarked(false);
+            // out_chio1 is left as-is on unmark, exactly like legacy's DBList2_77 (it only ever
+            // reads it on the strip branch; legacy never resets it back here either).
+        }
+        fieldRepository.save(f);
+        return new RetrievalFieldOption(f.getFieldKey(), f.getLabel(), f.getCategory(), f.getFieldType(),
+                f.isLookupEnabled(), f.getLegacySourceTable(), f.isHashMarked());
+    }
+
+    private RetrievalUserFieldEntity findOrCreate(String userNo, String fieldKey) {
+        return userFieldRepository.findByUserNoAndFieldKey(userNo, fieldKey)
+                .orElseGet(() -> {
+                    RetrievalUserFieldEntity e = new RetrievalUserFieldEntity();
+                    e.setUserNo(userNo);
+                    e.setFieldKey(fieldKey);
+                    return e;
+                });
+    }
+
+    /**
+     * Legacy's box_user_no (the user_bnkout/view_user_bnkout scoping key) has no 1:1 equivalent
+     * claim in our JWT; the authenticated username is the real, stable per-user identity in
+     * this system and is used in its place.
+     */
+    private String currentUserNo() {
+        String username = SecurityUtils.getCurrentUsername();
+        if (username == null) {
+            throw new BusinessException("No authenticated user");
+        }
+        return username;
     }
 
     @Transactional(readOnly = true)
@@ -115,7 +231,27 @@ public class RetrievalService {
                 ? ""
                 : " WHERE " + buildPredicate(request.getRootCondition(), fields, params, new AtomicInteger());
 
-        String jpql = "SELECT DISTINCT c.appNo, " + String.join(", ", selectParts) + JOIN_SKELETON + whereClause;
+        // Legacy F10 ("حقول العرض في الجدول" / DBList2_KeyDown / user_out_choi1) — fields marked
+        // for ordering feed cmd_result_Click's "order by" clause in the order they were marked.
+        String orderClause = "";
+        List<String> orderKeys = request.getOrderFieldKeys();
+        if (orderKeys != null && !orderKeys.isEmpty()) {
+            List<String> orderParts = new ArrayList<>();
+            for (String key : orderKeys) {
+                // SELECT DISTINCT requires ORDER BY columns to appear in the SELECT list (same
+                // constraint legacy avoided implicitly since F10 marks fields on the same
+                // DBList2 list the output-column dblclick toggle uses) — enforce that here
+                // rather than emitting a query Postgres would reject.
+                if (!outputKeys.contains(key)) {
+                    throw new BusinessException(
+                            "Order field '" + key + "' must also be one of the selected output fields");
+                }
+                orderParts.add(qualify(requireField(key, fields)));
+            }
+            orderClause = " ORDER BY " + String.join(", ", orderParts);
+        }
+
+        String jpql = "SELECT DISTINCT c.appNo, " + String.join(", ", selectParts) + JOIN_SKELETON + whereClause + orderClause;
         Query dataQuery = entityManager.createQuery(jpql);
         params.forEach(dataQuery::setParameter);
 

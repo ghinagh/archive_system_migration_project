@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -31,6 +32,7 @@ export class GraphicalRetrievalComponent {
 
   private retrievalService = inject(RetrievalService);
   private router = inject(Router);
+  private location = inject(Location);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
@@ -54,9 +56,30 @@ export class GraphicalRetrievalComponent {
   lookupControl = new FormControl<string>('');
   lookupResults = signal<string[]>([]);
 
+  /**
+   * Legacy sort_from.frm Form_Load: BNKOUT2.sql filters view_user_bnkout to the current user's
+   * rows where user_out_choice is 1 or 2 — i.e. "حقول العرض في الجدول" starts populated with
+   * whatever THIS user has already marked (persisted server-side), not empty every load, and
+   * not the full catalogue either. Populated from RetrievalService.myFieldState() in the
+   * constructor; every mutation below (dblclick/F10/Command3) now calls the backend so it
+   * survives a reload/re-login exactly like legacy's user_bnkout.
+   */
   displayFields = signal<RetrievalFieldOption[]>([]);
 
+  /**
+   * Legacy F10 ("حقول العرض في الجدول" / DBList2_KeyDown / user_out_choi1) — fields marked to
+   * participate in ORDER BY, kept as its own distinct list from `displayFields` per the audit
+   * ruling (F10 is a separate mechanism from the dblclick output-column toggle, even though
+   * both operate on the same legacy list control). Also persisted per-user now.
+   */
+  orderFields = signal<RetrievalFieldOption[]>([]);
+
   tokens = signal<AccumulatorToken[]>([]);
+
+  /** F8 whitelist per legacy sort_from.frm c_getcond_KeyDown (RTrim(out_slct1) membership check). */
+  readonly F8_SOURCE_TABLES = ['form', 'macnz', 'view_form1', 'main', 'auther', 'period'];
+  /** F9 whitelist — same set plus 'view_form' (confirmed in sort_from.frm + end_user.frm). */
+  readonly F9_SOURCE_TABLES = [...this.F8_SOURCE_TABLES, 'view_form'];
 
   openParens = computed(() => {
     let depth = 0;
@@ -79,18 +102,16 @@ export class GraphicalRetrievalComponent {
   });
 
   private lastTokenKind = computed(() => this.tokens().at(-1)?.kind ?? null);
+  /** Legacy x_and_Click/x_or_Click guard (`nb_and+nb_or < nb_ad`) — see addAnd()/addOr(). */
   canAddConjunction = computed(() => this.lastTokenKind() === 'CONDITION' || this.lastTokenKind() === 'RPAREN');
-  canOpenGroup = computed(() => {
-    const last = this.lastTokenKind();
-    return last === null || last === 'AND' || last === 'OR' || last === 'LPAREN';
-  });
-  canCloseGroup = computed(() => {
-    const last = this.lastTokenKind();
-    return this.openParens() > 0 && (last === 'CONDITION' || last === 'RPAREN');
-  });
 
   constructor() {
-    this.retrievalService.getFields().subscribe({ next: r => this.fields.set(r.data) });
+    this.retrievalService.getFields().subscribe({
+      next: r => {
+        this.fields.set(r.data);
+        this.loadMyFieldState();
+      }
+    });
 
     this.lookupControl.valueChanges.pipe(
       debounceTime(250),
@@ -106,6 +127,29 @@ export class GraphicalRetrievalComponent {
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(response => this.lookupResults.set(response?.data ?? []));
+  }
+
+  /**
+   * Legacy Form_Load's BNKOUT2 query — fetches this user's persisted display/order marks and
+   * populates displayFields/orderFields from them, instead of starting empty every load.
+   */
+  private loadMyFieldState(): void {
+    this.retrievalService.myFieldState().subscribe({
+      next: r => {
+        const byKey = new Map(this.fields().map(f => [f.fieldKey, f]));
+        const display: RetrievalFieldOption[] = [];
+        const order: RetrievalFieldOption[] = [];
+        for (const state of r.data) {
+          const field = byKey.get(state.fieldKey);
+          if (!field) continue;
+          if (state.display) display.push(field);
+          if (state.orderMark) order.push(field);
+        }
+        this.displayFields.set(display);
+        this.orderFields.set(order);
+      },
+      error: () => { /* fresh user with no prior marks yet — legacy shows an empty list too */ }
+    });
   }
 
   onSelectCategory(category: string | null): void {
@@ -132,28 +176,127 @@ export class GraphicalRetrievalComponent {
     this.value.set(val);
   }
 
+  /** Legacy DBList2_DblClick — toggles user_out_choice for this user, persisted server-side. */
   toggleDisplayField(field: RetrievalFieldOption): void {
+    const wasDisplayed = this.isDisplayField(field);
+    // Optimistic local update so the UI responds immediately; the backend call is the source
+    // of truth and will be re-applied below in case of a mismatch (e.g. a conflicting tab).
     const current = this.displayFields();
-    const exists = current.some(f => f.fieldKey === field.fieldKey);
-    this.displayFields.set(exists ? current.filter(f => f.fieldKey !== field.fieldKey) : [...current, field]);
+    this.displayFields.set(wasDisplayed ? current.filter(f => f.fieldKey !== field.fieldKey) : [...current, field]);
+
+    this.retrievalService.toggleDisplay(field.fieldKey).subscribe({
+      next: r => {
+        const list = this.displayFields();
+        const has = list.some(f => f.fieldKey === field.fieldKey);
+        if (r.data.display && !has) {
+          this.displayFields.set([...list, field]);
+        } else if (!r.data.display && has) {
+          this.displayFields.set(list.filter(f => f.fieldKey !== field.fieldKey));
+        }
+      }
+    });
   }
 
   isDisplayField(field: RetrievalFieldOption): boolean {
     return this.displayFields().some(f => f.fieldKey === field.fieldKey);
   }
 
+  /**
+   * Legacy F10 on "حقول العرض في الجدول" (DBList2_KeyDown) — toggles whether a field
+   * participates in ORDER BY, persisted server-side per user.
+   */
+  toggleOrderField(field: RetrievalFieldOption): void {
+    const wasOrdered = this.isOrderField(field);
+    const current = this.orderFields();
+    this.orderFields.set(wasOrdered ? current.filter(f => f.fieldKey !== field.fieldKey) : [...current, field]);
+
+    this.retrievalService.toggleOrder(field.fieldKey).subscribe({
+      next: r => {
+        const list = this.orderFields();
+        const has = list.some(f => f.fieldKey === field.fieldKey);
+        if (r.data.orderMark && !has) {
+          this.orderFields.set([...list, field]);
+        } else if (!r.data.orderMark && has) {
+          this.orderFields.set(list.filter(f => f.fieldKey !== field.fieldKey));
+        }
+      }
+    });
+  }
+
+  isOrderField(field: RetrievalFieldOption): boolean {
+    return this.orderFields().some(f => f.fieldKey === field.fieldKey);
+  }
+
+  /**
+   * Legacy F2 (`DBList2_77`) "#" marker — global per-field flag (bnkout.OUT_CHIOCE), not
+   * per-user, persisted via /fields/{key}/toggle-hash-mark. Updates the shared `fields` list
+   * in place from the backend's authoritative response.
+   */
+  toggleHashMark(field: RetrievalFieldOption): void {
+    this.retrievalService.toggleHashMark(field.fieldKey).subscribe({
+      next: r => {
+        this.fields.update(list => list.map(f => f.fieldKey === r.data.fieldKey ? r.data : f));
+        const selected = this.selectedField();
+        if (selected?.fieldKey === r.data.fieldKey) {
+          this.selectedField.set(r.data);
+        }
+      }
+    });
+  }
+
+  isHashMarked(field: RetrievalFieldOption): boolean {
+    return this.fields().find(f => f.fieldKey === field.fieldKey)?.hashMarked ?? field.hashMarked;
+  }
+
+  /** Legacy c_getcond_KeyDown F8 whitelist check: RTrim(out_slct1) membership. */
+  canUseStartsWith(field: RetrievalFieldOption | null): boolean {
+    const table = field?.legacySourceTable?.trim();
+    return !!table && this.F8_SOURCE_TABLES.includes(table);
+  }
+
+  /** Legacy c_getcond_KeyDown F9 whitelist check: RTrim(out_slct1) membership. */
+  canUseContains(field: RetrievalFieldOption | null): boolean {
+    const table = field?.legacySourceTable?.trim();
+    return !!table && this.F9_SOURCE_TABLES.includes(table);
+  }
+
+  /**
+   * F8 keyboard shortcut — mirrors legacy exactly: Option1/Option2 radio buttons themselves are
+   * never disabled in sort_from.frm, only the F8/F9 *keyboard* activation on c_getcond is gated
+   * by the out_slct1 whitelist. A field outside the whitelist simply does nothing on F8/F9,
+   * same as legacy (no error, no visible feedback).
+   */
+  onF8Shortcut(): void {
+    if (this.canUseStartsWith(this.selectedField())) {
+      this.onSearchModeChange('STARTS_WITH');
+    }
+  }
+
+  onF9Shortcut(): void {
+    if (this.canUseContains(this.selectedField())) {
+      this.onSearchModeChange('CONTAINS');
+    }
+  }
+
+  /** Legacy Command3_Click ("تعليم حقول العرض") — bulk-marks the category server-side for this user. */
   markCategoryForDisplay(): void {
     const cat = this.selectedCategory();
     if (!cat) {
       return;
     }
-    const merged = [...this.displayFields()];
-    for (const f of this.fields().filter(x => x.category === cat)) {
-      if (!merged.some(m => m.fieldKey === f.fieldKey)) {
-        merged.push(f);
+    this.retrievalService.markCategoryForDisplay(cat).subscribe({
+      next: r => {
+        const byKey = new Map(this.fields().map(f => [f.fieldKey, f]));
+        const merged = [...this.displayFields()];
+        for (const state of r.data) {
+          if (state.display && !merged.some(m => m.fieldKey === state.fieldKey)) {
+            const field = byKey.get(state.fieldKey);
+            if (field) merged.push(field);
+          }
+        }
+        this.displayFields.set(merged);
       }
-    }
-    this.displayFields.set(merged);
+    });
   }
 
   addCondition(): void {
@@ -187,31 +330,53 @@ export class GraphicalRetrievalComponent {
     this.lookupControl.setValue('');
   }
 
+  /**
+   * BUG FIX (live-browser regression report): legacy x_and_Click/x_or_Click (sort_from.frm
+   * lines 2409-2422, 2539-2551) are buttons that are ALWAYS clickable — the guard
+   * (`nb_and+nb_or < nb_ad`) only decides whether the click *succeeds* or pops a MsgBox; it
+   * never disables the control. The previous migrated version instead used `[disabled]` on
+   * the button, which gives a user zero feedback on an invalid click — indistinguishable from
+   * "the button doesn't work" (exactly what was reported). Reproducing legacy exactly: the
+   * button is always enabled; an invalid click shows the same message legacy did, via the
+   * existing snackbar pattern already used elsewhere in this component.
+   *   nb_and+nb_or = 0  -> "لايمكن اضافة /و/ قبل اختيار السؤال"  (x_and_Click's first MsgBox)
+   *   otherwise         -> "لا يمكن اضافة /و/ لانها موجودة"      (x_and_Click's second MsgBox)
+   */
   addAnd(): void {
-    if (!this.canAddConjunction()) {
+    if (this.canAddConjunction()) {
+      this.tokens.update(t => [...t, { kind: 'AND' }]);
       return;
     }
-    this.tokens.update(t => [...t, { kind: 'AND' }]);
+    const key = this.lastTokenKind() === null ? 'RETRIEVAL.AND_BEFORE_CONDITION' : 'RETRIEVAL.AND_ALREADY_EXISTS';
+    this.snackBar.open(this.translate.instant(key), '', { duration: 3000 });
   }
 
+  /** Same fix as addAnd(), mirroring x_or_Click's two MsgBox texts. */
   addOr(): void {
-    if (!this.canAddConjunction()) {
+    if (this.canAddConjunction()) {
+      this.tokens.update(t => [...t, { kind: 'OR' }]);
       return;
     }
-    this.tokens.update(t => [...t, { kind: 'OR' }]);
+    const key = this.lastTokenKind() === null ? 'RETRIEVAL.OR_BEFORE_CONDITION' : 'RETRIEVAL.OR_ALREADY_EXISTS';
+    this.snackBar.open(this.translate.instant(key), '', { duration: 3000 });
   }
 
+  /**
+   * BUG FIX (live-browser regression report): legacy x_left_Click/x_right_Click (sort_from.frm
+   * lines 423-430, 415-422) are completely UNGATED — they unconditionally append the paren
+   * character every time, with no guard of any kind. The previous migrated version invented a
+   * `canOpenGroup()`/`canCloseGroup()` guard with no legacy basis, which disabled these buttons
+   * in states a user hits constantly (e.g. immediately after adding one condition) — reported
+   * as the buttons "not working." Fixed to match legacy exactly: always appends, unconditionally.
+   * Final paren-balance validation still happens once, at submit time, in runSearch() — that
+   * check is unchanged and still prevents an unbalanced query from being sent.
+   */
   addLeftParen(): void {
-    if (!this.canOpenGroup()) {
-      return;
-    }
     this.tokens.update(t => [...t, { kind: 'LPAREN' }]);
   }
 
+  /** Same fix as addLeftParen() — see its comment. */
   addRightParen(): void {
-    if (!this.canCloseGroup()) {
-      return;
-    }
     this.tokens.update(t => [...t, { kind: 'RPAREN' }]);
   }
 
@@ -219,11 +384,36 @@ export class GraphicalRetrievalComponent {
     this.tokens.set([]);
   }
 
+  /**
+   * Legacy Command1_Click ("اغلاق", sort_form.frm line 1533-1535) is literally:
+   *   Private Sub Command1_Click()
+   *     Unload sort_form
+   *   End Sub
+   * — no navigation of any kind. Both ARCHIVE.frm (the menu screen that opens this one via
+   * f2_Click) and sort_form.frm are plain `VB.Form`, not `MDIForm`/`MDIChild`, so Unload
+   * simply removes this window and reveals whatever screen was already open underneath it —
+   * there is no legacy evidence for "return to a specific screen." Location.back() is the
+   * accurate Angular equivalent of that (return to whatever was open before), with a fallback
+   * to the app's default route only for the case Unload never had to handle: this screen
+   * opened with no browser history (e.g. a direct link in a new tab).
+   */
   close(): void {
-    this.router.navigate(['/catalogue']);
+    if (history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/catalogue']);
+    }
   }
 
   runSearch(): void {
+    // Legacy cmd_result_Click (sort_form.frm line 1064: "If nb_ad > 0 Then" ... line 1527-1529:
+    // "Else / MsgBox "لا يوجد جواب لانه لم تطلب سوال " / End If") — the entire query build/execute
+    // path is skipped and this exact message shown when no condition was ever added (nb_ad = 0).
+    // tokens() containing no CONDITION entry is the migrated equivalent of nb_ad = 0.
+    if (!this.tokens().some(t => t.kind === 'CONDITION')) {
+      this.snackBar.open(this.translate.instant('RETRIEVAL.NO_CONDITIONS'), '', { duration: 3000 });
+      return;
+    }
     if (this.openParens() !== 0) {
       this.snackBar.open(this.translate.instant('RETRIEVAL.UNBALANCED_PARENS'), '', { duration: 3000 });
       return;
@@ -234,9 +424,16 @@ export class GraphicalRetrievalComponent {
     }
 
     const rootCondition = this.tokens().length ? this.parseTokens(this.tokens()) : null;
+    const displayKeys = this.displayFields().map(f => f.fieldKey);
+    // Backend requires ORDER BY columns to also be selected output columns (SELECT DISTINCT
+    // constraint) — legacy F10 operates on the same list the output-column toggle does, so a
+    // field marked for order but no longer marked for display is dropped here rather than
+    // sent as an invalid request.
+    const orderKeys = this.orderFields().map(f => f.fieldKey).filter(k => displayKeys.includes(k));
     this.retrievalService.pendingSearch.set({
       rootCondition,
-      outputFieldKeys: this.displayFields().map(f => f.fieldKey),
+      outputFieldKeys: displayKeys,
+      orderFieldKeys: orderKeys.length ? orderKeys : undefined,
       page: 0,
       size: 25
     });

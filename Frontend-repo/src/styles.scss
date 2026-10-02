@@ -67,6 +67,38 @@ input[type="week"] {
   }
 }
 
+// Graphical-retrieval screen's mat-select dropdowns (operator "الادوات", category
+// "لوائح لحقول العرض"/"التصنيف") — same CDK-overlay-reach issue as .doc-form-panel above:
+// these panels render into the global overlay container appended to <body>, outside this
+// component's view encapsulation, so a scoped component style can never reach them. Without
+// an explicit opaque background here the panel rendered see-through over the picker columns
+// underneath it. Solid dark background + light text, same values as .doc-form-panel for
+// visual consistency across the app's two themed-panel screens.
+.retrieval-tools-panel {
+  background: #1e3243 !important; // --panel
+  border: 1px solid #4f7691; // --line
+  border-radius: 4px;
+
+  .mat-mdc-option {
+    color: #e9f1f6; // --ink
+    min-height: 40px;
+
+    .mdc-list-item__primary-text {
+      color: inherit;
+    }
+
+    &:hover:not(.mdc-list-item--disabled),
+    &.mat-mdc-option-active {
+      background: #24394b; // --panel-2
+    }
+
+    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+      background: #e0b45533; // --accent-dim
+      color: #e0b455; // --accent
+    }
+  }
+}
+
 // MatDialog surfaces render into the same CDK overlay container as mat-select/
 // mat-autocomplete panels above, for the same reason: outside any component's
 // view encapsulation. panelClass: 'doc-form-dialog' on dialog.open() reaches

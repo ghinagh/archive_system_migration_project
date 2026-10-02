@@ -41,4 +41,8 @@ public class RetrievalFieldRequest {
     private boolean lookupEnabled = false;
 
     private int displayOrder = 0;
+
+    /** Legacy bnkout.out_slct1 equivalent — see RetrievalFieldEntity#legacySourceTable. */
+    @Size(max = 60)
+    private String legacySourceTable;
 }

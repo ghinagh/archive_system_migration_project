@@ -32,6 +32,59 @@
   gap: 8px;
 }
 
+// Distinct background colors per action button, so each button in the toolbars is visually
+// distinguishable at a glance (close/run-search/add/clear/paren/and/or all look identical
+// otherwise, since mat-stroked-button has no fill by default).
+.btn-close {
+  background-color: #fdecea;
+  color: #c62828;
+}
+
+.btn-run-search {
+  background-color: #1976d2 !important;
+  color: #fff;
+}
+
+.btn-add-condition {
+  background-color: #2e7d32 !important;
+  color: #fff;
+}
+
+.btn-clear {
+  background-color: #fdecea;
+  color: #c62828;
+}
+
+.btn-paren-open,
+.btn-paren-close {
+  background-color: #ede7f6;
+  color: #4527a0;
+}
+
+.btn-and {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+}
+
+.btn-or {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+// Legacy toolbar row ("الادوات" / "لوائح لحقول العرض" / "تعليم حقول العرض") — see the
+// coordinate evidence in the template comment above .tools-toolbar.
+.tools-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tools-operator,
+.tools-category {
+  min-width: 160px;
+}
+
 .condition-row {
   display: flex;
   align-items: center;
@@ -122,11 +175,29 @@
       content: ' \2713';
       color: green;
     }
+
+    &.order-marked {
+      background: rgba(25, 118, 210, 0.08);
+    }
   }
+}
+
+.order-badge {
+  display: inline-block;
+  margin-inline-end: 4px;
+  color: #1976d2;
+  font-weight: 700;
 }
 
 .no-data {
   color: rgba(0, 0, 0, 0.5);
   font-style: italic;
   padding: 6px 8px;
+}
+
+.f8-f9-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
 }

@@ -3,6 +3,7 @@ package com.startupstack.app.modules.retrieval.controller;
 import com.startupstack.app.modules.retrieval.dto.RetrievalFieldOption;
 import com.startupstack.app.modules.retrieval.dto.RetrievalSearchRequest;
 import com.startupstack.app.modules.retrieval.dto.RetrievalSearchResponse;
+import com.startupstack.app.modules.retrieval.dto.RetrievalUserFieldState;
 import com.startupstack.app.modules.retrieval.service.RetrievalService;
 import com.startupstack.app.shared.annotation.Permission;
 import com.startupstack.app.shared.constants.PermissionConstants;
@@ -10,6 +11,7 @@ import com.startupstack.app.shared.response.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,5 +53,41 @@ public class RetrievalController {
     public ResponseEntity<ApiResponse<RetrievalSearchResponse>> search(
             @Valid @RequestBody RetrievalSearchRequest request) {
         return ResponseEntity.ok(ApiResponse.success(service.search(request)));
+    }
+
+    /** Legacy sort_from.frm Form_Load's BNKOUT2 query — this user's persisted display/order marks. */
+    @Permission(PermissionConstants.PERM_VIEW)
+    @GetMapping("/my-field-state")
+    public ResponseEntity<ApiResponse<List<RetrievalUserFieldState>>> myFieldState() {
+        return ResponseEntity.ok(ApiResponse.success(service.myFieldState()));
+    }
+
+    /** Legacy DBList2_DblClick. */
+    @Permission(PermissionConstants.PERM_VIEW)
+    @PostMapping("/my-field-state/{fieldKey}/toggle-display")
+    public ResponseEntity<ApiResponse<RetrievalUserFieldState>> toggleDisplay(@PathVariable String fieldKey) {
+        return ResponseEntity.ok(ApiResponse.success(service.toggleDisplay(fieldKey)));
+    }
+
+    /** Legacy DBList2_KeyDown (F10). */
+    @Permission(PermissionConstants.PERM_VIEW)
+    @PostMapping("/my-field-state/{fieldKey}/toggle-order")
+    public ResponseEntity<ApiResponse<RetrievalUserFieldState>> toggleOrder(@PathVariable String fieldKey) {
+        return ResponseEntity.ok(ApiResponse.success(service.toggleOrder(fieldKey)));
+    }
+
+    /** Legacy Command3_Click ("تعليم حقول العرض"). */
+    @Permission(PermissionConstants.PERM_VIEW)
+    @PostMapping("/my-field-state/mark-category")
+    public ResponseEntity<ApiResponse<List<RetrievalUserFieldState>>> markCategoryForDisplay(
+            @RequestParam String category) {
+        return ResponseEntity.ok(ApiResponse.success(service.markCategoryForDisplay(category)));
+    }
+
+    /** Legacy DBList2_77 (F2) — global per-field "#" marker, not per-user. */
+    @Permission(PermissionConstants.PERM_VIEW)
+    @PostMapping("/fields/{fieldKey}/toggle-hash-mark")
+    public ResponseEntity<ApiResponse<RetrievalFieldOption>> toggleHashMark(@PathVariable String fieldKey) {
+        return ResponseEntity.ok(ApiResponse.success(service.toggleHashMark(fieldKey)));
     }
 }

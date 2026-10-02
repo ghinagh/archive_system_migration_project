@@ -21,6 +21,7 @@ public class RetrievalFieldResponse {
     private String category;
     private boolean lookupEnabled;
     private int displayOrder;
+    private String legacySourceTable;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
