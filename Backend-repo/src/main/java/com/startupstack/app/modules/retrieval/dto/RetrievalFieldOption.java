@@ -23,4 +23,10 @@ public class RetrievalFieldOption {
 
     /** Legacy F2 (DBList2_77) "#" marker — global per-field flag (bnkout.OUT_CHIOCE), not per-user. */
     private boolean hashMarked;
+
+    /**
+     * Legacy coded condition (out_nature 2): the value is picked by name from /lookup-codes and
+     * sent as its code. See RetrievalScope#codedCondition.
+     */
+    private boolean codeLookup;
 }

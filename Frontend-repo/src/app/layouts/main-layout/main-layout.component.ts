@@ -67,10 +67,10 @@ export class MainLayoutComponent implements OnInit {
       icon: 'find_in_page', labelKey: 'NAV.GROUP_RETRIEVAL',
       children: [
         { icon: 'insights', labelKey: 'NAV.GRAPHICAL_RETRIEVAL', route: '/retrieval' },
-        { icon: 'folder_open', labelKey: 'NAV.FILES_RETRIEVAL', route: '/retrieval' },
+        { icon: 'folder_open', labelKey: 'NAV.FILES_RETRIEVAL', route: '/retrieval/additional-files' },
         { icon: 'inventory_2', labelKey: 'NAV.FILE_PULL_QUEUE', route: '/catalogue/files-retrieval' },
         { icon: 'video_library', labelKey: 'NAV.VIDEO_ORDERS', route: '/video-orders' },
-        { icon: 'auto_stories', labelKey: 'NAV.PERIODICALS_RETRIEVAL', route: '/periodicals' }
+        { icon: 'auto_stories', labelKey: 'NAV.PERIODICALS_RETRIEVAL', route: '/retrieval/periodicals' }
       ]
     },
     { icon: 'search', labelKey: 'NAV.SEARCH_SCREEN', route: '/catalogue/search' },

@@ -66,6 +66,58 @@ public class FfmpegService {
     }
 
     /**
+     * new_vdpreview.frm Command4 "newstart", argument for argument:
+     * {@code ffmpeg -ss <hh:mm:ss> -i <src> -acodec copy -vcodec copy -t <hh:mm:ss> <out>}
+     * (:2058-2085), with both timecodes built by {@link #legacyTimecode}.
+     */
+    public void legacyNewstart(String source, String destination, BigDecimal inSeconds, BigDecimal durationSeconds) {
+        run(List.of("ffmpeg", "-y",
+                "-ss", legacyTimecode(inSeconds),
+                "-i", source,
+                "-acodec", "copy", "-vcodec", "copy",
+                "-t", legacyTimecode(durationSeconds),
+                destination));
+    }
+
+    /**
+     * new_vdpreview.frm Command9 "start": VideoEdit re-encode of {@code [in, in + duration)} to
+     * an AVI at 720x576, 25 fps, PCM audio at 48 kHz (:2433-2440). The video codec there is the
+     * per-user {@code config.user_cmpvd} Windows codec name, which has no ffmpeg equivalent; the
+     * form's own commented default is "MainConcept DV Video Encoder", so DV is used.
+     */
+    public void legacyStartEncode(String source, String destination, BigDecimal inSeconds, BigDecimal durationSeconds) {
+        List<String> args = new ArrayList<>(List.of("ffmpeg", "-y"));
+        if (inSeconds != null) {
+            args.addAll(List.of("-ss", inSeconds.toPlainString()));
+        }
+        args.addAll(List.of("-i", source));
+        if (durationSeconds != null) {
+            args.addAll(List.of("-t", durationSeconds.toPlainString()));
+        }
+        args.addAll(List.of("-s", "720x576", "-r", "25", "-vcodec", "dvvideo",
+                "-acodec", "pcm_s16le", "-ar", "48000", destination));
+        run(args);
+    }
+
+    /**
+     * Legacy's hh:mm:ss: {@code Int(t / 3600)}, then {@code t Mod 3600} (VB's Mod first rounds
+     * {@code t} half-to-even), {@code Int(rest / 60)}, {@code rest Mod 60}, each left-padded to
+     * two digits.
+     */
+    static String legacyTimecode(BigDecimal seconds) {
+        BigDecimal t = seconds == null ? BigDecimal.ZERO : seconds;
+        long hours = t.divide(BigDecimal.valueOf(3600), 0, java.math.RoundingMode.FLOOR).longValue();
+        long rounded = t.setScale(0, java.math.RoundingMode.HALF_EVEN).longValue();
+        long rest = rounded % 3600;
+        return pad2(hours) + ":" + pad2(rest / 60) + ":" + pad2(rest % 60);
+    }
+
+    private static String pad2(long value) {
+        String s = Long.toString(value);
+        return s.length() < 2 ? "0" + s : s;
+    }
+
+    /**
      * Legacy Command5's poster frame — {@code ffmpeg -ss 00:00:02 -i <clip> -frames:v 1 <png>}.
      * Grabbed two seconds in rather than at zero, which on tape material is usually black.
      */

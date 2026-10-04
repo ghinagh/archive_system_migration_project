@@ -5,7 +5,7 @@
       <mat-icon>close</mat-icon>
       {{ 'RETRIEVAL.CLOSE' | translate }}
     </button>
-    <h1 class="retrieval-title">{{ 'RETRIEVAL.TITLE' | translate }}</h1>
+    <h1 class="retrieval-title">{{ titleKey | translate }}</h1>
     <button class="btn-run-search" mat-raised-button color="primary" (click)="runSearch()">
       <mat-icon>search</mat-icon>
       {{ 'RETRIEVAL.RUN_SEARCH' | translate }}
@@ -49,7 +49,7 @@
             }
           </mat-select>
         </mat-form-field>
-      } @else {
+      } @else if (!field.codeLookup) {
         <mat-radio-group class="search-mode" [value]="searchMode()" (change)="onSearchModeChange($event.value)">
           <mat-radio-button value="STARTS_WITH">{{ 'RETRIEVAL.MODE_STARTS_WITH' | translate }} (F8)</mat-radio-button>
           <mat-radio-button value="CONTAINS">{{ 'RETRIEVAL.MODE_CONTAINS' | translate }} (F9)</mat-radio-button>
@@ -66,7 +66,7 @@
       -->
       <mat-form-field appearance="outline">
         <mat-label>{{ 'RETRIEVAL.VALUE' | translate }}</mat-label>
-        <input matInput [value]="value()" (input)="value.set($any($event.target).value)"
+        <input matInput [value]="value()" [readonly]="field.codeLookup" (input)="value.set($any($event.target).value)"
                (keydown.F8)="onF8Shortcut()" (keydown.F9)="onF9Shortcut()">
       </mat-form-field>
 
@@ -191,10 +191,18 @@
           <input matInput [formControl]="lookupControl" [placeholder]="'RETRIEVAL.TYPE_TO_FILTER' | translate">
         </mat-form-field>
         <ul class="picker-list">
-          @for (v of lookupResults(); track v) {
-            <li (click)="pickLookupValue(v)">{{ v }}</li>
-          } @empty {
-            <li class="no-data">{{ 'APP.NO_DATA' | translate }}</li>
+          @if (selectedField()?.codeLookup) {
+            @for (o of codeOptions(); track o.code) {
+              <li [class.selected]="pickedCode() === o.code" (click)="pickCodeOption(o)">{{ o.label }}</li>
+            } @empty {
+              <li class="no-data">{{ 'APP.NO_DATA' | translate }}</li>
+            }
+          } @else {
+            @for (v of lookupResults(); track v) {
+              <li (click)="pickLookupValue(v)">{{ v }}</li>
+            } @empty {
+              <li class="no-data">{{ 'APP.NO_DATA' | translate }}</li>
+            }
           }
         </ul>
       } @else {

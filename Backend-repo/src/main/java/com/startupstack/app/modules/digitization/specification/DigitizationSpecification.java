@@ -85,15 +85,24 @@ public final class DigitizationSpecification {
         };
     }
 
+    /**
+     * Legacy compares dmd_dte against bare dates ({@code dmd_dte >= / <= convert(datetime,'yyyy-mm-dd',102)})
+     * and stored dates without a time, so the range is inclusive by calendar day. Rows carrying a
+     * time of day would fall outside {@code <= to-midnight}, so the upper bound is the start of the
+     * following day, exclusive.
+     */
     public static Specification<DemandEntity> demandDateBetween(LocalDateTime from, LocalDateTime to) {
         return (root, query, cb) -> {
             if (from == null && to == null) {
                 return null;
             }
-            if (from != null && to != null) {
-                return cb.between(root.get("date"), from, to);
+            LocalDateTime start = from == null ? null : from.toLocalDate().atStartOfDay();
+            LocalDateTime endExclusive = to == null ? null : to.toLocalDate().plusDays(1).atStartOfDay();
+            if (start != null && endExclusive != null) {
+                return cb.and(cb.greaterThanOrEqualTo(root.get("date"), start),
+                        cb.lessThan(root.get("date"), endExclusive));
             }
-            return from != null ? cb.greaterThanOrEqualTo(root.get("date"), from) : cb.lessThanOrEqualTo(root.get("date"), to);
+            return start != null ? cb.greaterThanOrEqualTo(root.get("date"), start) : cb.lessThan(root.get("date"), endExclusive);
         };
     }
 
@@ -107,6 +116,27 @@ public final class DigitizationSpecification {
             return cb.or(
                     cb.like(cb.lower(root.get("description")), pattern),
                     cb.like(cb.lower(root.get("catalogue").get("activeTitleAr")), pattern));
+        };
+    }
+
+    /**
+     * new_vdpreview.frm "البحث بالشرح": {@code dmd_desc + mn_act_ttl LIKE '%x%'}. In SQL Server a
+     * NULL on either side makes the concatenation NULL (no match), and both columns are
+     * space-padded char fields, so the term matches within one of them; the CI collation makes
+     * it case-insensitive.
+     */
+    public static Specification<DemandEntity> demandQueueTextMatches(String term) {
+        return (root, query, cb) -> {
+            if (term == null || term.isBlank()) {
+                return null;
+            }
+            var catalogue = root.join("catalogue", jakarta.persistence.criteria.JoinType.LEFT);
+            String pattern = "%" + term.toLowerCase() + "%";
+            return cb.and(
+                    cb.isNotNull(root.get("description")),
+                    cb.isNotNull(catalogue.get("activeTitleAr")),
+                    cb.or(cb.like(cb.lower(root.get("description")), pattern),
+                            cb.like(cb.lower(catalogue.get("activeTitleAr")), pattern)));
         };
     }
 

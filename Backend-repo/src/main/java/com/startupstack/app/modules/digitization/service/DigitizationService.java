@@ -48,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -370,14 +371,19 @@ public class DigitizationService {
     /**
      * Fulfils a single demand using one of the legacy screen's three parallel mechanisms:
      * Command9 "start" (full re-encode), Command4 "newstart" (ffmpeg stream-copy trim), or
-     * Command5 "copy" (plain whole-file copy). All three converge on the same outcome —
-     * a file lands in the archive path and the demand is marked done.
+     * Command5 "copy" (plain whole-file copy).
+     *
+     * <p>new_vdpreview.frm only ever processes rows whose {@code dmd_chek = 1} (selected via F1),
+     * and on success writes nothing but {@code upd_demand1 … dmd_chek = 2}. {@code dmd_path} is
+     * the source the clip is cut from and is left untouched — the output goes elsewhere.
      */
     @Transactional
     public DemandResponse fulfilDemand(Integer id, String mechanism) {
         DemandEntity entity = requireDemandWithStock(id);
-        String destination = fulfilOne(entity, mechanism);
-        entity.setPath(destination);
+        if (!isSelectedForProcessing(entity)) {
+            throw new BusinessException("Only selected orders (dmd_chek = 1) can be processed");
+        }
+        fulfilOne(entity, mechanism);
         entity.setChecked(2);
         return demandMapper.toResponse(demandRepository.save(entity));
     }
@@ -386,12 +392,21 @@ public class DigitizationService {
      * Fulfils several demands at once. With {@code mergeClip} set — the legacy "كليب" checkbox —
      * every selected demand's trimmed clip is concatenated into a single output file instead of
      * each getting its own.
+     *
+     * <p>As in the legacy loops (Command9/4/5), rows whose {@code dmd_chek} is not 1 are skipped,
+     * and {@code dmd_path} is never rewritten.
      */
     @Transactional
     public void bulkFulfil(List<Integer> ids, String mechanism, boolean mergeClip) {
         List<DemandEntity> entities = new ArrayList<>();
         for (Integer id : ids) {
-            entities.add(requireDemandWithStock(id));
+            DemandEntity entity = requireDemandWithStock(id);
+            if (isSelectedForProcessing(entity)) {
+                entities.add(entity);
+            }
+        }
+        if (entities.isEmpty()) {
+            return;
         }
 
         if (mergeClip && entities.size() > 1) {
@@ -401,20 +416,27 @@ public class DigitizationService {
             }
             String merged = mediaService.archivePathFor("merged_" + entities.get(0).getDemandNo());
             ffmpegService.mergeConcat(clipPaths, merged);
-            for (DemandEntity entity : entities) {
-                entity.setPath(merged);
-                entity.setChecked(2);
-            }
         } else {
             for (DemandEntity entity : entities) {
-                entity.setPath(fulfilOne(entity, mechanism));
-                entity.setChecked(2);
+                fulfilOne(entity, mechanism);
             }
+        }
+        for (DemandEntity entity : entities) {
+            entity.setChecked(2);
         }
         demandRepository.saveAll(entities);
     }
 
-    /** Command19 "test" — dry-run check that each demand's source tape exists and is decodable, without fulfilling anything. */
+    /** Legacy {@code dmd_chek}: NULL = new, 1 = selected (F1), 2 = done. Only 1 is processed. */
+    private static boolean isSelectedForProcessing(DemandEntity entity) {
+        return entity.getChecked() != null && entity.getChecked() == 1;
+    }
+
+    /**
+     * Command19 "test" — dry-run check that each demand's source tape exists and is decodable,
+     * without fulfilling anything. Legacy only examines rows with {@code dmd_chek = 1}; others
+     * are skipped and do not appear in the result.
+     */
     @Transactional(readOnly = true)
     public List<DemandTestResult> testDemands(List<Integer> ids) {
         List<DemandTestResult> results = new ArrayList<>();
@@ -422,6 +444,9 @@ public class DigitizationService {
             DemandEntity entity = demandRepository.findById(id).orElse(null);
             if (entity == null) {
                 results.add(new DemandTestResult(id, null, false, "Demand not found"));
+                continue;
+            }
+            if (!isSelectedForProcessing(entity)) {
                 continue;
             }
             if (entity.getMachineStock() == null || entity.getMachineStock().isBlank()) {
@@ -457,22 +482,39 @@ public class DigitizationService {
         return mediaService.resolveStockPath(entity.getMachineStock(), StockTier.HIGH, null);
     }
 
+    /**
+     * Output is named as new_vdpreview names it outside كليب mode — {@code <desc> Clip <ser><ext>}
+     * with the source's own extension (Command5's {@code V_EXT}); "start" always writes .avi.
+     * Every mechanism reads the demand's dmd_path (Command5: {@code FileCopy V_PATH, v_nam}).
+     */
     private String fulfilOne(DemandEntity entity, String mechanism) {
         String source = sourcePathFor(entity);
         BigDecimal in = entity.getInputSize();
         BigDecimal duration = entity.getOutputSize();
+        String description = entity.getDescription() == null ? "" : entity.getDescription().trim();
+        int dot = source.lastIndexOf('.');
+        String extension = dot >= 0 ? source.substring(dot + 1) : null;
         return switch (mechanism) {
             case "START" -> {
-                String destination = mediaService.archivePathFor(entity.getDemandNo() + "_" + entity.getSerial());
-                ffmpegService.reencode(source, destination, in, duration);
+                String destination = mediaService.archiveClipPathFor(description, entity.getSerial(), "avi");
+                ffmpegService.legacyStartEncode(source, destination, in, duration);
                 yield destination;
             }
             case "NEWSTART" -> {
-                String destination = mediaService.archivePathFor(entity.getDemandNo() + "_" + entity.getSerial());
-                ffmpegService.streamCopyTrim(source, destination, in, duration);
+                String destination = mediaService.archiveClipPathFor(description, entity.getSerial(), extension);
+                ffmpegService.legacyNewstart(source, destination, in, duration);
                 yield destination;
             }
-            case "COPY" -> mediaService.copyToArchive(entity.getMachineStock(), StockTier.HIGH, null);
+            case "COPY" -> {
+                String destination = mediaService.archiveClipPathFor(description, entity.getSerial(), extension);
+                try {
+                    java.nio.file.Files.copy(java.nio.file.Path.of(source), java.nio.file.Path.of(destination),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                } catch (java.io.IOException | java.nio.file.InvalidPathException e) {
+                    throw new BusinessException("Source file not found or unreadable: " + source);
+                }
+                yield destination;
+            }
             default -> throw new BusinessException("Unknown fulfilment mechanism: " + mechanism);
         };
     }
@@ -631,6 +673,79 @@ public class DigitizationService {
         entity.setTime1(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
 
         return demandMapper.toResponse(demandRepository.save(entity));
+    }
+
+    /**
+     * Adds one scene from the "طلبيات الفيديو" order queue — new_vdpreview.frm Command10 "اضافة"
+     * and Command14 "اضافة - كامل المشهد". Differs from {@link #addScene} (USER_INTERFACE1) exactly
+     * where the legacy procs differ:
+     * <ul>
+     *   <li>no scene-length cap — new_vdpreview has no {@code m_len_mch < 400} check;</li>
+     *   <li>{@code dmd_chek} stays NULL (new) — {@code upd_demand2}/{@code insr_demand1} never set it;</li>
+     *   <li>{@code dmd_time1}/{@code dmd_cote} are not written — neither proc carries them;</li>
+     *   <li>{@code dmd_dte} is the date only — legacy passes {@code Format(Date, "yyyy/mm/dd")};</li>
+     *   <li>the description is LTrim'd and the legacy character set, including the apostrophe,
+     *       is blanked (Command10:1382-1397, Command14:1690-1705).</li>
+     * </ul>
+     */
+    @Transactional
+    public DemandResponse addQueueScene(AddSceneRequest request) {
+        var catalogue = catalogueRepository.findById(request.getMachineNo())
+                .orElseThrow(() -> new ResourceNotFoundException("Catalogue record not found: " + request.getMachineNo()));
+
+        if (request.getOutSeconds().compareTo(request.getInSeconds()) < 0) {
+            throw new BusinessException("Out point must not be before the in point");
+        }
+
+        // op_demand + max_demand (new request, serial 1) or max_demand_ser + 1 (append).
+        String demandNo = request.getDemandNo();
+        int serial;
+        if (demandNo == null || demandNo.isBlank()) {
+            demandNo = String.format("%07d", demandRepository.findMaxNumericDemandNo() + 1);
+            serial = 1;
+        } else {
+            Integer maxSerial = demandRepository.findMaxSerialForDemandNo(demandNo);
+            serial = (maxSerial == null ? 0 : maxSerial) + 1;
+        }
+
+        String username = SecurityUtils.getCurrentUsername();
+        UserEntity user = username == null ? null : userRepository.findByUserName(username).orElse(null);
+
+        // m_path = m_STCOK_path_new(stock, 1) + stock + "." + ext — the HIGH-tier ranjpath entry.
+        String path = request.getPath();
+        if ((path == null || path.isBlank()) && request.getMachineStock() != null) {
+            path = mediaService.resolveStockPath(
+                    request.getMachineStock(), StockTier.HIGH, request.getHighExtension());
+        }
+
+        BigDecimal length = request.getOutSeconds().subtract(request.getInSeconds());
+        long totalSeconds = length.longValue();
+
+        DemandEntity entity = new DemandEntity();
+        entity.setDemandNo(demandNo);
+        entity.setSerial(serial);
+        entity.setUser(user);
+        entity.setCatalogue(catalogue);
+        entity.setDate(LocalDate.now().atStartOfDay());
+        entity.setInputSize(request.getInSeconds());
+        entity.setOutputSize(length);
+        entity.setPath(path);
+        entity.setDescription(sanitiseQueueDescription(request.getDescription()));
+        entity.setMachineStock(request.getMachineStock());
+        entity.setHours((int) (totalSeconds / 3600));
+        entity.setMinutes((int) ((totalSeconds % 3600) / 60));
+        entity.setSeconds((int) (totalSeconds % 60));
+        entity.setFrames(0);
+
+        return demandMapper.toResponse(demandRepository.save(entity));
+    }
+
+    /** new_vdpreview's description loop: LTrim, then the shared unsafe set plus {@code '} → space. */
+    private static String sanitiseQueueDescription(String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        return FilenameSanitiser.sanitise(value.stripLeading()).replace('\'', ' ');
     }
 
     @Transactional(readOnly = true)

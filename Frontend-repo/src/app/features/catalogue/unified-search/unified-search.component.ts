@@ -10,6 +10,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { SearchScreenService } from './search-screen.service';
 import { SearchScreenRequest } from './search-screen.model';
 import { ArchiveSearchResult } from '../../archive-search/models/archive-search.model';
+import { VIDEO_ORDER_PRELOAD_STATE, VideoOrderPreload } from '../../digitization/models/digitization.model';
 import { DigitizationService } from '../../digitization/services/digitization.service';
 import { AutocompleteService, AuthorOption, PeriodicalOption, CodingOption, MacnzOption, FormOption } from '../../../core/services/autocomplete.service';
 import { ArchiveSearchService } from '../../archive-search/services/archive-search.service';
@@ -205,7 +206,30 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
     } else if (event.key === 'F3') {
       event.preventDefault();
       this.logSelectedByChoice();
+    } else if (event.key === 'F6') {
+      event.preventDefault();
+      if (row) this.openVideoOrders(row);
     }
+  }
+
+  /**
+   * Legacy DataGrid1_KeyUp F6 (user_inetrface.frm:2624-2659): copies the focused row into the
+   * v_mch_* globals and opens new_vdpreview ("طلبيات الفيديو") on that record. The row carries
+   * the same columns legacy reads — its fixed tmp_result SELECT (:2403-2416) always includes them.
+   */
+  openVideoOrders(row: ArchiveSearchResult): void {
+    const n = (v: number | null) => (v == null ? 0 : Number(v));
+    const typ = row.documentType?.trim() || null;
+    const preload: VideoOrderPreload = {
+      machineNo: row.appNo,
+      title: row.activeTitleAr,
+      stock: row.digitNo?.trim() || null,
+      inSeconds: n(row.durationSeconds) + n(row.durationMinutes) * 60 + n(row.durationHours) * 3600,
+      outSeconds: n(row.durationSeconds1) + n(row.durationMinutes1) * 60 + n(row.durationHours1) * 3600,
+      lowExtension: typ,
+      highExtension: row.highType?.trim() || typ || 'avi'
+    };
+    this.router.navigate(['/video-orders'], { state: { [VIDEO_ORDER_PRELOAD_STATE]: preload } });
   }
 
   /** Legacy DataGrid1_KeyDown F9 (:2590-2605) — `execute upd_dig_choice(dig_dig_no, newValue,

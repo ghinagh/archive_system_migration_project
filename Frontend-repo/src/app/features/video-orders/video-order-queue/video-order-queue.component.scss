@@ -1,257 +1,413 @@
-.queue-page {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+// new_vdpreview.frm palette: form / grid BackColor &H0086C8EC, buttons &H002972B4,
+// text boxes &H00D8F9FE (VB colours are BGR).
+$vq-bg: #ecc886;
+$vq-btn: #b47229;
+$vq-input: #fef9d8;
+$vq-border: #5a4a3a;
+
+:host {
+  display: block;
 }
 
-// Two-pane top area mirroring the legacy screen's proportions: player ~35%, filters ~65%.
-// The legacy form placed the player at a fixed physical Left=0 regardless of language, so this
-// grid is pinned to LTR column order — otherwise Arabic mode's RTL flips which physical side
-// "column 1" renders on and the player lands on the right. direction is reset back to rtl on
-// each pane so their own text/content still reads correctly.
-.console-top {
+.vq-page {
+  background: $vq-bg;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #1a1a1a;
+  font-family: Tahoma, 'MS Sans Serif', Arial, sans-serif;
+  font-size: 13px;
+  min-height: 100%;
+}
+
+// Physical layout as in the legacy form (player Left=0, panel 6960, search 11400 of 19860
+// twips), so it is pinned LTR regardless of the app's language direction.
+.vq-top {
   display: grid;
-  grid-template-columns: 35% 1fr;
-  gap: 12px;
-  align-items: stretch;
+  grid-template-columns: 34% 22% 1fr;
+  gap: 10px;
   direction: ltr;
+  align-items: stretch;
 
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.player-pane {
-  background: #111;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 220px;
-
-  // Only re-flip to rtl when the app itself is actually in Arabic mode ([dir="rtl"] on <html>) —
-  // in English mode the inherited ltr from .console-top is already correct.
-  :host-context([dir="rtl"]) & {
-    direction: rtl;
-  }
-}
-
-.player-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 8px;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  font-size: 0.85rem;
-
-  button {
-    color: #fff;
-  }
-}
-
-.player-placeholder {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.5);
-
-  mat-icon {
-    font-size: 2.5rem;
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-}
-
-.clip-toolbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.06);
-
-  button {
-    color: #fff;
-  }
-}
-
-.jog-step {
-  width: 60px;
-
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    height: 36px;
-  }
-}
-
-.marks-readout {
-  margin-inline-start: auto;
-  color: #cfe0e6;
-  font-family: Consolas, monospace;
-  font-size: 0.85rem;
-}
-
-.clip-create-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px 10px;
-  flex-wrap: wrap;
-
-  .clip-desc {
-    flex: 1;
-    min-width: 160px;
-
-    ::ng-deep .mat-mdc-form-field-flex,
-    ::ng-deep input {
-      color: #fff;
-    }
-  }
-}
-
-.filter-pane {
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  :host-context([dir="rtl"]) & {
-    direction: rtl;
-  }
-}
-
-.filter-title {
-  margin: 0 0 4px;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px 12px;
-
-  .span-2 {
-    grid-column: span 2;
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr 1fr;
+    .vq-search { grid-column: span 2; }
   }
 
   @media (max-width: 700px) {
-    grid-template-columns: 1fr 1fr;
-    .span-2 { grid-column: span 2; }
+    grid-template-columns: 1fr;
+    .vq-search { grid-column: auto; }
   }
 }
 
-.filter-pane mat-form-field {
-  font-size: 0.9rem;
-}
-
-.filter-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-// Dense action strip, where the legacy fulfilment/creation button row sat between the
-// player area and the grid.
-.action-strip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  background: var(--mat-sys-surface-container-low, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  padding: 8px 16px;
-  min-height: 24px;
-
-  .selection-count {
-    font-weight: 600;
-  }
-
-  .hint {
-    color: rgba(0, 0, 0, 0.5);
-    font-size: 0.85rem;
-    font-style: italic;
-  }
-
-  .stats-readout {
-    font-family: Consolas, monospace;
-    font-size: 0.85rem;
-    color: rgba(0, 0, 0, 0.7);
-  }
-
-  .strip-divider {
-    width: 1px;
-    align-self: stretch;
-    background: rgba(0, 0, 0, 0.1);
-  }
-
-  .mechanism-select {
-    width: 140px;
-
-    ::ng-deep .mat-mdc-text-field-wrapper {
-      height: 40px;
-    }
-  }
-}
-
-.status-footer {
-  position: sticky;
-  bottom: 0;
-  background: var(--mat-sys-surface-container-low, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  padding: 8px 16px;
+// ---- Player ----
+.vq-player {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-
-  .status-text {
-    font-size: 0.85rem;
-  }
-
-  .status-count {
-    font-family: Consolas, monospace;
-    font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.6);
-    align-self: flex-end;
-  }
+  background: #000;
+  border: 1px solid $vq-border;
 }
 
-.table-scroll {
-  overflow-x: auto;
-  background: var(--mat-sys-surface-container-low, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+.vq-screen {
+  flex: 1;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
 
-  table {
+  app-video-preview {
     width: 100%;
   }
 }
 
-.status-badge {
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
+.vq-ready {
+  align-self: flex-end;
+  margin: 0 0 6px 8px;
+  margin-right: auto;
+  color: #9ecbe0;
+  font-size: 12px;
+}
 
-  &.status-fulfilled {
-    background: #d8f0dc;
-    color: #256029;
-  }
+.vq-jog {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: linear-gradient(#dfe9f5, #b9cde6);
+}
 
-  &.status-pending {
-    background: #fde8cf;
-    color: #8a5a00;
+.vq-jog-btn {
+  width: 28px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #7a8aa0;
+  background: #eef3fa;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
   }
 }
 
-.no-data {
-  color: rgba(0, 0, 0, 0.5);
-  font-style: italic;
-  padding: 16px;
+.vq-step {
+  width: 28px;
+  height: 24px;
+  text-align: center;
+  border: 1px solid #7a8aa0;
+  background: #fff;
+}
+
+.vq-small-btn {
+  height: 26px;
+  min-width: 34px;
+  padding: 0 8px;
+  border: 1px solid #7a8aa0;
+  background: #eef3fa;
+  cursor: pointer;
+  font: inherit;
+}
+
+// ---- Clip panel (the section from the first legacy screenshot) ----
+.vq-panel {
+  border: 1px solid $vq-border;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vq-black {
+  background: #12121c;
+  border: 1px solid #000;
+  min-height: 130px;
+  flex: 1;
+  position: relative;
+}
+
+.vq-marks {
+  position: absolute;
+  bottom: 4px;
+  left: 6px;
+  color: #cfd8dc;
+  font-family: Consolas, monospace;
+  font-size: 11px;
+}
+
+.vq-inout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  .vq-out {
+    margin-top: 10px;
+  }
+}
+
+.vq-desc-label {
+  align-self: flex-end;
+}
+
+.vq-desc {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.vq-actions {
+  display: flex;
+  gap: 2px;
+
+  .vq-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 0 2px;
+  }
+}
+
+.vq-clip {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// ---- Buttons / inputs ----
+.vq-btn {
+  height: 30px;
+  padding: 0 10px;
+  background: $vq-btn;
+  color: #1a1a1a;
+  border: 2px outset #d9a066;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+
+  &:active {
+    border-style: inset;
+  }
+
+  &:disabled {
+    color: #6d5a43;
+    cursor: default;
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: 1px dotted #000;
+    outline-offset: -4px;
+  }
+}
+
+.vq-btn-wide {
+  width: 45%;
+}
+
+.vq-big {
+  height: 38px;
+  flex: 1;
+  white-space: normal;
+  line-height: 1.1;
+}
+
+.vq-bold {
+  font-weight: 700;
+}
+
+.vq-exit {
+  height: 38px;
+  min-width: 58px;
+}
+
+.vq-input {
+  height: 24px;
+  border: 2px inset #c9b98a;
+  background: $vq-input;
+  padding: 0 4px;
+  font: inherit;
+  color: inherit;
+
+  &:disabled {
+    background: #efe6c0;
+    color: #555;
+  }
+}
+
+// ---- Search panel ----
+.vq-search {
+  border: 1px solid $vq-border;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.vq-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.vq-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  > span {
+    min-width: 110px;
+  }
+}
+
+.vq-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.vq-date {
+  width: 140px;
+}
+
+.vq-wide {
+  width: 240px;
+  max-width: 100%;
+}
+
+.vq-narrow {
+  width: 110px;
+}
+
+.vq-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+  flex-wrap: wrap;
+}
+
+// ---- Grid ----
+.vq-grid {
+  position: relative;
+  background: $vq-bg;
+  border: 2px inset #c9b98a;
+  max-height: 46vh;
+  min-height: 160px;
+  overflow: auto;
+  outline: none;
+
+  &:focus {
+    border-color: #8a6a3a;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: #e8d9b0;
+    font-weight: 400;
+    border: 1px solid #a89a72;
+    padding: 2px 6px;
+    text-align: right;
+    z-index: 1;
+  }
+
+  td {
+    border: 1px solid #c7b07a;
+    padding: 1px 6px;
+    text-align: right;
+  }
+
+  tr.vq-current td {
+    background: #2a62b8;
+    color: #fff;
+  }
+
+  .vq-col-desc {
+    min-width: 200px;
+  }
+
+  .vq-col-wide {
+    min-width: 260px;
+  }
+
+  .vq-ltr {
+    direction: ltr;
+    text-align: left;
+  }
+}
+
+.vq-check-cell {
+  padding: 0 !important;
+}
+
+.vq-cell-input {
+  width: 48px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font: inherit;
+  color: inherit;
+}
+
+// ---- F5 path panel (Frame1) ----
+.vq-frame {
+  align-self: center;
+  background: $vq-bg;
+  border: 2px outset #d9a066;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(460px, 100%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.vq-path-select {
+  width: 100%;
+  height: 26px;
+}
+
+.vq-frame-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+// ---- Footer: m_tit1 / ProgressBar1 / nb_copy ----
+.vq-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vq-status {
+  width: 100%;
+  box-sizing: border-box;
+  background: $vq-bg;
+}
+
+.vq-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-progress-bar {
+    flex: 1;
+  }
+}
+
+.vq-nb {
+  width: 60px;
+  text-align: center;
 }

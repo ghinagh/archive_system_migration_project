@@ -227,7 +227,12 @@ public class SearchScreenService {
         String sql = "SELECT DISTINCT v.res_res_no, v.mn_app_no, v.mn_act_ttl, v.mn_add_ttl, " +
                 "v.dig_typ2, v.art_dte, v.art_pg_no, v.art_per_no, " +
                 "v.dig_dig_no, v.dig_typ, v.dig_typ1, v.dig_choice, " +
-                "v.dig_s, v.dig_o, v.dig_m, v.dig_s1, v.dig_o1, v.dig_m1, v.aut_nam " +
+                "v.dig_s, v.dig_o, v.dig_m, v.dig_s1, v.dig_o1, v.dig_m1, v.aut_nam, " +
+                // dig_typ_high is in user_inetrface.frm's fixed SELECT (:2409) and read by its
+                // F6 (:2640-2645); view_result does not carry it, so it is taken from the same
+                // DIGIT row (document + digital number + type).
+                "(SELECT dh.\"dig_typ_high\" FROM \"DIGIT\" dh WHERE dh.\"DIG_NO\" = v.mn_app_no " +
+                "AND dh.\"DIG_DIG_NO\" = v.dig_dig_no AND dh.\"DIG_TYP1\" = v.dig_typ1 LIMIT 1) AS dig_typ_high " +
                 joins + "WHERE " + String.join(" AND ", where) + " ORDER BY v.art_dte DESC";
 
         Query query = entityManager.createNativeQuery(sql);
@@ -254,7 +259,7 @@ public class SearchScreenService {
                     castString(r[10]),                   // documentType1 = dig_typ1
                     castString(r[4]),                    // docTypeDescription = dig_typ2
                     castInteger(r[11]),                  // choice = dig_choice
-                    null,
+                    castString(r[19]),                   // highType = dig_typ_high
                     null,
                     castInteger(r[13]),                  // durationHours = dig_o
                     castInteger(r[14]),                  // durationMinutes = dig_m

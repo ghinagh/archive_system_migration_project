@@ -27,7 +27,11 @@ public class RetrievalSearchResponse {
     @Getter
     @AllArgsConstructor
     public static class RetrievalResultRow {
-        /** Always present regardless of outputFieldKeys, so the UI can navigate to the underlying record. */
+        /**
+         * The scope's root key regardless of outputFieldKeys: MAIN.MN_APP_NO for BANK, FORM.SUB_NO
+         * for ADDITIONAL_FILES. Null for PERIODICALS, whose legacy rows are "select distinct" over
+         * the displayed columns only (no key column).
+         */
         private String appNo;
         private Map<String, Object> values;
     }

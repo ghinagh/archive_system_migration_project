@@ -31,6 +31,14 @@ public class RetrievalUserFieldEntity {
     @Column(name = "user_no", nullable = false, length = 100)
     private String userNo;
 
+    /**
+     * Legacy user_bnkout.user_ist_no — '01' rows back view_user_bnkout (bank retrieval), '02'
+     * rows back view_user_pout (additional-files retrieval). Stored as the matching
+     * retrieval_field.module so each screen keeps its own marks.
+     */
+    @Column(name = "module", nullable = false, length = 30)
+    private String module;
+
     @Column(name = "field_key", nullable = false, length = 50)
     private String fieldKey;
 

@@ -1,5 +1,6 @@
 package com.startupstack.app.modules.retrieval.service;
 
+import com.startupstack.app.modules.retrieval.dto.RetrievalCodeOption;
 import com.startupstack.app.modules.retrieval.dto.RetrievalConditionNode;
 import com.startupstack.app.modules.retrieval.dto.RetrievalFieldOption;
 import com.startupstack.app.modules.retrieval.dto.RetrievalSearchRequest;
@@ -32,15 +33,14 @@ import java.util.stream.Collectors;
  * The cross-domain "graphical retrieval" query engine — migrated equivalent of the legacy
  * sort_from.frm builder + its dynamically rebuilt tmp_result* stored procedures. Rather than
  * generating and executing ad hoc SQL/stored procedures (disallowed for this project), this
- * builds one parameterized JPQL query per request against a fixed LEFT JOIN skeleton spanning
- * the catalogue (main) root plus its article / periodical / author / subject / additional-file
- * joins, with the SELECT and WHERE clauses assembled from admin-defined
- * {@link RetrievalFieldEntity} metadata.
+ * builds one parameterized JPQL query per request against a fixed LEFT JOIN skeleton, with the
+ * SELECT and WHERE clauses assembled from admin-defined {@link RetrievalFieldEntity} metadata.
  *
- * The additional-file join (fa/rd) covers the same FILE_ADD cross-reference domain that the
- * legacy "استرجاع الملفات الاضافية" menu item searched via this same sort_form shell (scoped to
- * the POUT metadata partition there) — merged into this one field catalog instead of
- * re-instantiating a second identical screen, the way the legacy app did.
+ * Every operation is scoped by {@link RetrievalScope}: the legacy "الاسترجاع البياني لبنك
+ * المعلومات", "استرجاع الملفات الاضافية" and "استـرجـاع الصحف والمجلات" menu items share the
+ * sort_form UI but not its data (bnkout vs POUT metadata, user_ist_no '01' / '02' / '06' user
+ * marks, MAIN-rooted tmp_result vs FORM-rooted tmp_result1 vs PERIOD-rooted tmp_result2) — see
+ * RetrievalScope for the evidence.
  *
  * The condition tree ({@link RetrievalConditionNode}) replaces the legacy screen's literal
  * "(" / ")" text accumulation with real nesting — a group's children are combined among
@@ -49,29 +49,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class RetrievalService {
-
-    private static final String MODULE = "GRAPHICAL_RETRIEVAL";
-
-    private static final String JOIN_SKELETON =
-            " FROM CatalogueEntity c " +
-            "LEFT JOIN ArticleEntity a ON a.appNo = c.appNo " +
-            "LEFT JOIN PeriodicalEntity p ON p.perNo = a.periodicalNo " +
-            // ARTICLE.ART_PER1 (ArticleEntity.periodical1) is a second, distinct periodical
-            // reference confirmed by upd_article2's own column list (art_per1) and, in Form6.frm,
-            // by the DataCombo m_art_per1 (also bound to PERIOD) sitting at the exact form
-            // position of the Label captioned "مصدر الترجمة" ("translation source") — i.e. the
-            // original periodical a translated article came from.
-            "LEFT JOIN PeriodicalEntity p1 ON p1.perNo = a.periodical1 " +
-            "LEFT JOIN ResEntity r ON r.appNo = c.appNo " +
-            "LEFT JOIN AuthorEntity au ON au.autNo = r.authorNo " +
-            "LEFT JOIN SubjectAnalysisEntity sl ON sl.appNo = c.appNo " +
-            "LEFT JOIN MacnzEntity sub ON sub.subCode = sl.descriptorNo " +
-            "LEFT JOIN FileAddEntity fa ON fa.appNo = c.appNo " +
-            "LEFT JOIN CatalogueEntity rd ON rd.appNo = fa.fileNo " +
-            // DigitEntity.catalogue is an existing @ManyToOne (DIG_NO=MN_APP_NO) — reused here,
-            // not a new relationship — to surface "نوع المادة"/"نوع الشريط" (DIGIT.dig_typmat /
-            // dig_typchrt), confirmed via Form6.frm's DataGrid DataField bindings + rel_digit_proc.
-            "LEFT JOIN DigitEntity dg ON dg.docNo = c.appNo ";
 
     private final RetrievalFieldRepository fieldRepository;
     private final RetrievalUserFieldRepository userFieldRepository;
@@ -85,31 +62,33 @@ public class RetrievalService {
     }
 
     @Transactional(readOnly = true)
-    public List<RetrievalFieldOption> listFields() {
-        return fieldRepository.findByModuleAndEnabledTrueOrderByCategoryAscDisplayOrderAsc(MODULE).stream()
+    public List<RetrievalFieldOption> listFields(RetrievalScope scope) {
+        return fieldRepository.findByModuleAndEnabledTrueOrderByCategoryAscDisplayOrderAsc(scope.module()).stream()
                 .map(f -> new RetrievalFieldOption(f.getFieldKey(), f.getLabel(), f.getCategory(), f.getFieldType(),
-                        f.isLookupEnabled(), f.getLegacySourceTable(), f.isHashMarked()))
+                        f.isLookupEnabled(), f.getLegacySourceTable(), f.isHashMarked(),
+                        scope.codedCondition(f.getFieldKey()) != null))
                 .toList();
     }
 
     /**
-     * Legacy sort_from.frm Form_Load (lines 2078-2081): BNKOUT2.sql filters view_user_bnkout to
-     * the current user's rows where user_out_choice is 1 or 2 — i.e. only fields that user has
-     * ever marked. Returns exactly that: the current user's persisted display/order marks.
+     * Legacy sort_from.frm Form_Load (lines 2078-2099): BNKOUT2.sql filters view_user_bnkout
+     * (BANK, user_ist_no '01') or view_user_pout (ADDITIONAL_FILES, user_ist_no '02') to the
+     * current user's rows where user_out_choice is 1 or 2 — i.e. only fields that user has ever
+     * marked on THAT screen. Returns exactly that: the current user's persisted marks for the scope.
      */
     @Transactional(readOnly = true)
-    public List<RetrievalUserFieldState> myFieldState() {
+    public List<RetrievalUserFieldState> myFieldState(RetrievalScope scope) {
         String userNo = currentUserNo();
-        return userFieldRepository.findByUserNo(userNo).stream()
+        return userFieldRepository.findByUserNoAndModule(userNo, scope.module()).stream()
                 .map(e -> new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark()))
                 .toList();
     }
 
     /** Legacy DBList2_DblClick — toggles this user's user_out_choice for one field. */
     @Transactional
-    public RetrievalUserFieldState toggleDisplay(String fieldKey) {
-        requireField(fieldKey, allFieldsByKey());
-        RetrievalUserFieldEntity e = findOrCreate(currentUserNo(), fieldKey);
+    public RetrievalUserFieldState toggleDisplay(RetrievalScope scope, String fieldKey) {
+        requireField(fieldKey, allFieldsByKey(scope));
+        RetrievalUserFieldEntity e = findOrCreate(currentUserNo(), scope, fieldKey);
         e.setDisplay(!e.isDisplay());
         userFieldRepository.save(e);
         return new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark());
@@ -117,9 +96,9 @@ public class RetrievalService {
 
     /** Legacy DBList2_KeyDown (F10) — toggles this user's user_out_choi1 for one field. */
     @Transactional
-    public RetrievalUserFieldState toggleOrder(String fieldKey) {
-        requireField(fieldKey, allFieldsByKey());
-        RetrievalUserFieldEntity e = findOrCreate(currentUserNo(), fieldKey);
+    public RetrievalUserFieldState toggleOrder(RetrievalScope scope, String fieldKey) {
+        requireField(fieldKey, allFieldsByKey(scope));
+        RetrievalUserFieldEntity e = findOrCreate(currentUserNo(), scope, fieldKey);
         e.setOrderMark(!e.isOrderMark());
         userFieldRepository.save(e);
         return new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark());
@@ -131,14 +110,14 @@ public class RetrievalService {
      * category and calls upd_user_bnkout_choice per field).
      */
     @Transactional
-    public List<RetrievalUserFieldState> markCategoryForDisplay(String category) {
+    public List<RetrievalUserFieldState> markCategoryForDisplay(RetrievalScope scope, String category) {
         String userNo = currentUserNo();
-        List<RetrievalFieldEntity> inCategory = fieldRepository.findByModuleAndEnabledTrue(MODULE).stream()
+        List<RetrievalFieldEntity> inCategory = fieldRepository.findByModuleAndEnabledTrue(scope.module()).stream()
                 .filter(f -> category.equals(f.getCategory()))
                 .toList();
         List<RetrievalUserFieldState> result = new ArrayList<>();
         for (RetrievalFieldEntity f : inCategory) {
-            RetrievalUserFieldEntity e = findOrCreate(userNo, f.getFieldKey());
+            RetrievalUserFieldEntity e = findOrCreate(userNo, scope, f.getFieldKey());
             e.setDisplay(true);
             userFieldRepository.save(e);
             result.add(new RetrievalUserFieldState(e.getFieldKey(), e.isDisplay(), e.isOrderMark()));
@@ -147,13 +126,14 @@ public class RetrievalService {
     }
 
     /**
-     * Legacy DBList2_77 (F2) — toggles the GLOBAL (not per-user) bnkout.OUT_CHIOCE/OUT_CHIO1
-     * "#" marker on the catalogue row itself. See the exact state machine quoted in the V29
+     * Legacy DBList2_77 (F2) — toggles the GLOBAL (not per-user) OUT_CHIOCE/OUT_CHIO1 "#" marker
+     * on the metadata row itself (a bnkout row on BANK, a POUT row on ADDITIONAL_FILES, since
+     * BNKOUT2 reads view_user_bnkout / view_user_pout respectively). See the exact state machine quoted in the V29
      * migration comment and in the frontend's hashMarkState doc comment.
      */
     @Transactional
-    public RetrievalFieldOption toggleHashMark(String fieldKey) {
-        RetrievalFieldEntity f = fieldRepository.findByModuleAndFieldKey(MODULE, fieldKey)
+    public RetrievalFieldOption toggleHashMark(RetrievalScope scope, String fieldKey) {
+        RetrievalFieldEntity f = fieldRepository.findByModuleAndFieldKey(scope.module(), fieldKey)
                 .orElseThrow(() -> new BusinessException("Unknown retrieval field: " + fieldKey));
         if (!f.isHashMarked()) {
             f.setHashMarked(true);
@@ -165,14 +145,16 @@ public class RetrievalService {
         }
         fieldRepository.save(f);
         return new RetrievalFieldOption(f.getFieldKey(), f.getLabel(), f.getCategory(), f.getFieldType(),
-                f.isLookupEnabled(), f.getLegacySourceTable(), f.isHashMarked());
+                f.isLookupEnabled(), f.getLegacySourceTable(), f.isHashMarked(),
+                scope.codedCondition(f.getFieldKey()) != null);
     }
 
-    private RetrievalUserFieldEntity findOrCreate(String userNo, String fieldKey) {
-        return userFieldRepository.findByUserNoAndFieldKey(userNo, fieldKey)
+    private RetrievalUserFieldEntity findOrCreate(String userNo, RetrievalScope scope, String fieldKey) {
+        return userFieldRepository.findByUserNoAndModuleAndFieldKey(userNo, scope.module(), fieldKey)
                 .orElseGet(() -> {
                     RetrievalUserFieldEntity e = new RetrievalUserFieldEntity();
                     e.setUserNo(userNo);
+                    e.setModule(scope.module());
                     e.setFieldKey(fieldKey);
                     return e;
                 });
@@ -192,13 +174,13 @@ public class RetrievalService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> lookupValues(String fieldKey, String term) {
-        RetrievalFieldEntity field = requireField(fieldKey, allFieldsByKey());
+    public List<String> lookupValues(RetrievalScope scope, String fieldKey, String term) {
+        RetrievalFieldEntity field = requireField(fieldKey, allFieldsByKey(scope));
         if (!field.isLookupEnabled()) {
             throw new BusinessException("Field does not offer a value picker: " + fieldKey);
         }
-        String column = qualify(field);
-        StringBuilder jpql = new StringBuilder("SELECT DISTINCT ").append(column).append(JOIN_SKELETON)
+        String column = qualify(scope, field);
+        StringBuilder jpql = new StringBuilder("SELECT DISTINCT ").append(column).append(scope.joinSkeleton())
                 .append("WHERE ").append(column).append(" IS NOT NULL");
         boolean hasTerm = term != null && !term.isBlank();
         if (hasTerm) {
@@ -213,23 +195,58 @@ public class RetrievalService {
         return query.setMaxResults(50).getResultList();
     }
 
+    /**
+     * Name/code pairs for a coded condition (legacy c_getcond: ListField = name, BoundColumn =
+     * code), drawn from the same source and filter as {@link #lookupValues}.
+     */
     @Transactional(readOnly = true)
-    public RetrievalSearchResponse search(RetrievalSearchRequest request) {
-        Map<String, RetrievalFieldEntity> fields = allFieldsByKey();
+    public List<RetrievalCodeOption> lookupCodes(RetrievalScope scope, String fieldKey, String term) {
+        RetrievalFieldEntity field = requireField(fieldKey, allFieldsByKey(scope));
+        RetrievalScope.CodedCondition coded = scope.codedCondition(fieldKey);
+        if (coded == null) {
+            throw new BusinessException("Field is not a coded condition: " + fieldKey);
+        }
+        String column = qualify(scope, field);
+        StringBuilder jpql = new StringBuilder("SELECT DISTINCT ").append(coded.codeColumn()).append(", ").append(column)
+                .append(scope.joinSkeleton()).append("WHERE ").append(column).append(" IS NOT NULL");
+        boolean hasTerm = term != null && !term.isBlank();
+        if (hasTerm) {
+            jpql.append(" AND LOWER(").append(column).append(") LIKE :term");
+        }
+        jpql.append(" ORDER BY ").append(column);
+
+        TypedQuery<Object[]> query = entityManager.createQuery(jpql.toString(), Object[].class);
+        if (hasTerm) {
+            query.setParameter("term", "%" + term.toLowerCase() + "%");
+        }
+        return query.setMaxResults(50).getResultList().stream()
+                .map(r -> new RetrievalCodeOption((String) r[0], (String) r[1]))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RetrievalSearchResponse search(RetrievalScope scope, RetrievalSearchRequest request) {
+        Map<String, RetrievalFieldEntity> fields = allFieldsByKey(scope);
 
         List<String> outputKeys = request.getOutputFieldKeys();
         List<String> selectParts = new ArrayList<>();
+        List<String> outputAliases = new ArrayList<>();
         List<RetrievalSearchResponse.RetrievalColumn> columns = new ArrayList<>();
         for (String key : outputKeys) {
             RetrievalFieldEntity field = requireField(key, fields);
-            selectParts.add(qualify(field));
+            selectParts.add(qualify(scope, field));
+            outputAliases.add(alias(scope, field));
             columns.add(new RetrievalSearchResponse.RetrievalColumn(key, field.getLabel()));
+        }
+        List<String> conditionAliases = new ArrayList<>();
+        if (request.getRootCondition() != null) {
+            collectConditionAliases(scope, request.getRootCondition(), fields, conditionAliases);
         }
 
         Map<String, Object> params = new HashMap<>();
         String whereClause = request.getRootCondition() == null
                 ? ""
-                : " WHERE " + buildPredicate(request.getRootCondition(), fields, params, new AtomicInteger());
+                : " WHERE " + buildPredicate(scope, request.getRootCondition(), fields, params, new AtomicInteger());
 
         // Legacy F10 ("حقول العرض في الجدول" / DBList2_KeyDown / user_out_choi1) — fields marked
         // for ordering feed cmd_result_Click's "order by" clause in the order they were marked.
@@ -246,12 +263,14 @@ public class RetrievalService {
                     throw new BusinessException(
                             "Order field '" + key + "' must also be one of the selected output fields");
                 }
-                orderParts.add(qualify(requireField(key, fields)));
+                orderParts.add(qualify(scope, requireField(key, fields)));
             }
             orderClause = " ORDER BY " + String.join(", ", orderParts);
         }
 
-        String jpql = "SELECT DISTINCT c.appNo, " + String.join(", ", selectParts) + JOIN_SKELETON + whereClause + orderClause;
+        boolean keyed = !scope.distinctOnOutputOnly();
+        String jpql = "SELECT DISTINCT " + (keyed ? scope.rootKey() + ", " : "") + String.join(", ", selectParts)
+                + scope.fromClause(conditionAliases, outputAliases) + whereClause + orderClause;
         Query dataQuery = entityManager.createQuery(jpql);
         params.forEach(dataQuery::setParameter);
 
@@ -268,11 +287,13 @@ public class RetrievalService {
 
         List<RetrievalSearchResponse.RetrievalResultRow> rows = new ArrayList<>();
         for (Object rowObj : allRows.subList(fromIndex, toIndex)) {
-            Object[] row = (Object[]) rowObj;
-            String appNo = (String) row[0];
+            // A single selected column comes back as a bare value, not an Object[].
+            Object[] row = rowObj instanceof Object[] cells ? cells : new Object[] {rowObj};
+            int offset = keyed ? 1 : 0;
+            String appNo = keyed ? rowKey(row[0]) : null;
             Map<String, Object> values = new LinkedHashMap<>();
             for (int i = 0; i < outputKeys.size(); i++) {
-                values.put(outputKeys.get(i), row[i + 1]);
+                values.put(outputKeys.get(i), row[i + offset]);
             }
             rows.add(new RetrievalSearchResponse.RetrievalResultRow(appNo, values));
         }
@@ -280,7 +301,28 @@ public class RetrievalService {
         return new RetrievalSearchResponse(columns, rows, total, page, size);
     }
 
-    private String buildPredicate(RetrievalConditionNode node, Map<String, RetrievalFieldEntity> fields,
+    /** Table aliases of the FIELD nodes in pre-order — the order the legacy conditions were added. */
+    private void collectConditionAliases(RetrievalScope scope, RetrievalConditionNode node,
+                                         Map<String, RetrievalFieldEntity> fields, List<String> out) {
+        if ("GROUP".equalsIgnoreCase(node.getType())) {
+            if (node.getChildren() != null) {
+                node.getChildren().forEach(c -> collectConditionAliases(scope, c, fields, out));
+            }
+        } else {
+            RetrievalScope.CodedCondition coded = scope.codedCondition(node.getFieldKey());
+            out.add(coded != null ? coded.conditionAlias() : alias(scope, requireField(node.getFieldKey(), fields)));
+        }
+    }
+
+    /** Root keys are strings (MN_APP_NO, SUB_NO) except PERIOD.PER_PER_NO, a float column holding whole numbers. */
+    private String rowKey(Object key) {
+        if (key instanceof Double d && d == Math.rint(d)) {
+            return String.valueOf(d.longValue());
+        }
+        return key == null ? null : key.toString();
+    }
+
+    private String buildPredicate(RetrievalScope scope, RetrievalConditionNode node, Map<String, RetrievalFieldEntity> fields,
                                    Map<String, Object> params, AtomicInteger paramSeq) {
         if ("GROUP".equalsIgnoreCase(node.getType())) {
             List<RetrievalConditionNode> children = node.getChildren();
@@ -293,7 +335,7 @@ public class RetrievalService {
                 if (i > 0) {
                     sb.append(" ").append("OR".equalsIgnoreCase(child.getConjunction()) ? "OR" : "AND").append(" ");
                 }
-                sb.append(buildPredicate(child, fields, params, paramSeq));
+                sb.append(buildPredicate(scope, child, fields, params, paramSeq));
             }
             return sb.append(")").toString();
         }
@@ -302,7 +344,8 @@ public class RetrievalService {
         }
 
         RetrievalFieldEntity field = requireField(node.getFieldKey(), fields);
-        String column = qualify(field);
+        RetrievalScope.CodedCondition coded = scope.codedCondition(field.getFieldKey());
+        String column = coded != null ? coded.conditionColumn() : qualify(scope, field);
         String operator = node.getOperator() == null ? "" : node.getOperator().toUpperCase();
         return switch (field.getFieldType()) {
             case "STRING" -> stringPredicate(column, operator, node, params, paramSeq);
@@ -396,13 +439,16 @@ public class RetrievalService {
         }
     }
 
-    private String qualify(RetrievalFieldEntity field) {
-        String alias = (field.getJoinPath() == null || field.getJoinPath().isBlank()) ? "c" : field.getJoinPath();
-        return alias + "." + field.getEntityPath();
+    private String qualify(RetrievalScope scope, RetrievalFieldEntity field) {
+        return alias(scope, field) + "." + field.getEntityPath();
     }
 
-    private Map<String, RetrievalFieldEntity> allFieldsByKey() {
-        return fieldRepository.findByModuleAndEnabledTrue(MODULE).stream()
+    private String alias(RetrievalScope scope, RetrievalFieldEntity field) {
+        return (field.getJoinPath() == null || field.getJoinPath().isBlank()) ? scope.rootAlias() : field.getJoinPath();
+    }
+
+    private Map<String, RetrievalFieldEntity> allFieldsByKey(RetrievalScope scope) {
+        return fieldRepository.findByModuleAndEnabledTrue(scope.module()).stream()
                 .collect(Collectors.toMap(RetrievalFieldEntity::getFieldKey, f -> f));
     }
 

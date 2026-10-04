@@ -67,7 +67,56 @@ export interface DigitDemand {
   checked1: boolean;
   inputSize: number | null;
   outputSize: number | null;
+  /** dmd_s / dmd_m / dmd_o — the legacy grid's "time_frm" column. */
+  seconds?: number | null;
+  minutes?: number | null;
+  hours?: number | null;
 }
+
+/** "طلبيات الفيديو" queue (new_vdpreview.frm) — caller's user lock and operator rights. */
+export interface DemandQueueContext {
+  userNo: string | null;
+  userName: string | null;
+  /** Legacy box_user_no = "244": may see / filter every user's orders. */
+  canSeeAllUsers: boolean;
+  /** Legacy box_user_start = 1: "start" button and F5 path panel. */
+  canOperate: boolean;
+}
+
+export interface DemandQueueUser {
+  userNo: string;
+  userName: string;
+}
+
+export interface DemandQueueCriteria {
+  dateFrom?: string;
+  dateTo?: string;
+  done?: boolean;
+  notDone?: boolean;
+  text?: string;
+  demandNo?: string;
+  userNo?: string;
+  stock?: string;
+}
+
+export type DemandQueueMechanism = 'START' | 'NEWSTART' | 'COPY';
+
+/**
+ * The record a search screen hands to "طلبيات الفيديو" — the legacy v_mch_* globals that
+ * user_inetrface.frm's F6 (DataGrid1_KeyUp, :2624-2659) fills before new_vdpreview.Show.
+ * Passed as router navigation state.
+ */
+export interface VideoOrderPreload {
+  machineNo: string;            // v_mch_no        = mn_app_no
+  title: string | null;         // v_mch_tit       = MN_ACT_TTL
+  stock: string | null;         // V_MCH_STOCK     = dig_DIG_NO
+  inSeconds: number;            // m_time  = dig_s + dig_m*60 + dig_o*3600
+  outSeconds: number;           // m_time1 = dig_s1 + dig_m1*60 + dig_o1*3600
+  lowExtension: string | null;  // v_mch_typ       = dig_typ (preview file)
+  highExtension: string | null; // v_mch_typ_high  = dig_typ_high, else dig_typ, else "avi"
+}
+
+export const VIDEO_ORDER_PRELOAD_STATE = 'videoOrderPreload';
 
 /**
  * Progress and outcome of a batch delivery (legacy Command5 / Command14).

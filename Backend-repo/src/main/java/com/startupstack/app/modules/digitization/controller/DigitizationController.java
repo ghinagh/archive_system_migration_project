@@ -171,6 +171,15 @@ public class DigitizationController {
                 .body(ApiResponse.success(digitizationService.addScene(request)));
     }
 
+    /** "طلبيات الفيديو" queue add / add-whole-scene (new_vdpreview.frm Command10/14). */
+    @Permission(PermissionConstants.PERM_CREATE)
+    @PostMapping("/demands/queue-scenes")
+    public ResponseEntity<ApiResponse<DemandResponse>> addQueueScene(
+            @Valid @RequestBody AddSceneRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(digitizationService.addQueueScene(request)));
+    }
+
     @Permission(PermissionConstants.PERM_UPDATE)
     @PatchMapping("/demands/{id}/path")
     public ResponseEntity<ApiResponse<DemandResponse>> reassignPath(

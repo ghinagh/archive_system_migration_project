@@ -1,18 +1,19 @@
 import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, of, tap, map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { RetrievalService } from '../services/retrieval.service';
-import { AccumulatorToken, RetrievalConditionNode, RetrievalFieldOption } from '../models/retrieval.model';
+import { AccumulatorToken, RETRIEVAL_SCOPE_SCREENS, RetrievalCodeOption, RetrievalConditionNode, RetrievalFieldOption, RetrievalScope } from '../models/retrieval.model';
 
 /**
- * Migrated equivalent of the legacy sort_from.frm ("الاسترجاع البياني لبنك المعلومات"):
- * a metadata-driven cross-domain query builder covering the catalogue, article,
- * periodical, author and thesaurus fields. The accumulator textbox and AND/OR/( / )
+ * Migrated equivalent of the legacy sort_from.frm, serving the three ARCHIVE.frm menu items that
+ * open it: "الاسترجاع البياني لبنك المعلومات" (route scope BANK), "استرجاع الملفات الاضافية"
+ * (route scope ADDITIONAL_FILES) and "استـرجـاع الصحف والمجلات" (route scope PERIODICALS). The UI is identical, but every backend call carries the
+ * scope so each screen reads its own legacy field catalogue, per-user marks and data root. The accumulator textbox and AND/OR/( / )
  * toolbar reproduce the original's "cumulative questions" sentence exactly, but a
  * condition is a real nested tree (see parseTokens) rather than a matched pair of
  * literal parenthesis characters.
@@ -32,10 +33,16 @@ export class GraphicalRetrievalComponent {
 
   private retrievalService = inject(RetrievalService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private location = inject(Location);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
+
+  /** Which legacy screen this instance is — set per route in RetrievalModule. */
+  readonly scope: RetrievalScope = this.route.snapshot.data['scope'] ?? 'BANK';
+  readonly titleKey = RETRIEVAL_SCOPE_SCREENS[this.scope].titleKey;
+  private readonly basePath = RETRIEVAL_SCOPE_SCREENS[this.scope].path;
 
   readonly numberOperators = ['EQUALS', 'GT', 'GTE', 'LT', 'LTE', 'BETWEEN'];
 
@@ -55,6 +62,9 @@ export class GraphicalRetrievalComponent {
 
   lookupControl = new FormControl<string>('');
   lookupResults = signal<string[]>([]);
+  /** Coded fields only: the c_getcond list and the code (BoundText) of the picked name. */
+  codeOptions = signal<RetrievalCodeOption[]>([]);
+  pickedCode = signal<string | null>(null);
 
   /**
    * Legacy sort_from.frm Form_Load: BNKOUT2.sql filters view_user_bnkout to the current user's
@@ -106,7 +116,7 @@ export class GraphicalRetrievalComponent {
   canAddConjunction = computed(() => this.lastTokenKind() === 'CONDITION' || this.lastTokenKind() === 'RPAREN');
 
   constructor() {
-    this.retrievalService.getFields().subscribe({
+    this.retrievalService.getFields(this.scope).subscribe({
       next: r => {
         this.fields.set(r.data);
         this.loadMyFieldState();
@@ -121,7 +131,14 @@ export class GraphicalRetrievalComponent {
         if (!field?.lookupEnabled) {
           return of(null);
         }
-        return this.retrievalService.lookupValues(field.fieldKey, term ?? undefined).pipe(
+        if (field.codeLookup) {
+          return this.retrievalService.lookupCodes(this.scope, field.fieldKey, term ?? undefined).pipe(
+            tap(r => this.codeOptions.set(r.data)),
+            map(() => null),
+            catchError(() => of(null))
+          );
+        }
+        return this.retrievalService.lookupValues(this.scope, field.fieldKey, term ?? undefined).pipe(
           catchError(() => of(null))
         );
       }),
@@ -134,7 +151,7 @@ export class GraphicalRetrievalComponent {
    * populates displayFields/orderFields from them, instead of starting empty every load.
    */
   private loadMyFieldState(): void {
-    this.retrievalService.myFieldState().subscribe({
+    this.retrievalService.myFieldState(this.scope).subscribe({
       next: r => {
         const byKey = new Map(this.fields().map(f => [f.fieldKey, f]));
         const display: RetrievalFieldOption[] = [];
@@ -162,18 +179,28 @@ export class GraphicalRetrievalComponent {
     this.value2.set('');
     this.lookupControl.setValue('');
     this.lookupResults.set([]);
-    this.operator.set(field.fieldType === 'STRING' ? this.searchMode() : 'EQUALS');
+    this.codeOptions.set([]);
+    this.pickedCode.set(null);
+    // A coded condition is always "<stored code> = '<picked code>'" (legacy add_question).
+    this.operator.set(field.fieldType === 'STRING' && !field.codeLookup ? this.searchMode() : 'EQUALS');
   }
 
   onSearchModeChange(mode: 'STARTS_WITH' | 'CONTAINS'): void {
     this.searchMode.set(mode);
-    if (this.selectedField()?.fieldType === 'STRING') {
+    const field = this.selectedField();
+    if (field?.fieldType === 'STRING' && !field.codeLookup) {
       this.operator.set(mode);
     }
   }
 
   pickLookupValue(val: string): void {
     this.value.set(val);
+  }
+
+  /** Legacy c_getcond selection: the name is shown, its code (BoundText) goes into the query. */
+  pickCodeOption(option: RetrievalCodeOption): void {
+    this.value.set(option.label);
+    this.pickedCode.set(option.code);
   }
 
   /** Legacy DBList2_DblClick — toggles user_out_choice for this user, persisted server-side. */
@@ -184,7 +211,7 @@ export class GraphicalRetrievalComponent {
     const current = this.displayFields();
     this.displayFields.set(wasDisplayed ? current.filter(f => f.fieldKey !== field.fieldKey) : [...current, field]);
 
-    this.retrievalService.toggleDisplay(field.fieldKey).subscribe({
+    this.retrievalService.toggleDisplay(this.scope, field.fieldKey).subscribe({
       next: r => {
         const list = this.displayFields();
         const has = list.some(f => f.fieldKey === field.fieldKey);
@@ -210,7 +237,7 @@ export class GraphicalRetrievalComponent {
     const current = this.orderFields();
     this.orderFields.set(wasOrdered ? current.filter(f => f.fieldKey !== field.fieldKey) : [...current, field]);
 
-    this.retrievalService.toggleOrder(field.fieldKey).subscribe({
+    this.retrievalService.toggleOrder(this.scope, field.fieldKey).subscribe({
       next: r => {
         const list = this.orderFields();
         const has = list.some(f => f.fieldKey === field.fieldKey);
@@ -233,7 +260,7 @@ export class GraphicalRetrievalComponent {
    * in place from the backend's authoritative response.
    */
   toggleHashMark(field: RetrievalFieldOption): void {
-    this.retrievalService.toggleHashMark(field.fieldKey).subscribe({
+    this.retrievalService.toggleHashMark(this.scope, field.fieldKey).subscribe({
       next: r => {
         this.fields.update(list => list.map(f => f.fieldKey === r.data.fieldKey ? r.data : f));
         const selected = this.selectedField();
@@ -284,7 +311,7 @@ export class GraphicalRetrievalComponent {
     if (!cat) {
       return;
     }
-    this.retrievalService.markCategoryForDisplay(cat).subscribe({
+    this.retrievalService.markCategoryForDisplay(this.scope, cat).subscribe({
       next: r => {
         const byKey = new Map(this.fields().map(f => [f.fieldKey, f]));
         const merged = [...this.displayFields()];
@@ -305,7 +332,7 @@ export class GraphicalRetrievalComponent {
       this.snackBar.open(this.translate.instant('RETRIEVAL.SELECT_FIELD_FIRST'), '', { duration: 3000 });
       return;
     }
-    if (!this.value().trim()) {
+    if (!this.value().trim() || (field.codeLookup && !this.pickedCode())) {
       this.snackBar.open(this.translate.instant('RETRIEVAL.ENTER_VALUE_FIRST'), '', { duration: 3000 });
       return;
     }
@@ -321,11 +348,12 @@ export class GraphicalRetrievalComponent {
       display,
       fieldKey: field.fieldKey,
       operator: opValue,
-      value: this.value(),
+      value: field.codeLookup ? this.pickedCode()! : this.value(),
       value2: opValue === 'BETWEEN' ? this.value2() : undefined
     }]);
 
     this.value.set('');
+    this.pickedCode.set(null);
     this.value2.set('');
     this.lookupControl.setValue('');
   }
@@ -431,13 +459,16 @@ export class GraphicalRetrievalComponent {
     // sent as an invalid request.
     const orderKeys = this.orderFields().map(f => f.fieldKey).filter(k => displayKeys.includes(k));
     this.retrievalService.pendingSearch.set({
-      rootCondition,
-      outputFieldKeys: displayKeys,
-      orderFieldKeys: orderKeys.length ? orderKeys : undefined,
-      page: 0,
-      size: 25
+      scope: this.scope,
+      request: {
+        rootCondition,
+        outputFieldKeys: displayKeys,
+        orderFieldKeys: orderKeys.length ? orderKeys : undefined,
+        page: 0,
+        size: 25
+      }
     });
-    this.router.navigate(['/retrieval/results']);
+    this.router.navigate([this.basePath, 'results']);
   }
 
   private formatCondition(field: RetrievalFieldOption, operator: string, value: string, value2: string): string {

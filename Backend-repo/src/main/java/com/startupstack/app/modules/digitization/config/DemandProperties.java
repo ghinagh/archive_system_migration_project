@@ -22,4 +22,16 @@ public class DemandProperties {
 
     /** Legacy {@code box_user_start} threshold — users below this level bypass the cap. */
     private int privilegedUserStartLevel = 2;
+
+    /**
+     * new_vdpreview.frm "طلبيات الفيديو": the one user code that may see and filter every
+     * user's orders ({@code If Not box_user_no = "244"} locks everyone else to their own).
+     */
+    private String queueAllUsersUserNo = "244";
+
+    /**
+     * new_vdpreview.frm: {@code box_user_start = 1} enables the "start" button (Form_Load) and
+     * the F5 path panel (DataGrid1_KeyUp).
+     */
+    private int queueOperatorUserStart = 1;
 }

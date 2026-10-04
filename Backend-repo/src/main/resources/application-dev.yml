@@ -21,13 +21,16 @@ app:
     secret: dev-only-secret-key-that-is-at-least-32-bytes-long
     expiration-ms: 86400000
   media:
-    base-path: C:/media
+    # Literal values here override application.yml's ${MEDIA_*} placeholders, so they are
+    # placeholders too: local IDE runs keep these Windows defaults, while docker-compose's
+    # MEDIA_* variables take effect inside the container.
+    base-path: ${MEDIA_BASE_PATH:C:/media}
     extension: ""
-    archive-path: ./data/archive
+    archive-path: ${MEDIA_ARCHIVE_PATH:./data/archive}
     volumes:
       - from: 1
         to: 5000
-        path: C:/media/vol1
+        path: ${MEDIA_VOL1_PATH:${MEDIA_BASE_PATH:C:/media}/vol1}
       - from: 5001
         to: 10000
-        path: C:/media/vol2
+        path: ${MEDIA_VOL2_PATH:${MEDIA_BASE_PATH:C:/media}/vol2}

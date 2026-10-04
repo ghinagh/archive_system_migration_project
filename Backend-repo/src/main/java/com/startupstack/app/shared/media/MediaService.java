@@ -319,6 +319,20 @@ public class MediaService {
     }
 
     /**
+     * The archive directory (created if missing) — where the "طلبيات الفيديو" queue writes the
+     * files legacy wrote to the folder picked in its Save dialog.
+     */
+    public Path archiveDirectory() {
+        try {
+            Path archiveDir = Paths.get(properties.getArchivePath());
+            Files.createDirectories(archiveDir);
+            return archiveDir;
+        } catch (IOException e) {
+            throw new BusinessException("Failed to prepare archive destination: " + e.getMessage());
+        }
+    }
+
+    /**
      * Legacy Command5's output name:
      * {@code "ARCHIVE_" + box_user_no + "_" + d-M-yyyy + "_" + HHMMSS + ext}, written into
      * {@code box_user_path}. Day and month are deliberately <em>not</em> zero-padded — legacy

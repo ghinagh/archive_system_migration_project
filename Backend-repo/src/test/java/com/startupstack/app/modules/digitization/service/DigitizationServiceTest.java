@@ -21,11 +21,14 @@ import com.startupstack.app.modules.users.repository.UserRepository;
 import com.startupstack.app.shared.exception.BusinessException;
 import com.startupstack.app.shared.exception.ResourceNotFoundException;
 import com.startupstack.app.shared.media.MediaService;
+import com.startupstack.app.shared.media.StockTier;
+import com.startupstack.app.modules.digitization.config.DemandProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -47,6 +50,7 @@ class DigitizationServiceTest {
     @Mock private DemandMapper demandMapper;
     @Mock private ResultMapper resultMapper;
     @Mock private MediaService mediaService;
+    @Spy private DemandProperties demandProperties = new DemandProperties();
     @InjectMocks
     private DigitizationService digitizationService;
 
@@ -193,7 +197,7 @@ class DigitizationServiceTest {
 
         when(catalogueRepository.findById("MCH0001")).thenReturn(Optional.of(new CatalogueEntity()));
         when(demandRepository.findMaxNumericDemandNo()).thenReturn(0);
-        when(mediaService.resolveStockPath("H01")).thenReturn("/media/vol1/H01");
+        when(mediaService.resolveStockPath("H01", StockTier.HIGH, null)).thenReturn("/media/vol1/H01");
         when(demandRepository.save(any(DemandEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(demandMapper.toResponse(any(DemandEntity.class))).thenReturn(new DemandResponse());
 

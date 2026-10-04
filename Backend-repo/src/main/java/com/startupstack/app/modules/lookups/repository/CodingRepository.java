@@ -20,4 +20,8 @@ public interface CodingRepository extends JpaRepository<CodingEntity, CodingEnti
 
     @Query("SELECT c FROM CodingEntity c WHERE c.subCode LIKE CONCAT(:codePrefix, '%') ORDER BY c.subDesc")
     List<CodingEntity> findBySubCodeStartingWithOrderBySubDesc(@Param("codePrefix") String codePrefix);
+
+    /** Legacy view_coding14: {@code SUBSTRING(sub_code,1,2) = '09' AND sub_leve = '2'}. */
+    @Query("SELECT c FROM CodingEntity c WHERE c.subCode LIKE '09%' AND c.subLeve = '2' ORDER BY c.subCode")
+    List<CodingEntity> findViewCoding14();
 }

@@ -1,8 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
 import { RetrievalService } from '../services/retrieval.service';
-import { RetrievalColumn, RetrievalResultRow, RetrievalSearchRequest } from '../models/retrieval.model';
+import { RETRIEVAL_SCOPE_SCREENS, RetrievalColumn, RetrievalResultRow, RetrievalScope, RetrievalSearchRequest } from '../models/retrieval.model';
 
 /**
  * Migrated equivalent of frm_result's DataGrid1: a dynamic-column results grid built
@@ -10,7 +10,9 @@ import { RetrievalColumn, RetrievalResultRow, RetrievalSearchRequest } from '../
  * double-click (open digital file), F2 (edit main record), F9 (mark choice), print/
  * report buttons, and bulk file-export panel were scoped out of this pass — opening
  * a row here navigates straight to the catalogue record, the one action every field
- * combination has in common.
+ * combination has in common. That action exists only for the bank scope: additional-files rows
+ * are FORM records (tmp_result1) and newspapers & magazines rows are PERIOD/TRANS records
+ * (tmp_result2) — not catalogue documents — so there is nothing to open there.
  */
 @Component({
   standalone: false,
@@ -22,6 +24,10 @@ export class RetrievalResultsComponent implements OnInit {
 
   private retrievalService = inject(RetrievalService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  readonly scope: RetrievalScope = this.route.snapshot.data['scope'] ?? 'BANK';
+  readonly canOpenRecord = this.scope === 'BANK';
 
   columns = signal<RetrievalColumn[]>([]);
   rows = signal<RetrievalResultRow[]>([]);
@@ -31,20 +37,23 @@ export class RetrievalResultsComponent implements OnInit {
   isLoading = signal(false);
   hasQuery = signal(false);
 
-  displayedColumns = computed(() => [...this.columns().map(c => c.fieldKey), 'actions']);
+  displayedColumns = computed(() => {
+    const cols = this.columns().map(c => c.fieldKey);
+    return this.canOpenRecord ? [...cols, 'actions'] : cols;
+  });
 
   private request: RetrievalSearchRequest | null = null;
 
   ngOnInit(): void {
     const pending = this.retrievalService.pendingSearch();
-    if (!pending) {
+    if (!pending || pending.scope !== this.scope) {
       this.hasQuery.set(false);
       return;
     }
     this.hasQuery.set(true);
-    this.request = pending;
-    this.pageIndex.set(pending.page);
-    this.pageSize.set(pending.size);
+    this.request = pending.request;
+    this.pageIndex.set(pending.request.page);
+    this.pageSize.set(pending.request.size);
     this.runSearch();
   }
 
@@ -59,11 +68,14 @@ export class RetrievalResultsComponent implements OnInit {
   }
 
   openRecord(row: RetrievalResultRow): void {
+    if (!this.canOpenRecord) {
+      return;
+    }
     this.router.navigate(['/catalogue', row.appNo]);
   }
 
   backToBuilder(): void {
-    this.router.navigate(['/retrieval']);
+    this.router.navigate([RETRIEVAL_SCOPE_SCREENS[this.scope].path]);
   }
 
   private runSearch(): void {
@@ -72,7 +84,7 @@ export class RetrievalResultsComponent implements OnInit {
     }
     this.isLoading.set(true);
     const req: RetrievalSearchRequest = { ...this.request, page: this.pageIndex(), size: this.pageSize() };
-    this.retrievalService.search(req).subscribe({
+    this.retrievalService.search(this.scope, req).subscribe({
       next: r => {
         this.columns.set(r.data.columns);
         this.rows.set(r.data.rows);

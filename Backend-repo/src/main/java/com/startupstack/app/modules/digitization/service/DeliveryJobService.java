@@ -12,10 +12,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -195,9 +203,230 @@ public class DeliveryJobService {
      */
     private String deliverOne(DemandEntity entity, DeliveryJobStatus status, DeliveryStep step) {
         String output = step.apply(entity, status);
-        entity.setPath(output);
+        // dmd_path is the source the clip was cut from; legacy (upd_demand1 / upd_dmd_user_do)
+        // never rewrites it, so only the status columns set by the step are persisted.
         demandRepository.save(entity);
         return output;
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // "طلبيات الفيديو" queue — new_vdpreview.frm Command9 "start", Command4 "newstart",
+    // Command5 "copy". Rows arrive in grid order; only dmd_chek = 1 rows are processed.
+    // Output names are built from the Save-dialog name exactly as legacy builds them, inside
+    // the server archive directory. One deliberate difference: legacy's On Error Resume Next
+    // let a failed save/copy still be marked dmd_chek = 2; here a row is only marked done
+    // when its output was actually produced, and is otherwise reported as not executed.
+    // ---------------------------------------------------------------------------------------
+
+    @Async("mediaJobExecutor")
+    public void runQueueProcess(String jobId, List<Integer> orderedIds, String mechanism,
+                                boolean clip, String outputName) {
+        DeliveryJobStatus status = jobs.get(jobId);
+        if (status == null) {
+            return;
+        }
+        try {
+            Map<Integer, DemandEntity> byId = new HashMap<>();
+            for (DemandEntity e : demandRepository.findAllById(orderedIds)) {
+                byId.put(e.getId(), e);
+            }
+            List<DemandEntity> rows = orderedIds.stream().map(byId::get).filter(Objects::nonNull).toList();
+            long queued = rows.stream().filter(DeliveryJobService::isQueued).count();
+            status.setTotal((int) queued);
+            if (queued == 0) {
+                status.setNothingSelected(true);
+                status.setState(DeliveryJobStatus.State.COMPLETED);
+                return;
+            }
+
+            String base = mediaService.archiveDirectory().resolve(outputName.trim()).toString();
+            switch (mechanism) {
+                case "COPY" -> queueCopy(rows, clip, base, status);
+                case "NEWSTART" -> queueNewstart(rows, clip, base, status);
+                case "START" -> queueStart(rows, clip, base, status);
+                default -> throw new IllegalArgumentException("Unknown mechanism: " + mechanism);
+            }
+            status.setCurrentTitle(null);
+            status.setState(DeliveryJobStatus.State.COMPLETED);
+        } catch (RuntimeException e) {
+            log.error("Queue job {} failed", jobId, e);
+            status.setErrorMessage(e.getMessage());
+            status.setState(DeliveryJobStatus.State.FAILED);
+        }
+    }
+
+    /** Command5 "copy" (:2171-2261). */
+    private void queueCopy(List<DemandEntity> rows, boolean clip, String base, DeliveryJobStatus status) {
+        for (DemandEntity row : rows) {
+            String path = trimmed(row.getPath());
+            String ext = lastChars(path, 4);
+            String target;
+            if (clip) {
+                // Legacy uses an undeclared `i` here, so the index is always "0"; the collision
+                // loop then yields base_0, base_1_0, base_2_0 ...
+                target = base + "_0" + ext;
+                for (int k = 1; exists(target); k++) {
+                    target = base + "_" + k + "_0" + ext;
+                }
+            } else {
+                target = base + trimmed(row.getDescription()) + " Clip " + row.getSerial() + ext;
+            }
+            if (!isQueued(row)) {
+                continue;
+            }
+            status.setCurrentTitle(trimmed(row.getDescription()));
+            boolean durationOk = !(".avi".equals(ext) || ".AVI".equals(ext)) || ffmpegService.checkPlayable(path);
+            boolean done = false;
+            if (durationOk && exists(path)) {
+                try {
+                    Files.copy(Path.of(path), Path.of(target), StandardCopyOption.REPLACE_EXISTING);
+                    done = Files.size(Path.of(path)) != 0;
+                } catch (IOException | RuntimeException e) {
+                    log.warn("Queue copy failed for demand {}: {}", row.getId(), e.getMessage());
+                }
+            }
+            finishRow(row, done, target, status);
+        }
+    }
+
+    /** Command4 "newstart" (:1959-2170). */
+    private void queueNewstart(List<DemandEntity> rows, boolean clip, String base, DeliveryJobStatus status) {
+        int i = 1;
+        for (DemandEntity row : rows) {
+            String path = trimmed(row.getPath());
+            String ext = lastChars(path, 4);
+            String target = base + "_" + i + ext;
+            if (clip) {
+                for (int k = 1; exists(target); k++) {
+                    target = base + "_" + k + "_" + i + ext;
+                }
+            }
+            if (!isQueued(row)) {
+                continue;
+            }
+            if (!exists(path)) {
+                finishRow(row, false, null, status);
+                continue;
+            }
+            i++;
+            status.setCurrentTitle(trimmed(row.getDescription()));
+            try {
+                ffmpegService.legacyNewstart(path, target, row.getInputSize(), row.getOutputSize());
+            } catch (RuntimeException e) {
+                log.warn("Queue newstart failed for demand {}: {}", row.getId(), e.getMessage());
+            }
+            if (!exists(target)) {
+                finishRow(row, false, null, status);
+                continue;
+            }
+            String output = target;
+            if (!clip) {
+                String desc = trimmed(row.getDescription());
+                String dest = base + desc + " Clip " + row.getSerial() + ext;
+                for (int k = 1; exists(dest); k++) {
+                    dest = base + k + "_" + desc + " Clip " + row.getSerial() + ext;
+                }
+                try {
+                    Files.move(Path.of(target), Path.of(dest));
+                    output = dest;
+                } catch (IOException e) {
+                    log.warn("Queue newstart rename failed for demand {}: {}", row.getId(), e.getMessage());
+                }
+            }
+            finishRow(row, true, output, status);
+        }
+    }
+
+    /** Command9 "start" (:2408-2750); with كليب every scene is merged into {@code <name>.avi}. */
+    private void queueStart(List<DemandEntity> rows, boolean clip, String base, DeliveryJobStatus status) {
+        List<DemandEntity> clipRows = new ArrayList<>();
+        for (DemandEntity row : rows) {
+            if (!isQueued(row)) {
+                continue;
+            }
+            String path = trimmed(row.getPath());
+            if (!exists(path) || !ffmpegService.checkPlayable(path)) {
+                finishRow(row, false, null, status);
+                continue;
+            }
+            status.setCurrentTitle(trimmed(row.getDescription()));
+            if (clip) {
+                clipRows.add(row);
+                continue;
+            }
+            String target = base + trimmed(row.getDescription()) + " Clip " + row.getSerial() + ".avi";
+            boolean done = false;
+            try {
+                ffmpegService.legacyStartEncode(path, target, row.getInputSize(), row.getOutputSize());
+                done = true;
+            } catch (RuntimeException e) {
+                log.warn("Queue start failed for demand {}: {}", row.getId(), e.getMessage());
+            }
+            finishRow(row, done, target, status);
+        }
+        if (clipRows.isEmpty()) {
+            return;
+        }
+        status.setCurrentTitle("دمج كل المشاهد");
+        String merged = base + ".avi";
+        List<String> parts = new ArrayList<>();
+        boolean done = false;
+        try {
+            for (DemandEntity row : clipRows) {
+                String part = Files.createTempFile("queue-start-", ".avi").toString();
+                parts.add(part);
+                ffmpegService.legacyStartEncode(trimmed(row.getPath()), part, row.getInputSize(), row.getOutputSize());
+            }
+            ffmpegService.mergeConcat(parts, merged);
+            done = true;
+        } catch (IOException | RuntimeException e) {
+            log.warn("Queue start merge failed: {}", e.getMessage());
+        } finally {
+            parts.forEach(mediaService::deleteQuietly);
+        }
+        for (DemandEntity row : clipRows) {
+            finishRow(row, done, merged, status);
+        }
+    }
+
+    /** Legacy upd_demand1 … dmd_chek = 2 on success; the stock number joins m_txt_no on failure. */
+    private void finishRow(DemandEntity row, boolean done, String output, DeliveryJobStatus status) {
+        if (done) {
+            row.setChecked(2);
+            demandRepository.save(row);
+            status.setSucceeded(status.getSucceeded() + 1);
+            if (output != null && !status.getOutputPaths().contains(output)) {
+                status.getOutputPaths().add(output);
+            }
+        } else {
+            status.getFailedStockNumbers().add(
+                    row.getMachineStock() == null ? String.valueOf(row.getId()) : row.getMachineStock().trim());
+        }
+        status.setProcessed(status.getProcessed() + 1);
+    }
+
+    private static boolean isQueued(DemandEntity e) {
+        return e.getChecked() != null && e.getChecked() == 1;
+    }
+
+    private static String trimmed(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    /** Legacy {@code Mid(V_PATH, Len(V_PATH) - 3, 4)}. */
+    private static String lastChars(String value, int n) {
+        return value.length() >= n ? value.substring(value.length() - n) : value;
+    }
+
+    private static boolean exists(String path) {
+        if (path == null || path.isBlank()) {
+            return false;
+        }
+        try {
+            return Files.isRegularFile(Path.of(path));
+        } catch (InvalidPathException e) {
+            return false;
+        }
     }
 
     /** Legacy feeds ffmpeg the demand's own dmd_path, already resolved against the master. */

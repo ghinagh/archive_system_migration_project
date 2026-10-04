@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
-import { DigitRecord, DigitRecordRequest, DigitDemand, DigitDemandRequest, DigitResult, DigitResultRequest, AddSceneRequest, DemandFulfilMechanism, DemandTestResult, DemandStats, LogUsageRequestBatch, DeliveryJobStatus } from '../models/digitization.model';
+import { DigitRecord, DigitRecordRequest, DigitDemand, DigitDemandRequest, DigitResult, DigitResultRequest, AddSceneRequest, DemandFulfilMechanism, DemandTestResult, DemandStats, LogUsageRequestBatch, DeliveryJobStatus, DemandQueueContext, DemandQueueCriteria, DemandQueueUser, DemandQueueMechanism } from '../models/digitization.model';
 
 @Injectable({ providedIn: 'root' })
 export class DigitizationService {
@@ -137,12 +137,60 @@ export class DigitizationService {
     return this.http.get<ApiResponse<DemandStats>>(`${this.api}/api/digitization/demands/stats`, { params: p });
   }
 
-  downloadMedia(stockNo: string): Observable<Blob> {
-    return this.http.get(`${this.api}/api/media/file/${encodeURIComponent(stockNo)}`, { responseType: 'blob' });
+  downloadMedia(stockNo: string, ext?: string): Observable<Blob> {
+    let p = new HttpParams();
+    if (ext) p = p.set('ext', ext);
+    return this.http.get(`${this.api}/api/media/file/${encodeURIComponent(stockNo)}`, { responseType: 'blob', params: p });
+  }
+
+  // --- "طلبيات الفيديو" order queue (new_vdpreview.frm) ---
+
+  getQueueContext(): Observable<ApiResponse<DemandQueueContext>> {
+    return this.http.get<ApiResponse<DemandQueueContext>>(`${this.api}/api/digitization/demand-queue/context`);
+  }
+
+  searchQueue(c: DemandQueueCriteria): Observable<ApiResponse<DigitDemand[]>> {
+    let p = new HttpParams();
+    if (c.dateFrom) p = p.set('dateFrom', c.dateFrom);
+    if (c.dateTo) p = p.set('dateTo', c.dateTo);
+    if (c.done) p = p.set('done', true);
+    if (c.notDone) p = p.set('notDone', true);
+    if (c.text) p = p.set('text', c.text);
+    if (c.demandNo) p = p.set('demandNo', c.demandNo);
+    if (c.userNo) p = p.set('userNo', c.userNo);
+    if (c.stock) p = p.set('stock', c.stock);
+    return this.http.get<ApiResponse<DigitDemand[]>>(`${this.api}/api/digitization/demand-queue`, { params: p });
+  }
+
+  getQueueUsers(prefix: string): Observable<ApiResponse<DemandQueueUser[]>> {
+    return this.http.get<ApiResponse<DemandQueueUser[]>>(`${this.api}/api/digitization/demand-queue/users`,
+      { params: new HttpParams().set('prefix', prefix) });
+  }
+
+  getQueuePathOptions(): Observable<ApiResponse<string[]>> {
+    return this.http.get<ApiResponse<string[]>>(`${this.api}/api/digitization/demand-queue/path-options`);
+  }
+
+  setQueueChecked(ids: number[], checked: number | null): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(`${this.api}/api/digitization/demand-queue/checked`, { ids, checked });
+  }
+
+  assignQueuePath(ids: number[], basePath: string): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(`${this.api}/api/digitization/demand-queue/path`, { ids, basePath });
+  }
+
+  processQueue(ids: number[], mechanism: DemandQueueMechanism, clip: boolean, outputName: string): Observable<ApiResponse<DeliveryJobStatus>> {
+    return this.http.post<ApiResponse<DeliveryJobStatus>>(`${this.api}/api/digitization/demand-queue/process`,
+      { ids, mechanism, clip, outputName });
   }
 
   addScene(req: AddSceneRequest): Observable<ApiResponse<DigitDemand>> {
     return this.http.post<ApiResponse<DigitDemand>>(`${this.api}/api/digitization/demands/scenes`, req);
+  }
+
+  /** "طلبيات الفيديو" queue add / add-whole-scene — new_vdpreview.frm Command10/14 semantics. */
+  addQueueScene(req: AddSceneRequest): Observable<ApiResponse<DigitDemand>> {
+    return this.http.post<ApiResponse<DigitDemand>>(`${this.api}/api/digitization/demands/queue-scenes`, req);
   }
 
   getDemandById(id: number): Observable<ApiResponse<DigitDemand>> {

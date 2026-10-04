@@ -5,8 +5,13 @@ import { GraphicalRetrievalComponent } from './graphical-retrieval/graphical-ret
 import { RetrievalResultsComponent } from './retrieval-results/retrieval-results.component';
 
 const routes: Routes = [
-  { path: '', component: GraphicalRetrievalComponent },
-  { path: 'results', component: RetrievalResultsComponent }
+  // Same sort_form UI for all three legacy menu items; the scope picks each one's own data source.
+  { path: '', component: GraphicalRetrievalComponent, data: { scope: 'BANK' } },
+  { path: 'results', component: RetrievalResultsComponent, data: { scope: 'BANK' } },
+  { path: 'additional-files', component: GraphicalRetrievalComponent, data: { scope: 'ADDITIONAL_FILES' } },
+  { path: 'additional-files/results', component: RetrievalResultsComponent, data: { scope: 'ADDITIONAL_FILES' } },
+  { path: 'periodicals', component: GraphicalRetrievalComponent, data: { scope: 'PERIODICALS' } },
+  { path: 'periodicals/results', component: RetrievalResultsComponent, data: { scope: 'PERIODICALS' } }
 ];
 
 @NgModule({
