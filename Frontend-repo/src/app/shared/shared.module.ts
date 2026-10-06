@@ -35,6 +35,7 @@ import { VideoPreviewComponent } from './components/video-preview/video-preview.
 import { AdvancedSearchComponent } from './components/advanced-search/advanced-search.component';
 import { RequiresLevelDirective } from '../features/users/directives/requires-level.directive';
 import { HighlightPipe } from './pipes/highlight.pipe';
+import { AccessKeyDialogComponent } from './components/access-key-dialog/access-key-dialog.component';
 
 const MATERIAL_MODULES = [
   MatButtonModule,
@@ -71,6 +72,7 @@ const MATERIAL_MODULES = [
     GlobalSearchComponent,
     VideoPreviewComponent,
     AdvancedSearchComponent,
+    AccessKeyDialogComponent,
     RequiresLevelDirective,
     HighlightPipe
   ],
@@ -93,6 +95,7 @@ const MATERIAL_MODULES = [
     GlobalSearchComponent,
     VideoPreviewComponent,
     AdvancedSearchComponent,
+    AccessKeyDialogComponent,
     RequiresLevelDirective,
     HighlightPipe
   ]

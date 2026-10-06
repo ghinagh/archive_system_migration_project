@@ -1,0 +1,9 @@
+<form class="access-key" (ngSubmit)="execute()">
+  <label for="access-key-input" class="caption">{{ 'ACCESS_KEY.LABEL' | translate }}</label>
+  <input id="access-key-input" name="key" type="password" autocomplete="off" inputmode="numeric"
+         class="key-input" [(ngModel)]="key">
+  <div class="actions">
+    <button mat-raised-button color="primary" type="submit">{{ 'ACCESS_KEY.EXECUTE' | translate }}</button>
+    <button mat-raised-button type="button" (click)="cancel()">{{ 'ACCESS_KEY.CANCEL' | translate }}</button>
+  </div>
+</form>

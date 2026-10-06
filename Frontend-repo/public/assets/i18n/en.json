@@ -530,13 +530,26 @@
     "ADD_NEW": "Add Transaction"
   },
   "AUTHORS": {
-    "TITLE": "Authors Management",
-    "NAME": "Author Name",
-    "TYPE": "Type",
-    "ADD_NEW": "Add New Author",
-    "EDIT": "Edit Author",
-    "AUT_NO": "Author No",
-    "SUBJECT_NO": "Subject No"
+    "TITLE": "Document Data Owners Coding File",
+    "LIST": "Authors & Publishers",
+    "SELECTED_NUMBER": "Selected record number",
+    "PROCESSING": "Processing",
+    "NUMBER": "Number",
+    "NAME": "Author or publisher name",
+    "COMMANDS": "Commands",
+    "ADD": "Add",
+    "EDIT": "Edit",
+    "SAVE": "Save",
+    "DELETE": "Delete",
+    "SEARCH": "Search (F10)",
+    "WORD_SEARCH": "Word search",
+    "EXIT": "Exit",
+    "DELETE_PROMPT": "هل تريد الغاء المقالة(ن/ك) — type ن or y to delete",
+    "MSG_NAME_EXISTS": "This name already exists...!!!",
+    "MSG_SELECT_ROW": "Select a record from the list first",
+    "MSG_NO_CURRENT_RECORD": "The list has no record to compute the next number from",
+    "OK": "OK",
+    "CANCEL": "Cancel"
   },
   "PERSONS": {
     "TITLE": "Persons Management",
@@ -1155,5 +1168,33 @@
     "SAVE_FAILED": "Fail to save file",
     "NO_VIDEO": "Video file not found",
     "OK": "OK"
+  },
+  "ACCESS_KEY": {
+    "LABEL": "Password",
+    "EXECUTE": "Execute",
+    "CANCEL": "Cancel",
+    "WRONG": "Incorrect password"
+  },
+  "SUBJECT_THESAURUS": {
+    "TITLE": "Subject thesaurus",
+    "LEVEL1": "First level",
+    "LEVEL2": "Second level",
+    "LEVEL3": "Third level",
+    "SELECTED_CODE": "Code",
+    "PROCESSING": "Processing",
+    "CODE": "Code",
+    "DESCRIPTOR": "Descriptor",
+    "COMMANDS": "Commands",
+    "ADD": "Add (Insert)",
+    "EDIT": "Edit (F2)",
+    "SAVE": "Save",
+    "DELETE": "Delete (Delete)",
+    "SEARCH": "Search (F10)",
+    "EXIT": "Exit",
+    "DELETE_PROMPT": "هل تريد الغاء المقالة(ن/ك)",
+    "OK": "OK",
+    "CANCEL": "Cancel",
+    "MSG_SELECT_ROW": "Select a descriptor in the list first",
+    "WRITER_ONLY": "Available to user 244 only"
   }
 }

@@ -62,6 +62,9 @@ app:
       - from: 5001
         to: 10000
         path: ${MEDIA_VOL2_PATH:/media/vol2}
+  subject-thesaurus:
+    # ARCHIVE.frm M6_Click: password1 = "891045" (Frame3 key before Form5 "المكنز الموضوعي" opens)
+    access-key: ${SUBJECT_THESAURUS_ACCESS_KEY:891045}
   backup:
     directory: ${BACKUP_DIRECTORY:./backups}
     pg-dump-path: ${PG_DUMP_PATH:pg_dump}

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { authGuard } from './core/guards/auth.guard';
+import { subjectThesaurusAccessGuard } from './core/guards/subject-thesaurus-access.guard';
 
 export const routes: Routes = [
   {
@@ -44,6 +45,12 @@ export const routes: Routes = [
       {
         path: 'subjects',
         loadChildren: () => import('./features/subjects/subjects.module').then(m => m.SubjectsModule)
+      },
+      {
+        // المكنز الموضوعي (legacy Form5) — opens only after the ARCHIVE.frm Frame3 key.
+        path: 'subject-thesaurus',
+        canActivate: [subjectThesaurusAccessGuard],
+        loadChildren: () => import('./features/subject-thesaurus/subject-thesaurus.module').then(m => m.SubjectThesaurusModule)
       },
       {
         path: 'persons',

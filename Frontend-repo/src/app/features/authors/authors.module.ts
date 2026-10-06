@@ -1,18 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { SharedModule } from '../../shared/shared.module';
-import { AuthorListComponent } from './author-list/author-list.component';
-import { AuthorDialogComponent } from './author-dialog/author-dialog.component';
+import { AuthorCodingComponent } from './author-coding/author-coding.component';
 
 const routes: Routes = [
-  { path: '', component: AuthorListComponent }
+  { path: '', component: AuthorCodingComponent }
 ];
 
 @NgModule({
-  declarations: [
-    AuthorListComponent,
-    AuthorDialogComponent
-  ],
-  imports: [SharedModule, RouterModule.forChild(routes)]
+  declarations: [AuthorCodingComponent],
+  imports: [SharedModule, ScrollingModule, RouterModule.forChild(routes)]
 })
 export class AuthorsModule { }

@@ -1,0 +1,25 @@
+<div class="list-shell" [class.disabled]="!enabled" [class.loading]="loading">
+  <cdk-virtual-scroll-viewport #viewport [itemSize]="itemSize" class="list-viewport">
+    <div #listBox class="list-box" role="listbox"
+         [attr.tabindex]="enabled ? 0 : -1"
+         [attr.aria-label]="ariaLabel"
+         [attr.aria-disabled]="!enabled"
+         [attr.aria-activedescendant]="activeDescendant()"
+         (focus)="onFocus()"
+         (keydown)="onKeydown($event)" (keyup)="listKeyup.emit($event)">
+      <div *cdkVirtualFor="let row of rows; let i = index"
+           class="list-item" role="option"
+           [id]="idPrefix + '-row-' + i"
+           [class.selected]="selectedIndex === i"
+           [attr.aria-selected]="selectedIndex === i"
+           [attr.title]="row.code"
+           [style.height.px]="itemSize"
+           (mousedown)="onMouseDown($event)"
+           (click)="onClick(i)"
+           (dblclick)="onDblClick(i)">{{ row.description }}</div>
+    </div>
+  </cdk-virtual-scroll-viewport>
+  @if (loading) {
+    <mat-progress-bar mode="indeterminate" class="list-progress"></mat-progress-bar>
+  }
+</div>

@@ -1,0 +1,154 @@
+<div class="subject-thesaurus">
+
+  <!-- Label1 -->
+  <h1 class="screen-title">{{ 'SUBJECT_THESAURUS.TITLE' | translate }}</h1>
+
+  <!-- DataList1 / DataList2 / DataList3 — level 1 on the reading-start side, like the legacy layout -->
+  <div class="levels">
+    <section class="level">
+      <!-- Label2 -->
+      <div class="level-caption">{{ 'SUBJECT_THESAURUS.LEVEL1' | translate }}</div>
+      <app-thesaurus-list #list1 idPrefix="thesaurus-l1"
+                          [ariaLabel]="'SUBJECT_THESAURUS.LEVEL1' | translate"
+                          [rows]="lists[0]().rows" [selectedIndex]="lists[0]().selected"
+                          [loading]="lists[0]().loading" [enabled]="list1Enabled()"
+                          (selectIndex)="selectRow(1, $event)"
+                          (rowDblClick)="drillDown(1, $event)"
+                          (gotFocus)="onListFocus(1, $event.byMouse)"
+                          (listKeydown)="onListKeydown(1, $event)"
+                          (listKeyup)="onListKeyup($event)"></app-thesaurus-list>
+      <!-- Text1 (disabled) -->
+      <input class="code-display" type="text" disabled [value]="codes[0]()"
+             [attr.aria-label]="'SUBJECT_THESAURUS.SELECTED_CODE' | translate">
+    </section>
+
+    @if (list2Visible()) {
+      <!-- Line2 -->
+      <div class="connector" aria-hidden="true"></div>
+      <section class="level">
+        <!-- Label3 -->
+        <div class="level-caption">{{ 'SUBJECT_THESAURUS.LEVEL2' | translate }}</div>
+        <app-thesaurus-list #list2 idPrefix="thesaurus-l2"
+                            [ariaLabel]="'SUBJECT_THESAURUS.LEVEL2' | translate"
+                            [rows]="lists[1]().rows" [selectedIndex]="lists[1]().selected"
+                            [loading]="lists[1]().loading" [enabled]="list2Enabled()"
+                            (selectIndex)="selectRow(2, $event)"
+                            (rowDblClick)="drillDown(2, $event)"
+                            (gotFocus)="onListFocus(2, $event.byMouse)"
+                            (listKeydown)="onListKeydown(2, $event)"
+                            (listKeyup)="onListKeyup($event)"></app-thesaurus-list>
+        <!-- Text2 (disabled) -->
+        <input class="code-display" type="text" disabled [value]="codes[1]()"
+               [attr.aria-label]="'SUBJECT_THESAURUS.SELECTED_CODE' | translate">
+      </section>
+    }
+
+    @if (list3Visible()) {
+      <!-- Line1 -->
+      <div class="connector" aria-hidden="true"></div>
+      <section class="level">
+        <!-- Label4 -->
+        <div class="level-caption">{{ 'SUBJECT_THESAURUS.LEVEL3' | translate }}</div>
+        <app-thesaurus-list #list3 idPrefix="thesaurus-l3"
+                            [ariaLabel]="'SUBJECT_THESAURUS.LEVEL3' | translate"
+                            [rows]="lists[2]().rows" [selectedIndex]="lists[2]().selected"
+                            [loading]="lists[2]().loading" [enabled]="true"
+                            (selectIndex)="selectRow(3, $event)"
+                            (gotFocus)="onListFocus(3, $event.byMouse)"
+                            (listKeydown)="onListKeydown(3, $event)"
+                            (listKeyup)="onListKeyup($event)"></app-thesaurus-list>
+        <!-- Text3 (disabled) -->
+        <input class="code-display" type="text" disabled [value]="codes[2]()"
+               [attr.aria-label]="'SUBJECT_THESAURUS.SELECTED_CODE' | translate">
+      </section>
+    }
+  </div>
+
+  <!-- Shape3 / Label6 "معالجات" with Label7 "الرمز" + code and Label8 "الواصفة" + desc -->
+  @if (panelVisible() || codeVisible()) {
+    <section class="processing" [class.frameless]="!panelVisible()">
+      @if (panelVisible()) {
+        <div class="processing-caption">{{ 'SUBJECT_THESAURUS.PROCESSING' | translate }}</div>
+      }
+      <div class="field-row">
+        @if (panelVisible()) {
+          <label for="thesaurus-code">{{ 'SUBJECT_THESAURUS.CODE' | translate }}</label>
+        }
+        @if (codeVisible()) {
+          <input #codeInput id="thesaurus-code" type="text" class="code-input" dir="ltr"
+                 [disabled]="!codeEnabled()"
+                 [attr.maxlength]="codeMaxLength()"
+                 [value]="codeText()"
+                 (input)="codeText.set($any($event.target).value)"
+                 (keydown)="onCodeKeydown($event)">
+        }
+      </div>
+      @if (panelVisible()) {
+        <div class="field-row">
+          <label for="thesaurus-desc">{{ 'SUBJECT_THESAURUS.DESCRIPTOR' | translate }}</label>
+          <input #descInput id="thesaurus-desc" type="text" class="desc-input" maxlength="40"
+                 [value]="descText()"
+                 (input)="descText.set($any($event.target).value)"
+                 (keydown)="onDescKeydown($event)">
+        </div>
+      }
+    </section>
+  }
+
+  <!-- Shape4 / Label5 "شاشة الاوامر" -->
+  <section class="commands">
+    <div class="commands-caption">{{ 'SUBJECT_THESAURUS.COMMANDS' | translate }}</div>
+    <div class="commands-row">
+      <button mat-raised-button type="button" (click)="add()"
+              [matTooltip]="canWrite() ? '' : ('SUBJECT_THESAURUS.WRITER_ONLY' | translate)">
+        {{ 'SUBJECT_THESAURUS.ADD' | translate }}
+      </button>
+      <button mat-raised-button type="button" (click)="edit()">{{ 'SUBJECT_THESAURUS.EDIT' | translate }}</button>
+      <button #saveBtn mat-raised-button type="button" (click)="save()"
+              [matTooltip]="canWrite() ? '' : ('SUBJECT_THESAURUS.WRITER_ONLY' | translate)">
+        {{ 'SUBJECT_THESAURUS.SAVE' | translate }}
+      </button>
+      <button mat-raised-button type="button" (click)="remove()"
+              [matTooltip]="canWrite() ? '' : ('SUBJECT_THESAURUS.WRITER_ONLY' | translate)">
+        {{ 'SUBJECT_THESAURUS.DELETE' | translate }}
+      </button>
+      <button #searchBtn mat-raised-button type="button" (click)="search()">{{ 'SUBJECT_THESAURUS.SEARCH' | translate }}</button>
+      <button mat-raised-button type="button" (click)="exit()">{{ 'SUBJECT_THESAURUS.EXIT' | translate }}</button>
+    </div>
+  </section>
+
+  <!-- MsgBox -->
+  @if (messageBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="alertdialog" aria-modal="true">
+        <p class="modal-text">{{ box.text }}</p>
+        <div class="modal-actions">
+          <button #msgOkBtn mat-raised-button color="primary" type="button" (click)="closeMessage()">
+            {{ 'SUBJECT_THESAURUS.OK' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- InputBox -->
+  @if (inputBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <label class="modal-text" for="thesaurus-inputbox">{{ box.prompt }}</label>
+        <input #inputBoxInput id="thesaurus-inputbox" type="text" class="modal-input"
+               [value]="box.value"
+               (input)="inputBox.set({ prompt: box.prompt, value: $any($event.target).value })"
+               (keydown)="onInputBoxKeydown($event)">
+        <div class="modal-actions">
+          <button mat-raised-button color="primary" type="button" (click)="confirmInputBox(true)">
+            {{ 'SUBJECT_THESAURUS.OK' | translate }}
+          </button>
+          <button mat-button type="button" (click)="confirmInputBox(false)">
+            {{ 'SUBJECT_THESAURUS.CANCEL' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

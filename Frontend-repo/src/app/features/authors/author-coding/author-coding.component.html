@@ -1,0 +1,116 @@
+<div class="author-coding">
+
+  <!-- Label1 -->
+  <h1 class="screen-title">{{ 'AUTHORS.TITLE' | translate }}</h1>
+
+  <div class="body">
+    <!-- DBList1 (ListField / BoundColumn AUT_NAM) -->
+    <section class="list-card">
+      <div class="list-shell" [class.loading]="loading()">
+        <cdk-virtual-scroll-viewport #listViewport [itemSize]="itemSize" class="list-viewport">
+          <div #listBox class="list-box" tabindex="0" role="listbox"
+               [attr.aria-label]="'AUTHORS.LIST' | translate"
+               [attr.aria-activedescendant]="activeDescendant()"
+               (keydown)="onListKeydown($event)" (keyup)="onListKeyup($event)">
+            <div *cdkVirtualFor="let row of rows(); let i = index"
+                 class="list-item" role="option"
+                 [id]="'author-row-' + i"
+                 [class.selected]="selectedIndex() === i"
+                 [attr.aria-selected]="selectedIndex() === i"
+                 [style.height.px]="itemSize"
+                 (mousedown)="$event.preventDefault(); listBox.focus()"
+                 (click)="selectRow(i)">{{ row.name }}</div>
+          </div>
+        </cdk-virtual-scroll-viewport>
+        @if (loading()) {
+          <mat-progress-bar mode="indeterminate" class="list-progress"></mat-progress-bar>
+        }
+      </div>
+
+      <!-- Text1 (disabled) — AUT_NO of the clicked row -->
+      <div class="selected-number">
+        <input type="text" disabled [value]="selectedNumber()"
+               [attr.aria-label]="'AUTHORS.SELECTED_NUMBER' | translate">
+      </div>
+    </section>
+
+    <!-- Shape3 / Label6 "معالجات" with Label7 + code and Label8 + desc -->
+    @if (panelVisible() || codeVisible()) {
+      <section class="processing" [class.frameless]="!panelVisible()">
+        @if (panelVisible()) {
+          <div class="processing-caption">{{ 'AUTHORS.PROCESSING' | translate }}</div>
+        }
+        <div class="field-row">
+          @if (panelVisible()) {
+            <label for="author-code">{{ 'AUTHORS.NUMBER' | translate }}</label>
+          }
+          @if (codeVisible()) {
+            <input id="author-code" type="text" class="code-input"
+                   [disabled]="!codeEnabled()"
+                   [value]="codeText()"
+                   (input)="codeText.set($any($event.target).value)"
+                   (keydown)="onCodeKeydown($event)">
+          }
+        </div>
+        @if (panelVisible()) {
+          <div class="field-row">
+            <label for="author-desc">{{ 'AUTHORS.NAME' | translate }}</label>
+            <input #descInput id="author-desc" type="text" class="desc-input"
+                   [value]="descText()"
+                   (input)="descText.set($any($event.target).value)"
+                   (keydown)="onDescKeydown($event)">
+          </div>
+        }
+      </section>
+    }
+  </div>
+
+  <!-- Shape4 / Label5 "شاشة الاوامر" -->
+  <section class="commands">
+    <div class="commands-caption">{{ 'AUTHORS.COMMANDS' | translate }}</div>
+    <div class="commands-row">
+      <button mat-raised-button type="button" (click)="add()">{{ 'AUTHORS.ADD' | translate }}</button>
+      <button mat-raised-button type="button" (click)="edit()">{{ 'AUTHORS.EDIT' | translate }}</button>
+      <button #saveBtn mat-raised-button type="button" (click)="save()">{{ 'AUTHORS.SAVE' | translate }}</button>
+      <button mat-raised-button type="button" (click)="remove()">{{ 'AUTHORS.DELETE' | translate }}</button>
+      <button mat-raised-button type="button" (click)="openPrefixSearch()">{{ 'AUTHORS.SEARCH' | translate }}</button>
+      <button mat-raised-button type="button" (click)="openWordSearch()">{{ 'AUTHORS.WORD_SEARCH' | translate }}</button>
+      <button mat-raised-button type="button" (click)="exit()">{{ 'AUTHORS.EXIT' | translate }}</button>
+    </div>
+  </section>
+
+  <!-- MsgBox -->
+  @if (messageBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="alertdialog" aria-modal="true">
+        <p class="modal-text">{{ box.text }}</p>
+        <div class="modal-actions">
+          <button #msgOkBtn mat-raised-button color="primary" type="button" (click)="closeMessage()">
+            {{ 'AUTHORS.OK' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- InputBox -->
+  @if (inputBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <label class="modal-text" for="author-inputbox">{{ box.prompt }}</label>
+        <input #inputBoxInput id="author-inputbox" type="text" class="modal-input"
+               [value]="box.value"
+               (input)="inputBox.set({ prompt: box.prompt, value: $any($event.target).value })"
+               (keydown)="onInputBoxKeydown($event)">
+        <div class="modal-actions">
+          <button mat-raised-button color="primary" type="button" (click)="confirmInputBox(true)">
+            {{ 'AUTHORS.OK' | translate }}
+          </button>
+          <button mat-button type="button" (click)="confirmInputBox(false)">
+            {{ 'AUTHORS.CANCEL' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

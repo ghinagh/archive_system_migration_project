@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, DestroyRef, HostListener, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConnectedPosition } from '@angular/cdk/overlay';
 import { NavigationEnd, Router } from '@angular/router';
@@ -46,7 +46,7 @@ export class MainLayoutComponent implements OnInit {
     {
       icon: 'category', labelKey: 'NAV.GROUP_CLASSIFICATION',
       children: [
-        { icon: 'topic', labelKey: 'NAV.SUBJECT_THESAURUS', route: '/subjects' },
+        { icon: 'topic', labelKey: 'NAV.SUBJECT_THESAURUS', route: '/subject-thesaurus' },
         { icon: 'style', labelKey: 'NAV.FORM_THESAURUS', route: '/subjects' },
         { icon: 'badge', labelKey: 'NAV.AUTHORS', route: '/authors' },
         { icon: 'construction', labelKey: 'NAV.RETRIEVAL_BUILDER', route: '/maintenance', queryParams: { tab: 'fields' }, adminOnly: true },
@@ -176,6 +176,28 @@ export class MainLayoutComponent implements OnInit {
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.closeAllFlyouts());
+  }
+
+  /**
+   * Legacy ARCHIVE.frm menu shortcuts: m10 "المؤلفين ودور النشر" = Ctrl+K; m6 "المكنز الموضوعي" =
+   * Ctrl+A (still key-protected by the route guard). Ctrl+A keeps its select-all meaning inside
+   * text fields.
+   */
+  @HostListener('document:keydown', ['$event'])
+  onMenuShortcut(event: KeyboardEvent): void {
+    if (!event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
+    if (event.code === 'KeyK') {
+      event.preventDefault();
+      this.router.navigate(['/authors']);
+    } else if (event.code === 'KeyA' && !this.isEditable(event.target)) {
+      event.preventDefault();
+      this.router.navigate(['/subject-thesaurus']);
+    }
+  }
+
+  private isEditable(target: EventTarget | null): boolean {
+    const el = target as HTMLElement | null;
+    return !!el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
   }
 
   toggleLanguage(): void {
