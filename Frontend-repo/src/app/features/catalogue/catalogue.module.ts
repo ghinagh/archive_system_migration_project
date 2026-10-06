@@ -5,7 +5,6 @@ import { CatalogueListComponent } from './catalogue-list/catalogue-list.componen
 import { CatalogueDetailComponent } from './catalogue-detail/catalogue-detail.component';
 import { CatalogueFormComponent } from './catalogue-form/catalogue-form.component';
 import { TempFilesComponent } from './temp-files/temp-files.component';
-import { TempFileDialogComponent } from './temp-file-dialog/temp-file-dialog.component';
 import { Main2FormDialogComponent } from './main2-form-dialog/main2-form-dialog.component';
 import { UnifiedSearchComponent } from './unified-search/unified-search.component';
 import { FilesRetrievalComponent } from './files-retrieval/files-retrieval.component';
@@ -33,7 +32,6 @@ const routes: Routes = [
     CatalogueDetailComponent,
     CatalogueFormComponent,
     TempFilesComponent,
-    TempFileDialogComponent,
     Main2FormDialogComponent,
     UnifiedSearchComponent,
     FilesRetrievalComponent,

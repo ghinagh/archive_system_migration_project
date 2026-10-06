@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { authGuard } from './core/guards/auth.guard';
 import { subjectThesaurusAccessGuard } from './core/guards/subject-thesaurus-access.guard';
+import { formThesaurusAccessGuard } from './core/guards/form-thesaurus-access.guard';
 
 export const routes: Routes = [
   {
@@ -51,6 +52,12 @@ export const routes: Routes = [
         path: 'subject-thesaurus',
         canActivate: [subjectThesaurusAccessGuard],
         loadChildren: () => import('./features/subject-thesaurus/subject-thesaurus.module').then(m => m.SubjectThesaurusModule)
+      },
+      {
+        // المكنز الشكلي (legacy coding.frm) — opens only after the ARCHIVE.frm Frame3 key.
+        path: 'form-thesaurus',
+        canActivate: [formThesaurusAccessGuard],
+        loadChildren: () => import('./features/form-thesaurus/form-thesaurus.module').then(m => m.FormThesaurusModule)
       },
       {
         path: 'persons',

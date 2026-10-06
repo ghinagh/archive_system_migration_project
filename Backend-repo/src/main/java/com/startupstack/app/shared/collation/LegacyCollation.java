@@ -1,4 +1,4 @@
-package com.startupstack.app.modules.subjectthesaurus.service;
+package com.startupstack.app.shared.collation;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,14 +1,12 @@
 package com.startupstack.app.modules.catalogue.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.time.LocalDateTime;
-
+/**
+ * tmp_file.frm Insert key: execute op_tmp Form2.Text1, box_user_no, today — the only value the caller
+ * supplies is the document number (Form2.Text1); name, remark, place and date are never taken from it.
+ */
 public record TmpFileAddRequest(
-        @NotBlank @Size(max = 7) String tmpFadNo,
-        @Size(max = 50) String tmpFileName,
-        @Size(max = 50) String tmpRmrk,
-        @Size(max = 30) String tmpMk,
-        LocalDateTime tmpDate
+        @NotNull @Size(max = 7) String tmpFadNo
 ) {}

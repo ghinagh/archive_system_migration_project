@@ -1,10 +1,8 @@
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { TempFilesService } from '../services/temp-files.service';
 import { TempFile } from '../models/catalogue.models';
-import { TempFileDialogComponent } from '../temp-file-dialog/temp-file-dialog.component';
 
 @Component({
   standalone: false,
@@ -17,7 +15,6 @@ export class TempFilesComponent implements OnInit {
   @Input() appNo!: string;
 
   private tempFilesService = inject(TempFilesService);
-  private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
@@ -37,16 +34,14 @@ export class TempFilesComponent implements OnInit {
     });
   }
 
+  /** tmp_file.frm Insert key: execute op_tmp Form2.Text1, box_user_no, today — the server fills the row. */
   openAddDialog(): void {
-    const ref = this.dialog.open(TempFileDialogComponent, {
-      width: '440px',
-      data: { appNo: this.appNo }
-    });
-    ref.afterClosed().subscribe(r => {
-      if (r) {
+    this.tempFilesService.createTempFile({ tmpFadNo: this.appNo }).subscribe({
+      next: () => {
         this.snackBar.open(this.translate.instant('APP.SUCCESS'), '', { duration: 3000 });
         this.loadData();
-      }
+      },
+      error: () => {}
     });
   }
 

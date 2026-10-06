@@ -1,0 +1,224 @@
+<div class="form-thesaurus">
+
+  <!-- coding.frm Caption -->
+  <h1 class="screen-title">{{ 'FORM_THESAURUS.TITLE' | translate }}</h1>
+
+  <!-- DBList1 | DBList2 | DataList1 | DataList2 — level 1 on the reading-start side, like the legacy layout -->
+  <div class="chain">
+    <section class="column">
+      <div class="caption">{{ 'FORM_THESAURUS.LEVEL1' | translate }}</div>
+      <app-coding-list #l1List idPrefix="ft-l1" [ariaLabel]="'FORM_THESAURUS.LEVEL1' | translate"
+                       [labels]="labels.l1()" [selectedIndex]="l1().selected" [enabled]="l1().enabled" [loading]="l1().loading"
+                       (selectIndex)="select('l1', $event)" (rowDblClick)="dblClick('l1', $event)"
+                       (listKeydown)="keydown('l1', $event)" (listKeyup)="keyup('l1', $event)"
+                       (navKeydown)="navKeydown('l1')"></app-coding-list>
+      <input class="code-display" type="text" disabled [value]="text1()" [attr.aria-label]="'FORM_THESAURUS.CODE' | translate">
+    </section>
+
+    <section class="column">
+      <div class="caption">{{ 'FORM_THESAURUS.LEVEL2' | translate }}</div>
+      <app-coding-list #l2List idPrefix="ft-l2" [ariaLabel]="'FORM_THESAURUS.LEVEL2' | translate"
+                       [labels]="labels.l2()" [selectedIndex]="l2().selected" [enabled]="l2().enabled" [loading]="l2().loading"
+                       (selectIndex)="select('l2', $event)" (rowDblClick)="dblClick('l2', $event)"
+                       (listKeydown)="keydown('l2', $event)" (listKeyup)="keyup('l2', $event)"
+                       (navKeydown)="navKeydown('l2')"></app-coding-list>
+      <input class="code-display" type="text" disabled [value]="text2()" [attr.aria-label]="'FORM_THESAURUS.CODE' | translate">
+    </section>
+
+    <section class="column" [class.hidden]="!countries().visible">
+      @if (countries().visible) {
+        <!-- Label7 -->
+        <div class="caption">{{ 'FORM_THESAURUS.COUNTRIES' | translate }}</div>
+        <app-coding-list #countriesList idPrefix="ft-countries" [ariaLabel]="'FORM_THESAURUS.COUNTRIES' | translate"
+                         [labels]="labels.countries()" [selectedIndex]="countries().selected" [enabled]="countries().enabled"
+                         [loading]="countries().loading"
+                         (selectIndex)="select('countries', $event)" (rowDblClick)="dblClick('countries', $event)"
+                         (listKeydown)="keydown('countries', $event)" (listKeyup)="keyup('countries', $event)"
+                         (navKeydown)="navKeydown('countries')"></app-coding-list>
+      }
+      @if (text3Visible()) {
+        <input class="code-display" type="text" disabled [value]="text3()" [attr.aria-label]="'FORM_THESAURUS.CODE' | translate">
+      }
+    </section>
+
+    <section class="column" [class.hidden]="!names().visible && !text4Visible()">
+      @if (names().visible) {
+        <!-- Label8 -->
+        <div class="caption">{{ 'FORM_THESAURUS.NAMES' | translate }}</div>
+        <app-coding-list #namesList idPrefix="ft-names" [ariaLabel]="'FORM_THESAURUS.NAMES' | translate"
+                         [labels]="labels.names()" [selectedIndex]="names().selected" [enabled]="names().enabled"
+                         [loading]="names().loading"
+                         (selectIndex)="select('names', $event)" (rowDblClick)="dblClick('names', $event)"
+                         (listKeydown)="keydown('names', $event)" (listKeyup)="keyup('names', $event)"
+                         (navKeydown)="navKeydown('names')"></app-coding-list>
+      }
+      @if (text4Visible()) {
+        <input class="code-display" type="text" disabled [value]="text4()" [attr.aria-label]="'FORM_THESAURUS.CODE' | translate">
+      }
+    </section>
+  </div>
+
+  <div class="lower">
+    <!-- right: Shape3 edit panel, DBList8 picker with Text5 search and Text6 -->
+    <div class="lower-col">
+      @if (panelVisible() || codeVisible()) {
+        <section class="processing" [class.frameless]="!panelVisible()">
+          @if (panelVisible()) {
+            <div class="processing-caption">{{ 'FORM_THESAURUS.PROCESSING' | translate }}</div>
+          }
+          <div class="field-row">
+            @if (panelVisible()) {
+              <label for="ft-code">{{ 'FORM_THESAURUS.CODE' | translate }}</label>
+            }
+            @if (codeVisible()) {
+              <input #codeInput id="ft-code" type="text" class="code-input" dir="ltr"
+                     [disabled]="!codeEnabled()" [value]="codeText()"
+                     (input)="codeText.set($any($event.target).value)" (keydown)="onCodeKeydown($event)">
+            }
+          </div>
+          @if (panelVisible()) {
+            <div class="field-row">
+              <label for="ft-desc">{{ 'FORM_THESAURUS.DESCRIPTION' | translate }}</label>
+              <input #descInput id="ft-desc" type="text" class="desc-input" maxlength="120"
+                     [value]="descText()" (input)="descText.set($any($event.target).value)" (keydown)="onDescKeydown($event)">
+            </div>
+          }
+        </section>
+      }
+
+      @if (picker().visible || searchVisible() || text6Visible()) {
+        <section class="picker">
+          @if (searchVisible()) {
+            <div class="field-row">
+              <!-- Label12 -->
+              <label for="ft-search">{{ 'FORM_THESAURUS.SEARCH_LABEL' | translate }}</label>
+              <input #searchInput id="ft-search" type="text" class="desc-input"
+                     [value]="searchText()" (input)="searchText.set($any($event.target).value)" (keydown)="onSearchKeydown($event)">
+            </div>
+          }
+          @if (picker().visible) {
+            <app-coding-list #pickerList idPrefix="ft-picker" [height]="220"
+                             [ariaLabel]="(pickerMode() === 'forms' ? 'FORM_THESAURUS.PICK_FORM' : 'FORM_THESAURUS.PICK_MACNZ') | translate"
+                             [labels]="labels.picker()" [selectedIndex]="picker().selected" [enabled]="picker().enabled"
+                             [loading]="picker().loading"
+                             (selectIndex)="select('picker', $event)" (rowDblClick)="dblClick('picker', $event)"
+                             (listKeydown)="keydown('picker', $event)" (listKeyup)="keyup('picker', $event)"
+                             (navKeydown)="navKeydown('picker')"></app-coding-list>
+          }
+          @if (text6Visible()) {
+            <input class="code-display" type="text" disabled [value]="text6()" [attr.aria-label]="'FORM_THESAURUS.CODE' | translate">
+          }
+        </section>
+      }
+    </div>
+
+    <!-- middle: DBList7 "الربط الموضوعي", m_rel with تراجع / تقدم, DBList6 "الربط الشكاي" -->
+    <div class="lower-col relations" [class.hidden]="!formRels().visible">
+      @if (formRels().visible) {
+        <section class="column">
+          <div class="caption">{{ 'FORM_THESAURUS.SUBJECT_RELATIONS' | translate }}</div>
+          <app-coding-list #subjRelsList idPrefix="ft-subjects" [height]="200"
+                           [ariaLabel]="'FORM_THESAURUS.SUBJECT_RELATIONS' | translate"
+                           [labels]="labels.subjRels()" [selectedIndex]="subjRels().selected" [enabled]="subjRels().enabled"
+                           [loading]="subjRels().loading"
+                           (selectIndex)="select('subjRels', $event)" (rowDblClick)="dblClick('subjRels', $event)"
+                           (listKeydown)="keydown('subjRels', $event)" (listKeyup)="keyup('subjRels', $event)"
+                           (navKeydown)="navKeydown('subjRels')"></app-coding-list>
+        </section>
+        <section class="rel-number">
+          @if (relButtonsVisible()) {
+            <button mat-stroked-button type="button" (click)="relForward()">{{ 'FORM_THESAURUS.FORWARD' | translate }}</button>
+          }
+          @if (relVisible()) {
+            <input #relInput type="text" class="rel-input" dir="ltr" [attr.aria-label]="'FORM_THESAURUS.RELATION_NO' | translate"
+                   [value]="relNo()" (input)="setRelNo($any($event.target).value)" (keydown)="onRelKeydown($event)">
+          }
+          @if (relButtonsVisible()) {
+            <button mat-stroked-button type="button" (click)="relBack()">{{ 'FORM_THESAURUS.BACK' | translate }}</button>
+          }
+        </section>
+        <section class="column">
+          <div class="caption">{{ 'FORM_THESAURUS.FORM_RELATIONS' | translate }}</div>
+          <app-coding-list #formRelsList idPrefix="ft-forms" [height]="200"
+                           [ariaLabel]="'FORM_THESAURUS.FORM_RELATIONS' | translate"
+                           [labels]="labels.formRels()" [selectedIndex]="formRels().selected" [enabled]="formRels().enabled"
+                           [loading]="formRels().loading"
+                           (selectIndex)="select('formRels', $event)" (rowDblClick)="dblClick('formRels', $event)"
+                           (listKeydown)="keydown('formRels', $event)" (listKeyup)="keyup('formRels', $event)"
+                           (navKeydown)="navKeydown('formRels')"></app-coding-list>
+        </section>
+      }
+    </div>
+
+    <!-- left: DBList5 "المناصب" and the Shape1 dates -->
+    <div class="lower-col">
+      @if (datesVisible()) {
+        <section class="dates">
+          <div class="field-row">
+            <label for="ft-start">{{ 'FORM_THESAURUS.START_DATE' | translate }}</label>
+            <input #startInput id="ft-start" type="date" [value]="startDate()"
+                   (input)="startDate.set($any($event.target).value)" (keydown)="onStartKeydown($event)">
+          </div>
+          <div class="field-row">
+            <label for="ft-end">{{ 'FORM_THESAURUS.END_DATE' | translate }}</label>
+            <input #endInput id="ft-end" type="date" [value]="endDate()"
+                   (input)="endDate.set($any($event.target).value)" (keydown)="onEndKeydown($event)">
+          </div>
+        </section>
+      }
+      @if (positions().visible) {
+        <section class="column">
+          <!-- Label9 -->
+          <div class="caption">{{ 'FORM_THESAURUS.POSITIONS' | translate }}</div>
+          <app-coding-list #positionsList idPrefix="ft-positions" [height]="220"
+                           [ariaLabel]="'FORM_THESAURUS.POSITIONS' | translate"
+                           [labels]="labels.positions()" [selectedIndex]="positions().selected" [enabled]="positions().enabled"
+                           [loading]="positions().loading"
+                           (selectIndex)="select('positions', $event)" (rowDblClick)="dblClick('positions', $event)"
+                           (listKeydown)="keydown('positions', $event)" (listKeyup)="keyup('positions', $event)"
+                           (navKeydown)="navKeydown('positions')"></app-coding-list>
+        </section>
+      }
+    </div>
+  </div>
+
+  <!-- Shape2 command bar, legacy order -->
+  <section class="commands">
+    <div class="commands-row">
+      <button mat-raised-button type="button" (click)="openAdditionalFiles()">{{ 'FORM_THESAURUS.ADDITIONAL_FILES' | translate }}</button>
+      <button mat-raised-button type="button" (click)="add()">{{ 'FORM_THESAURUS.ADD' | translate }}</button>
+      <button #editBtn mat-raised-button type="button" (click)="edit()">{{ 'FORM_THESAURUS.EDIT' | translate }}</button>
+      <button #saveBtn mat-raised-button type="button" (click)="save()">{{ 'FORM_THESAURUS.SAVE' | translate }}</button>
+      <button #deleteBtn mat-raised-button type="button" (click)="remove()">{{ 'FORM_THESAURUS.DELETE' | translate }}</button>
+      <button mat-raised-button type="button" (click)="search()">{{ 'FORM_THESAURUS.SEARCH' | translate }}</button>
+      <button mat-raised-button type="button" (click)="exit()">{{ 'FORM_THESAURUS.EXIT' | translate }}</button>
+    </div>
+  </section>
+
+  <!-- MsgBox -->
+  @if (messageBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="alertdialog" aria-modal="true">
+        <p class="modal-text">{{ box.text }}</p>
+        <div class="modal-actions">
+          <button #msgOkBtn mat-raised-button color="primary" type="button" (click)="closeMessage()">{{ 'FORM_THESAURUS.OK' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- InputBox -->
+  @if (inputBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <label class="modal-text" for="ft-inputbox">{{ box.prompt }}</label>
+        <input #inputBoxInput id="ft-inputbox" type="text" class="modal-input" [value]="box.value"
+               (input)="inputBox.set({ prompt: box.prompt, value: $any($event.target).value })" (keydown)="onInputBoxKeydown($event)">
+        <div class="modal-actions">
+          <button mat-raised-button color="primary" type="button" (click)="confirmInputBox(true)">{{ 'FORM_THESAURUS.OK' | translate }}</button>
+          <button mat-button type="button" (click)="confirmInputBox(false)">{{ 'FORM_THESAURUS.CANCEL' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

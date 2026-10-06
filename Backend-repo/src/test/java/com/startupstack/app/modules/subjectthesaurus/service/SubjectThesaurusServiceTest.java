@@ -65,29 +65,29 @@ class SubjectThesaurusServiceTest {
 
     @Test
     void divWord_stripsArticlesAndShortWords() {
-        assertEquals(List.of("علاقات", "اقتصادية", "دولية"), SubjectThesaurusService.divWord("العلاقات الاقتصادية الدولية"));
+        assertEquals(List.of("علاقات", "اقتصادية", "دولية"), com.startupstack.app.shared.collation.LegacyWords.divWord("العلاقات الاقتصادية الدولية"));
     }
 
     @Test
     void divWord_lilAndHamzaAndDigits() {
         // "للتنمية" -> "تنمية"; "أمن" -> "امن"; "2020" starts with a digit; "في" is too short.
-        assertEquals(List.of("تنمية", "امن"), SubjectThesaurusService.divWord("للتنمية في أمن 2020"));
+        assertEquals(List.of("تنمية", "امن"), com.startupstack.app.shared.collation.LegacyWords.divWord("للتنمية في أمن 2020"));
     }
 
     @Test
     void divWord_waalIsNeverStripped_likeLegacyTwoCharMid() {
-        assertEquals(List.of("والتعليم"), SubjectThesaurusService.divWord("والتعليم"));
+        assertEquals(List.of("والتعليم"), com.startupstack.app.shared.collation.LegacyWords.divWord("والتعليم"));
     }
 
     @Test
     void divWord_outerLoopStopsBeforeOneCharLastWord_andCollapsesBlanks() {
-        assertEquals(List.of("زراعة", "صناعة"), SubjectThesaurusService.divWord("  الزراعة    الصناعة x"));
+        assertEquals(List.of("زراعة", "صناعة"), com.startupstack.app.shared.collation.LegacyWords.divWord("  الزراعة    الصناعة x"));
     }
 
     @Test
     void divWord_emptyText() {
-        assertTrue(SubjectThesaurusService.divWord("   ").isEmpty());
-        assertTrue(SubjectThesaurusService.divWord(null).isEmpty());
+        assertTrue(com.startupstack.app.shared.collation.LegacyWords.divWord("   ").isEmpty());
+        assertTrue(com.startupstack.app.shared.collation.LegacyWords.divWord(null).isEmpty());
     }
 
     // ─── op_macnz suffix ──────────────────────────────────────────────

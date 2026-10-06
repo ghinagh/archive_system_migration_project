@@ -1,0 +1,116 @@
+<div class="window" cdkDrag cdkDragRootElement=".cdk-overlay-pane" dir="rtl">
+  <!-- tmp_file Caption -->
+  <header class="title-bar" cdkDragHandle>
+    <span class="title">{{ 'FORM_THESAURUS.FILES.TITLE' | translate }}</span>
+    <button type="button" class="close" (click)="close()" [attr.aria-label]="'FORM_THESAURUS.EXIT' | translate">✕</button>
+  </header>
+
+  <div class="top">
+    <div class="criteria">
+      <div class="row">
+        <!-- Label1 / M_tmp_date -->
+        <label for="af-from">{{ 'FORM_THESAURUS.FILES.FROM' | translate }}</label>
+        <input id="af-from" class="date" dir="ltr" [disabled]="!fromEnabled()" [value]="shownDate('from')"
+               (focus)="focused.set('from')" (blur)="focused.set('')" (keydown)="onMaskKeydown('from', $event)">
+        <!-- Label3 / m_user_no -->
+        <label for="af-user">{{ 'FORM_THESAURUS.FILES.USER' | translate }}</label>
+        <input id="af-user" class="user" [disabled]="!userEnabled()" [value]="userNo()"
+               title="كلمة معينة من عنوان المشهد او المستخلص"
+               (input)="userNo.set($any($event.target).value)" (keydown.enter)="onUserEnter()">
+      </div>
+      <div class="row">
+        <!-- Label2 / M_tmp_date1 -->
+        <label for="af-to">{{ 'FORM_THESAURUS.FILES.TO' | translate }}</label>
+        <input id="af-to" class="date" dir="ltr" [disabled]="!toEnabled()" [value]="shownDate('to')" readonly
+               (focus)="focused.set('to')" (blur)="focused.set('')">
+        <!-- Option1 / Option2 -->
+        <label class="option"><input type="radio" name="af-final" [checked]="option() === 'final'" (change)="selectOption('final')">
+          {{ 'FORM_THESAURUS.FILES.FINAL' | translate }}</label>
+        <label class="option"><input type="radio" name="af-final" [checked]="option() === 'notFinal'" (change)="selectOption('notFinal')">
+          {{ 'FORM_THESAURUS.FILES.NOT_FINAL' | translate }}</label>
+      </div>
+      <div class="row">
+        <!-- Label4 / m_word -->
+        <label for="af-word">{{ 'FORM_THESAURUS.FILES.WORD' | translate }}</label>
+        <input id="af-word" class="word" [disabled]="!wordEnabled()" [value]="word()"
+               (input)="word.set($any($event.target).value)" (keydown.enter)="onWordEnter()">
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button #resultBtn mat-raised-button type="button" (click)="result()">{{ 'FORM_THESAURUS.FILES.RESULT' | translate }}</button>
+      <button mat-raised-button type="button" (click)="newSearch()">{{ 'FORM_THESAURUS.FILES.NEW_SEARCH' | translate }}</button>
+      <div class="pair">
+        <button mat-raised-button type="button" (click)="count()">{{ 'FORM_THESAURUS.FILES.COUNT_BUTTON' | translate }}</button>
+        <button mat-raised-button type="button" (click)="close()">{{ 'FORM_THESAURUS.EXIT' | translate }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DataGrid1 (AllowUpdate / AllowAddNew / AllowDelete) -->
+  <div #grid class="grid" tabindex="0" role="grid" [class.loading]="loading()"
+       (keydown)="onGridKeydown($event)" (keyup)="onGridKeyup($event)">
+    <table>
+      <thead>
+        <tr>
+          <th class="selector"></th>
+          @for (c of columns; track c.key) { <th>{{ c.label }}</th> }
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of rows(); track $index; let i = $index) {
+          <tr [class.current]="current() === i" [class.row-selected]="rowSelected() && current() === i">
+            <td class="selector" (click)="selectRow(i)">{{ current() === i ? '▶' : '' }}</td>
+            @for (c of columns; track c.key) {
+              <td [class.cell-current]="current() === i && currentCol() === c.key"
+                  (click)="setCurrent(i, c.key)" (dblclick)="openDocument()">
+                @if (editing()?.row === i && editing()?.col === c.key) {
+                  <input #cellEditor class="cell-editor" [value]="editing()!.value"
+                         (input)="editing.set({ row: i, col: c.key, value: $any($event.target).value })"
+                         (keydown)="onEditorKeydown($event)" (blur)="commitEdit()">
+                } @else {
+                  {{ cellText(r, c.key) }}
+                }
+              </td>
+            }
+          </tr>
+        }
+        <!-- the AllowAddNew line -->
+        <tr class="new-row">
+          <td class="selector">*</td>
+          @for (c of columns; track c.key) {
+            <td (click)="beginEdit('new', c.key)">
+              @if (editing()?.row === 'new' && editing()?.col === c.key) {
+                <input #cellEditor class="cell-editor" [value]="editing()!.value"
+                       (input)="editing.set({ row: 'new', col: c.key, value: $any($event.target).value })"
+                       (keydown)="onEditorKeydown($event)" (blur)="commitEdit()">
+              } @else {
+                {{ newRow()[c.key] ?? '' }}
+              }
+            </td>
+          }
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Adodc f_tmp navigation bar -->
+  <div class="navbar" dir="ltr">
+    <button type="button" (click)="move('first')" aria-label="first">|◀</button>
+    <button type="button" (click)="move('prev')" aria-label="previous">◀</button>
+    <span class="nav-caption">f_tmp</span>
+    <button type="button" (click)="move('next')" aria-label="next">▶</button>
+    <button type="button" (click)="move('last')" aria-label="last">▶|</button>
+  </div>
+
+  @if (messageBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="alertdialog" aria-modal="true">
+        <p class="modal-text" dir="auto">{{ box.text }}</p>
+        <div class="modal-actions">
+          <button #msgOkBtn mat-raised-button color="primary" type="button" (click)="closeMessage()">{{ 'FORM_THESAURUS.OK' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

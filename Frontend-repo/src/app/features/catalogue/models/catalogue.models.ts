@@ -207,10 +207,6 @@ export interface TempFile {
 
 export interface TempFileRequest {
   tmpFadNo: string;
-  tmpFileName?: string;
-  tmpRmrk?: string;
-  tmpMk?: string;
-  tmpDate?: string;
 }
 
 export interface Main2Item {

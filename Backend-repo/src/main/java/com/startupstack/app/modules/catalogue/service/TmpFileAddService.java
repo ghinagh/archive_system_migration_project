@@ -5,60 +5,73 @@ import com.startupstack.app.modules.catalogue.dto.TmpFileAddResponse;
 import com.startupstack.app.modules.catalogue.entity.TmpFileAddEntity;
 import com.startupstack.app.modules.catalogue.entity.TmpFileAddId;
 import com.startupstack.app.modules.catalogue.repository.TmpFileAddRepository;
+import com.startupstack.app.modules.users.entity.UserEntity;
+import com.startupstack.app.modules.users.repository.UserRepository;
 import com.startupstack.app.shared.exception.ResourceNotFoundException;
-import jakarta.persistence.criteria.Predicate;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.context.SecurityContextHolder;
+import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.ObjectNotFoundException;
+import com.startupstack.app.shared.util.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class TmpFileAddService {
 
     private final TmpFileAddRepository tmpFileAddRepository;
+    private final UserRepository userRepository;
+    private final Clock clock;
 
-    public TmpFileAddService(TmpFileAddRepository tmpFileAddRepository) {
-        this.tmpFileAddRepository = tmpFileAddRepository;
+    @Autowired
+    public TmpFileAddService(TmpFileAddRepository tmpFileAddRepository, UserRepository userRepository) {
+        this(tmpFileAddRepository, userRepository, Clock.systemDefaultZone());
     }
 
+    TmpFileAddService(TmpFileAddRepository tmpFileAddRepository, UserRepository userRepository, Clock clock) {
+        this.tmpFileAddRepository = tmpFileAddRepository;
+        this.userRepository = userRepository;
+        this.clock = clock;
+    }
+
+    /**
+     * Read through a projection rather than the (tmp_fad_no, tmp_ser) entity: legacy tmp_fileadd rows
+     * may have a NULL tmp_ser (tmp_file.frm lists them too), which the entity identity cannot load.
+     */
     @Transactional(readOnly = true)
     public List<TmpFileAddResponse> findAll(String fadNo, String userNo, Integer finalStatus) {
-        Specification<TmpFileAddEntity> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (fadNo != null) predicates.add(cb.equal(root.get("tmpFadNo"), fadNo));
-            if (userNo != null) predicates.add(cb.equal(root.get("tmpUserNo"), userNo));
-            if (finalStatus != null) predicates.add(cb.equal(root.get("tmpFinal"), finalStatus));
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-        return tmpFileAddRepository.findAll(spec).stream()
-                .map(this::toResponse)
+        return tmpFileAddRepository.findListRows(fadNo, userNo, finalStatus).stream()
+                .map(r -> new TmpFileAddResponse(r.getTmpFadNo(), r.getTmpSer(), r.getTmpFileName(), r.getTmpRmrk(),
+                        r.getTmpMk(), r.getTmpDate(), r.getTmpUserNo(), r.getUserName(), r.getTmpFinal()))
                 .toList();
     }
 
+    /**
+     * tmp_file.frm DataGrid1 KeyUp Insert → execute op_tmp Form2.Text1, box_user_no, today:
+     * tmp_user_no = the login's config.user_no (char(3)), tmp_ser = max(tmp_ser) of that USER + 1
+     * (declare @max1 int truncates; none → 1), tmp_fad_no = @m_code char(7), tmp_date = today,
+     * tmp_final = 0; name, remark and place stay NULL.
+     */
     @Transactional
     public TmpFileAddResponse create(TmpFileAddRequest request) {
-        String userNo = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityUtils.getCurrentUsername();
+        UserEntity user = username == null ? null : userRepository.findByUserName(username).orElse(null);
+        String userNo = user == null || user.getUserNo() == null ? null : pad(user.getUserNo(), 3);
+        String fadNo = pad(request.tmpFadNo(), 7);
+        Double max = tmpFileAddRepository.findMaxSerialOfUser(userNo);
+        double ser = max == null ? 1 : (int) max.doubleValue() + 1;
+        LocalDateTime today = LocalDate.now(clock).atStartOfDay();
+        tmpFileAddRepository.insertOp(ser, userNo, fadNo, today);
+        return new TmpFileAddResponse(fadNo, ser, null, null, null, today, userNo,
+                userNo == null ? null : user.getUserName(), 0);
+    }
 
-        double nextSer = tmpFileAddRepository.findByTmpFadNo(request.tmpFadNo())
-                .stream()
-                .mapToDouble(TmpFileAddEntity::getTmpSer)
-                .max()
-                .orElse(0.0) + 1.0;
-
-        TmpFileAddEntity entity = new TmpFileAddEntity();
-        entity.setTmpFadNo(request.tmpFadNo());
-        entity.setTmpSer(nextSer);
-        entity.setTmpFileName(request.tmpFileName());
-        entity.setTmpRmrk(request.tmpRmrk());
-        entity.setTmpMk(request.tmpMk());
-        entity.setTmpDate(request.tmpDate());
-        entity.setTmpUserNo(userNo);
-        entity.setTmpFinal(0);
-
-        return toResponse(tmpFileAddRepository.save(entity));
+    private static String pad(String s, int n) {
+        return s.length() >= n ? s : s + " ".repeat(n - s.length());
     }
 
     @Transactional
@@ -89,7 +102,7 @@ public class TmpFileAddService {
     }
 
     private TmpFileAddResponse toResponse(TmpFileAddEntity entity) {
-        String userName = entity.getUser() != null ? entity.getUser().getUserName() : null;
+        String userName = userName(entity);
         return new TmpFileAddResponse(
                 entity.getTmpFadNo(),
                 entity.getTmpSer(),
@@ -101,5 +114,17 @@ public class TmpFileAddService {
                 userName,
                 entity.getTmpFinal()
         );
+    }
+
+    /**
+     * The documenter's name, or null when tmp_user_no names no config user: legacy stored any char(3)
+     * there (no foreign key), so a missing or deleted user must not break the listing.
+     */
+    static String userName(TmpFileAddEntity entity) {
+        try {
+            return entity.getUser() != null ? entity.getUser().getUserName() : null;
+        } catch (EntityNotFoundException | ObjectNotFoundException e) {
+            return null;
+        }
     }
 }

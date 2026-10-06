@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, HostListener, ViewChild, ElementRef, inject, signal } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
@@ -33,6 +33,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   private catalogueService = inject(CatalogueService);
   private autoSvc = inject(AutocompleteService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private dialog = inject(MatDialog);
   private snack = inject(MatSnackBar);
   private t = inject(TranslateService);
@@ -123,6 +124,10 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   });
 
   ngOnInit(): void {
+    // tmp_file.frm DataGrid1 DblClick / F12: m_bk_no = tmp_fad_no, Form6 shows that main record (SERCH_main)
+    const requestedAppNo = this.route.snapshot.queryParamMap.get('appNo');
+    if (requestedAppNo !== null) this.loadRecord(requestedAppNo);
+
     // Load coding options (Documenter & Data Entry Location)
     this.autoSvc.getCodingByCodePrefix('01').subscribe({
       next: (res) => {

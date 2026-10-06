@@ -47,7 +47,7 @@ export class MainLayoutComponent implements OnInit {
       icon: 'category', labelKey: 'NAV.GROUP_CLASSIFICATION',
       children: [
         { icon: 'topic', labelKey: 'NAV.SUBJECT_THESAURUS', route: '/subject-thesaurus' },
-        { icon: 'style', labelKey: 'NAV.FORM_THESAURUS', route: '/subjects' },
+        { icon: 'style', labelKey: 'NAV.FORM_THESAURUS', route: '/form-thesaurus' },
         { icon: 'badge', labelKey: 'NAV.AUTHORS', route: '/authors' },
         { icon: 'construction', labelKey: 'NAV.RETRIEVAL_BUILDER', route: '/maintenance', queryParams: { tab: 'fields' }, adminOnly: true },
         { icon: 'lock_open', labelKey: 'NAV.UNLOCK_DOCUMENTS', route: '/maintenance', queryParams: { tab: 'unlock' }, adminOnly: true },
@@ -180,8 +180,8 @@ export class MainLayoutComponent implements OnInit {
 
   /**
    * Legacy ARCHIVE.frm menu shortcuts: m10 "المؤلفين ودور النشر" = Ctrl+K; m6 "المكنز الموضوعي" =
-   * Ctrl+A (still key-protected by the route guard). Ctrl+A keeps its select-all meaning inside
-   * text fields.
+   * Ctrl+A and M2 "المكنز الشكلي" = Ctrl+B (both still key-protected by their route guards).
+   * Ctrl+A / Ctrl+B keep their editing meaning inside text fields.
    */
   @HostListener('document:keydown', ['$event'])
   onMenuShortcut(event: KeyboardEvent): void {
@@ -192,6 +192,9 @@ export class MainLayoutComponent implements OnInit {
     } else if (event.code === 'KeyA' && !this.isEditable(event.target)) {
       event.preventDefault();
       this.router.navigate(['/subject-thesaurus']);
+    } else if (event.code === 'KeyB' && !this.isEditable(event.target)) {
+      event.preventDefault();
+      this.router.navigate(['/form-thesaurus']);
     }
   }
 

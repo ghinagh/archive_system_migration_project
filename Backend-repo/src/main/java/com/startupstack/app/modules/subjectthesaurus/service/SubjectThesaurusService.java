@@ -11,6 +11,8 @@ import com.startupstack.app.modules.subjectthesaurus.repository.SubjectThesaurus
 import com.startupstack.app.modules.subjectthesaurus.repository.ThesaurusTermView;
 import com.startupstack.app.modules.users.entity.UserEntity;
 import com.startupstack.app.modules.users.repository.UserRepository;
+import com.startupstack.app.shared.collation.LegacyCollation;
+import com.startupstack.app.shared.collation.LegacyWords;
 import com.startupstack.app.shared.exception.BusinessException;
 import com.startupstack.app.shared.exception.PermissionDeniedException;
 import com.startupstack.app.shared.util.SecurityUtils;
@@ -132,7 +134,7 @@ public class SubjectThesaurusService {
             throw new BusinessException("لا يمكن التسجيل: الرمز " + code + " مستخدم سابقا في المكنز");
         }
         String wordCode = truncate(nullToEmpty(request.wordCode()), WORD_CODE_LENGTH);
-        for (String word : divWord(request.description())) {
+        for (String word : LegacyWords.divWord(request.description())) {
             repository.insertWord(truncate(word, WORD_LENGTH), wordCode, "1");
         }
     }
@@ -249,54 +251,6 @@ public class SubjectThesaurusService {
         } catch (NumberFormatException e) {
             throw new BusinessException("لا يمكن الاضافة: رموز المستوى الثالث تحت هذا الرمز ليست رقمية (" + t + ")");
         }
-    }
-
-    /**
-     * Form5.div_word: splits the description on blanks and returns the words insr_word receives —
-     * leading "ال" / "لل" stripped repeatedly, a leading "أ" turned into "ا", kept when longer than
-     * two characters and not starting with a digit. Ported literally, including the outer
-     * {@code While i < L} that skips a one-character last word and the "وال" test that can never
-     * match (it compares a two-character Mid).
-     */
-    static List<String> divWord(String description) {
-        List<String> words = new ArrayList<>();
-        String swDesc = vbTrim(description);
-        int len = swDesc.length();
-        int i = 1;
-        while (i < len) {
-            StringBuilder word = new StringBuilder();
-            while (!vbMid(swDesc, i, 1).equals(" ") && i < len + 1) {
-                word.append(vbMid(swDesc, i, 1));
-                i++;
-            }
-            String swDes = word.toString();
-            int l1 = swDes.length();
-            while (vbMid(swDesc, i, 1).equals(" ") && i < len + 1) {
-                i++;
-            }
-            if (l1 > 1) {
-                boolean again = true;
-                while (again) {
-                    String two = vbMid(swDes, 1, 2);
-                    if (two.equals("ال") || two.equals("لل")) {
-                        swDes = vbMid(swDes, 3, swDes.length() - 2);
-                    } else if (two.equals("وال")) {
-                        swDes = vbMid(swDes, 4, swDes.length() - 3);
-                    } else if (vbMid(swDes, 1, 1).equals("أ")) {
-                        swDes = "ا" + vbMid(swDes, 2, swDes.length() - 1);
-                    } else {
-                        again = false;
-                    }
-                }
-            }
-            // nb = InStr(1, "0123456789", Mid(sw_des, 1, 1)) — InStr of "" returns 1.
-            String first = vbMid(swDes, 1, 1);
-            boolean digitOrEmpty = first.isEmpty() || "0123456789".contains(first);
-            if (swDes.length() > 2 && !digitOrEmpty) {
-                words.add(swDes);
-            }
-        }
-        return words;
     }
 
     /** serh_wrdmacnz: @desc nvarchar(50); @m_word nvarchar(20) = '%' + ltrim(@desc) + '%'. */
