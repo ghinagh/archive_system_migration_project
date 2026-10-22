@@ -1,0 +1,49 @@
+:host { display: block; }
+
+.grid {
+  overflow: auto;
+  max-height: 300px;
+  min-height: 140px;
+  border: 1px solid #c7ccd3;
+  border-radius: 10px;
+  outline: none;
+
+  &:focus { border-color: #3b6fd8; box-shadow: 0 0 0 2px rgba(59, 111, 216, 0.15); }
+  &.loading { opacity: 0.6; }
+
+  table { border-collapse: collapse; width: max-content; min-width: 100%; font-size: 13px; }
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #eceff3;
+    padding: 6px 10px;
+    border-bottom: 1px solid #c7ccd3;
+    white-space: nowrap;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  td {
+    padding: 4px 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    white-space: nowrap;
+    min-width: 60px;
+    max-width: 360px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 26px;
+    cursor: default;
+  }
+
+  td.selector, th.selector { min-width: 22px; width: 22px; text-align: center; background: #f4f5f7; cursor: pointer; }
+  td.locked { color: #4b5563; }
+  .v { white-space: pre; }
+  tr.current td:not(.selector) { background: rgba(47, 95, 191, 0.10); }
+  tr.row-selected td { background: #2f5fbf !important; color: #fff; }
+  td.cell-current { outline: 2px solid #3b6fd8; outline-offset: -2px; }
+  tr.new-row td { color: #6b7280; }
+
+  .cell-editor { width: 100%; min-width: 120px; height: 24px; border: 1px solid #3b6fd8; border-radius: 4px; padding: 0 6px; }
+}

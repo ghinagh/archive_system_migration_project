@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.videoorders.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.archive.entity.ChartEntity;
 import com.startupstack.app.shared.auditing.BaseEntity;
 import jakarta.persistence.Column;
@@ -26,6 +28,7 @@ public class VideoOrderEntity extends BaseEntity {
     private String stockNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "chart_id")
     private ChartEntity chart;
 

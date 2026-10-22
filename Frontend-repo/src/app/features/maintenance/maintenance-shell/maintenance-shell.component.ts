@@ -236,7 +236,10 @@ export class MaintenanceShellComponent implements OnInit {
   }
 
   unlockDocument(appNo: string): void {
-    this.maintenanceService.unlockDocument(appNo).subscribe({
+    // Same key as فتح صلاحية (Form6.frm m_user_password = "891045")
+    const key = window.prompt(this.translate.instant('ACCESS_KEY.LABEL'));
+    if (key === null) return;
+    this.maintenanceService.unlockDocument(appNo, key).subscribe({
       next: () => {
         this.snackBar.open(this.translate.instant('MAINTENANCE.UNLOCK_SUCCESS'), '', { duration: 3000 });
         this.loadLockedDocs();

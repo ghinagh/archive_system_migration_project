@@ -6,7 +6,8 @@
   @if (isLoading()) {
     <app-loading-spinner></app-loading-spinner>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- No ngSubmit / submit button: legacy PERIOD1.frm saved only through تسجيل (Command), never on Enter in a field. -->
+    <form [formGroup]="form">
 
       <!-- Shape1: Header + Contact -->
       <mat-card class="form-section">
@@ -276,7 +277,7 @@
       <!-- All 8 legacy PERIOD1.frm buttons: اضافة / تسجيل / بحث / الغاء / سابق / لاحق / البحث بالعنوان / خروج -->
       <div class="form-actions">
         <button mat-raised-button type="button" (click)="addNew()">{{ 'PERIODICALS.ADD' | translate }}</button>
-        <button mat-raised-button type="submit">
+        <button mat-raised-button type="button" [disabled]="isSaving()" (click)="onSubmit()">
           {{ 'PERIODICALS.SAVE' | translate }}
         </button>
         <button mat-raised-button type="button" (click)="toggleSearchByNo()">{{ 'PERIODICALS.SEARCH_BY_NO' | translate }}</button>

@@ -1,5 +1,22 @@
 @use '@angular/material' as mat;
 
+// No mat.theme() is included, so Material's surface token (--mat-sys-surface-container) is
+// undefined and every overlay panel (select, autocomplete, menu, datepicker) rendered
+// see-through over the fields underneath. Give them an opaque default; the themed
+// .doc-form-panel / .retrieval-tools-panel below still override it with !important.
+:root {
+  --mat-autocomplete-background-color: #ffffff;
+  --mat-select-panel-background-color: #ffffff;
+  --mat-menu-container-color: #ffffff;
+  --mat-datepicker-calendar-container-background-color: #ffffff;
+}
+
+.mat-mdc-autocomplete-panel,
+.mat-mdc-select-panel {
+  border: 1px solid #c7ccd3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -152,4 +169,29 @@ input[type="week"] {
   .mat-mdc-select-value-text {
     color: #e9f1f6; // --ink
   }
+
+  // The --mdc-* names above are pre-v18 tokens that Angular Material 21 no longer reads, so
+  // the dialog's field text stayed grey. Current token names, white text as requested.
+  --mat-form-field-outlined-input-text-color: #ffffff;
+  --mat-form-field-outlined-label-text-color: #d6e2ea;
+  --mat-form-field-outlined-hover-label-text-color: #ffffff;
+  --mat-form-field-outlined-focus-label-text-color: #e0b455; // --accent
+  --mat-form-field-outlined-outline-color: #4f7691; // --line
+  --mat-form-field-outlined-hover-outline-color: #e0b455;
+  --mat-form-field-outlined-focus-outline-color: #e0b455;
+  --mat-form-field-outlined-disabled-input-text-color: #c9d6df;
+  --mat-form-field-outlined-input-text-placeholder-color: #9db3c2;
+  --mat-select-enabled-trigger-text-color: #ffffff;
+  --mat-select-enabled-arrow-color: #ffffff;
+
+  input.mat-mdc-input-element,
+  textarea.mat-mdc-input-element,
+  .mat-mdc-select-value-text,
+  .mat-mdc-dialog-title {
+    color: #ffffff;
+  }
 }
+
+// Dropdown lists opened from inside the dark dialog render in the overlay, outside it, so they
+// inherited its light text on the white default panel. Give the dialog's panels the dark
+// .doc-form-panel look (panelClass / class="doc-form-panel" on the dialog's selects and autocomplete).

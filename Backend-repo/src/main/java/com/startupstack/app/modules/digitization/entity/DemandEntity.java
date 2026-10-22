@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.digitization.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.catalogue.entity.CatalogueEntity;
 import com.startupstack.app.modules.users.entity.UserEntity;
 import jakarta.persistence.Column;
@@ -38,6 +40,7 @@ public class DemandEntity {
     private String userNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "dmd_user", referencedColumnName = "user_no")
     private UserEntity user;
 
@@ -60,6 +63,7 @@ public class DemandEntity {
     private String machineNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "dmd_mch_no", referencedColumnName = "MN_APP_NO")
     private CatalogueEntity catalogue;
 

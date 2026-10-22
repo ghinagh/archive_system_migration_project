@@ -25,6 +25,10 @@ public interface SubjectThesaurusRepository extends Repository<MacnzEntity, Stri
             nativeQuery = true)
     List<ThesaurusTermView> findAllRows();
 
+    /** Duplicate guard formerly done by UNIQUE ("SUB_CODE"); the legacy table has no key. */
+    @Query(value = "SELECT count(*) FROM \"MACNZ\" WHERE \"SUB_CODE\" = :code", nativeQuery = true)
+    long countByCode(@Param("code") String code);
+
     /** insr_macnz: insert into macnz (sub_desc, sub_code, sub_level) values (@desc, @m_code, @m_leve) */
     @Modifying
     @Query(value = "INSERT INTO \"MACNZ\" (\"SUB_DESC\", \"SUB_CODE\", \"SUB_LEVEL\") "

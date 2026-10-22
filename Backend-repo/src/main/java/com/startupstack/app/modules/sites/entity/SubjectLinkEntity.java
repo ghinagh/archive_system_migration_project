@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.sites.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.lookups.entity.MacnzEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,10 +32,12 @@ public class SubjectLinkEntity {
     private String subMcnz;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "SUB_FORM", referencedColumnName = "SUB_NO", insertable = false, updatable = false)
     private FormEntity form;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "SUB_MCNZ", referencedColumnName = "SUB_CODE", insertable = false, updatable = false)
     private MacnzEntity macnz;
 

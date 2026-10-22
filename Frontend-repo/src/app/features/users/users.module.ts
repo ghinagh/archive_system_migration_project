@@ -1,27 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedModule } from '../../shared/shared.module';
-import { adminGuard } from '../../core/guards/admin.guard';
-import { UserListComponent } from './user-list/user-list.component';
-import { UserFormComponent } from './user-form/user-form.component';
-import { ChangePasswordDialogComponent } from './change-password-dialog/change-password-dialog.component';
-import { MigratePasswordsDialogComponent } from './migrate-passwords-dialog/migrate-passwords-dialog.component';
+import { configUsersAccessGuard } from '../../core/guards/config-users-access.guard';
+import { ConfigUsersComponent } from './config-users/config-users.component';
 
+/** " معالجة المستخدمين" — legacy config_users.frm, behind the ARCHIVE.frm Frame3 key 261015. */
 const routes: Routes = [
-  { path: '', component: UserListComponent, canActivate: [adminGuard] },
-  { path: 'new', component: UserFormComponent, canActivate: [adminGuard] },
-  { path: ':id/edit', component: UserFormComponent, canActivate: [adminGuard] }
+  { path: '', component: ConfigUsersComponent, canActivate: [configUsersAccessGuard] }
 ];
 
 @NgModule({
-  declarations: [
-    UserListComponent,
-    UserFormComponent,
-    ChangePasswordDialogComponent,
-    MigratePasswordsDialogComponent
-  ],
-  imports: [SharedModule, MatExpansionModule, RouterModule.forChild(routes)],
-  exports: []
+  declarations: [ConfigUsersComponent],
+  imports: [SharedModule, RouterModule.forChild(routes)]
 })
 export class UsersModule { }

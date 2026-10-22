@@ -42,4 +42,8 @@ public class DigitResponse {
      *  ListField=SUB_NAME/BoundColumn=sub_cod) — not the raw stored code. Null when the code
      *  has no matching form row. */
     private String chartGeoName;
+    /** CODING '29' + dig_typmat (view_coding29). */
+    private String materialTypeDescription;
+    /** CODING '26' + dig_typchrt (view_coding26). */
+    private String chartTypeDescription;
 }

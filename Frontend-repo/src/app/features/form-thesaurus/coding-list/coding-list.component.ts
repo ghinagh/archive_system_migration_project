@@ -31,6 +31,11 @@ export class CodingListComponent {
   @Output() listKeyup = new EventEmitter<KeyboardEvent>();
   /** Arrow/Page/Home/End — moved by the list itself, reported for the form's KeyDown handlers. */
   @Output() navKeydown = new EventEmitter<KeyboardEvent>();
+  /**
+   * A click / double-click on a row while the list is disabled. The list itself still ignores it
+   * (no selection, no focus); the owning screen decides whether to re-enable the list first.
+   */
+  @Output() disabledRowActivate = new EventEmitter<{ index: number; dbl: boolean }>();
 
   @ViewChild('viewport') viewport?: CdkVirtualScrollViewport;
   @ViewChild('listBox') listBox?: ElementRef<HTMLElement>;
@@ -46,12 +51,21 @@ export class CodingListComponent {
     if (this.enabled) this.listBox?.nativeElement.focus();
   }
 
+  /** A click on the empty part of the list (below the rows) still gives it focus, like a VB list. */
+  onAreaMouseDown(event: MouseEvent): void {
+    if ((event.target as HTMLElement).closest('.list-item')) return;
+    event.preventDefault();   // the default mousedown would move focus to <body> right after
+    if (this.enabled) this.listBox?.nativeElement.focus();
+  }
+
   onClick(index: number): void {
     if (this.enabled) this.selectIndex.emit(index);
+    else this.disabledRowActivate.emit({ index, dbl: false });
   }
 
   onDblClick(index: number): void {
     if (this.enabled) this.rowDblClick.emit(index);
+    else this.disabledRowActivate.emit({ index, dbl: true });
   }
 
   onKeydown(event: KeyboardEvent): void {

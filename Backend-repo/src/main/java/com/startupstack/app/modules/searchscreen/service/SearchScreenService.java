@@ -159,15 +159,19 @@ public class SearchScreenService {
         // Migrated TEXT table exposes TXT_APP_NO/TXT_MEM (legacy's TXT_NO/TXT_TEXT were
         // renamed during migration — same join key and content column, different names).
         if (notBlank(request.getFullText())) {
-            joins.append("LEFT JOIN \"TEXT\" txt ON v.mn_app_no = txt.\"TXT_APP_NO\" ");
-            where.add("txt.\"TXT_MEM\" LIKE :fullText");
+            // legacy: left join dbo.text1 ON ART_app_no = text1.txt_no ... txt_text like '%word%'
+            // (the analysis screen's text — التحليل › فتح النص — is stored in text1)
+            joins.append("LEFT JOIN text1 txt ON v.mn_app_no = txt.txt_no ");
+            where.add("txt.txt_text LIKE :fullText");
             params.put("fullText", "%" + request.getFullText().trim() + "%");
         }
 
         // ===== m_art_pg_no "عدد الصفحات" — :3035 art_pg_no = Val(text) numeric coercion =====
         if (notBlank(request.getPageNo())) {
             where.add("v.art_pg_no = :pageNo");
-            params.put("pageNo", String.valueOf(val(request.getPageNo())));
+            // VB Val() concatenated into SQL prints 12, not 12.0
+            double pg = val(request.getPageNo());
+            params.put("pageNo", pg == Math.rint(pg) ? String.valueOf((long) pg) : String.valueOf(pg));
         }
 
         // ===== m_art_lang "اللغة" — :3002 art_lang1 = Mid(BoundText,3,2) =====
@@ -324,6 +328,10 @@ public class SearchScreenService {
     }
 
     private LocalDateTime castLocalDateTime(Object value) {
-        return (value instanceof LocalDateTime) ? (LocalDateTime) value : null;
+        // native queries return java.sql.Timestamp for timestamp columns
+        if (value instanceof LocalDateTime ldt) return ldt;
+        if (value instanceof java.sql.Timestamp ts) return ts.toLocalDateTime();
+        if (value instanceof java.util.Date d) return new java.sql.Timestamp(d.getTime()).toLocalDateTime();
+        return null;
     }
 }

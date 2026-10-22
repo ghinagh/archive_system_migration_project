@@ -1,5 +1,9 @@
 server:
   port: ${SERVER_PORT:8080}
+  tomcat:
+    # Spring Boot 3.5 caps a multipart request at 10 parts by default; the digital-file
+    # upload (استمارة التوثيق › إضافة ملف رقمي) sends up to 14 (file + 13 fields) and failed with 500.
+    max-part-count: 50
 
 spring:
   application:
@@ -68,6 +72,12 @@ app:
   form-thesaurus:
     # ARCHIVE.frm M2_Click: password1 = "891045" (Frame3 key before coding.frm "المكنز الشكلي" opens)
     access-key: ${FORM_THESAURUS_ACCESS_KEY:891045}
+  document-lock:
+    # ARCHIVE.frm m30_Click (اقفال الوثائق المفتوحة) and Form6.frm فتح صلاحية: password "891045"
+    access-key: ${DOCUMENT_LOCK_ACCESS_KEY:891045}
+  config-users:
+    # ARCHIVE.frm m31_Click: password1 = "261015" (Frame3 key before config_users "معالجة المستخدمين" opens)
+    access-key: ${CONFIG_USERS_ACCESS_KEY:261015}
   backup:
     directory: ${BACKUP_DIRECTORY:./backups}
     pg-dump-path: ${PG_DUMP_PATH:pg_dump}

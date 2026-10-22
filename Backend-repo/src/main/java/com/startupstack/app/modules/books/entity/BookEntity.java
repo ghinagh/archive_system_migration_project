@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.books.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.catalogue.entity.CatalogueEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +26,7 @@ public class BookEntity {
     private String appNo;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "BK_APP_NO", referencedColumnName = "MN_APP_NO", insertable = false, updatable = false)
     private CatalogueEntity catalogue;
 

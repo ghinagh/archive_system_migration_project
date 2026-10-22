@@ -62,8 +62,8 @@ export class MaintenanceService {
     });
   }
 
-  unlockDocument(appNo: string): Observable<ApiResponse<CatalogueItem>> {
-    return this.http.patch<ApiResponse<CatalogueItem>>(`${this.catalogueUrl}/${appNo}/unlock`, {});
+  unlockDocument(appNo: string, key: string): Observable<ApiResponse<CatalogueItem>> {
+    return this.http.patch<ApiResponse<CatalogueItem>>(`${this.catalogueUrl}/${appNo}/unlock`, { key });
   }
 
   // --- Retrieval fields ---

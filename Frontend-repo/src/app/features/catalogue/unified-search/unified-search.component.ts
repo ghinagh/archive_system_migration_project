@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -126,6 +127,10 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
   languageOptions = signal<CodingOption[]>([]);
   articleTypeOptions = signal<CodingOption[]>([]);
   documentTypeOptions = signal<CodingOption[]>([]);
+  /** m_res_cote "الجهة المستفيدة" — DataCombo over CODING 32; stored as Mid(BoundText, 3, 2). */
+  beneficiaryEntityOptions = signal<CodingOption[]>([]);
+  /** m_res_permit "الجهة الموافقة" — DataCombo over CODING 33; stored as Mid(BoundText, 3, 2). */
+  approvingBodyOptions = signal<CodingOption[]>([]);
   dataEntryOperatorOptions = signal<CodingOption[]>([]);
 
   displayMacnz = (value: string | MacnzOption | null): string =>
@@ -158,6 +163,12 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
   hasSearched = signal(false);
 
   logRequestRows = signal<ArchiveSearchResult[]>([]);
+  // ---- Frame2 (F3): Dirlist/drvlist folder, isrec "مع تسجيل الطلب", نسخ الاختيار / نسخ الجدول / الغاء الامر ----
+  copyPanelOpen = signal(false);
+  copyFolderName = signal<string | null>(null);
+  private copyFolder: any = null;
+  isRec = signal(false);
+  copying = signal(false);
   logRequestForm = this.fb.group({
     person: [''],
     cote: [''],
@@ -177,14 +188,19 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
 
   /** Legacy DataGrid1.Row — the row under the grid cursor, set by clicking a row (the web
    *  equivalent of moving the grid's cursor there) and read by F2/F9. */
-  focusedAppNo = signal<string | null>(null);
+  focusedKey = signal<string | null>(null);
+
+  /** One DataGrid1 row = one DIGIT file, so several rows can share an app-no. */
+  private rowKey(row: ArchiveSearchResult): string {
+    return `${row.appNo}|${row.digitNo ?? ''}|${row.documentType1 ?? ''}`;
+  }
 
   focusRow(row: ArchiveSearchResult): void {
-    this.focusedAppNo.set(row.appNo);
+    this.focusedKey.set(this.rowKey(row));
   }
 
   isFocused(row: ArchiveSearchResult): boolean {
-    return this.focusedAppNo() === row.appNo;
+    return this.focusedKey() === this.rowKey(row);
   }
 
   /**
@@ -196,7 +212,7 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
    * "الاختيار"-flagged record, exactly what Command9 "نسخ الاختيار" iterates over, :2450-2545).
    */
   onGridKeydown(event: KeyboardEvent): void {
-    const row = this.results().find(r => r.appNo === this.focusedAppNo());
+    const row = this.results().find(r => this.rowKey(r) === this.focusedKey());
     if (event.key === 'F9') {
       event.preventDefault();
       if (row) this.toggleChoice(row);
@@ -274,11 +290,9 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Command9 "نسخ الاختيار" (:2450-2545) — iterates every row with DIG_choice = 1. */
+  /** DataGrid1_KeyDown F3 (:2618): Frame2.Visible = True — the copy panel opens. */
   private logSelectedByChoice(): void {
-    const rows = this.results().filter(r => r.choice === 1);
-    if (rows.length === 0) return;
-    this.startLogRequest(rows);
+    this.copyPanelOpen.set(true);
   }
 
   /**
@@ -329,6 +343,11 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
     this.autocomplete.getCodingByCodePrefix('02').pipe(catchError(() => of({ data: [] } as any)))
       .subscribe(r => this.dataEntryOperatorOptions.set(r?.data ?? []));
 
+    this.autocomplete.getCodingByCodePrefix('32').pipe(catchError(() => of({ data: [] } as any)))
+      .subscribe(r => this.beneficiaryEntityOptions.set(r?.data ?? []));
+    this.autocomplete.getCodingByCodePrefix('33').pipe(catchError(() => of({ data: [] } as any)))
+      .subscribe(r => this.approvingBodyOptions.set(r?.data ?? []));
+
     this.wireFormLookup(this.additionalFileControl, this.additionalFileOptions);
     this.wireFormLookup(this.geoLocationControl, this.geoLocationOptions);
     this.wireFormLookup(this.photoPlaceControl, this.photoPlaceOptions);
@@ -373,6 +392,12 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
         ? payload.rows.filter((o: FormOption) => o.name?.toLowerCase().startsWith(payload.term))
         : payload.rows);
     });
+  }
+
+  /** A picked name as legacy stores it: sub_cod = SUB_TYP + SUB_NO (typed-but-not-picked = no criterion). */
+  private formCodeOf(value: string | FormOption | null | undefined): string | undefined {
+    if (value == null || typeof value === 'string' || !value.formNo) return undefined;
+    return (value.formType ?? '') + value.formNo;
   }
 
   private codeOf<T extends object>(value: string | T | null | undefined, key: keyof T): string | undefined {
@@ -444,9 +469,10 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
       subjectDescriptorCode: this.codeOf(this.subjectDescriptorControl.value, 'code'),
       relatedDescriptorCode: this.codeOf(this.relatedDescriptorControl.value, 'code'),
       narrowerDescriptorCode: this.codeOf(this.narrowerDescriptorControl.value, 'code'),
-      additionalFileCode: this.codeOf(this.additionalFileControl.value, 'formNo'),
-      geoLocationCode: this.codeOf(this.geoLocationControl.value, 'formNo'),
-      photoPlaceCode: this.codeOf(this.photoPlaceControl.value, 'formNo')
+      // FILE_ADD / GEO / DIGIT.dig_geochrt hold view_form.sub_cod = SUB_TYP + SUB_NO
+      additionalFileCode: this.formCodeOf(this.additionalFileControl.value),
+      geoLocationCode: this.formCodeOf(this.geoLocationControl.value),
+      photoPlaceCode: this.formCodeOf(this.photoPlaceControl.value)
     };
 
     this.searchScreenService.search(request, this.pageIndex(), this.pageSize()).subscribe({
@@ -454,7 +480,7 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
         this.results.set(r.data.content);
         this.totalElements.set(r.data.totalElements);
         this.isLoading.set(false);
-        this.focusedAppNo.set(null);
+        this.focusedKey.set(null);
       },
       error: err => {
         this.isLoading.set(false);
@@ -486,7 +512,7 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
     this.results.set([]);
     this.totalElements.set(0);
     this.hasSearched.set(false);
-    this.focusedAppNo.set(null);
+    this.focusedKey.set(null);
   }
 
   /** Command3 "عدد المقالات" (:2302-2316) — MsgBox of the CURRENT result set's record
@@ -528,8 +554,103 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
     window.open('/reports', '_blank');
   }
 
+  /** DataGrid1 F2 (:2606-2616): Form6 — استمارة التوثيق — opens on that record. */
   openRecord(row: ArchiveSearchResult): void {
-    this.router.navigate(['/catalogue', row.appNo]);
+    this.router.navigate(['/catalogue/new'], { queryParams: { appNo: row.appNo } });
+  }
+
+  /** Dirlist / drvlist: the target folder (File System Access API; else the browser's downloads). */
+  async chooseCopyFolder(): Promise<void> {
+    const w = window as any;
+    if (typeof w.showDirectoryPicker !== 'function') {
+      this.snackBar.open(this.translate.instant('SEARCH_SCREEN.FOLDER_DOWNLOADS'), '', { duration: 4000 });
+      return;
+    }
+    try {
+      this.copyFolder = await w.showDirectoryPicker({ mode: 'readwrite' });
+      this.copyFolderName.set(this.copyFolder.name);
+    } catch { /* cancelled */ }
+  }
+
+  /** Command10 "الغاء الامر" */
+  cancelCopy(): void { this.copyPanelOpen.set(false); }
+
+  /** Command9 "نسخ الاختيار": the rows with DIG_choice = 1; each copied file's mark is cleared. */
+  copySelection(): void { this.copyRows(this.results().filter(r => r.choice === 1), true); }
+
+  /** Command11 "نسخ الجدول": every row of the result. */
+  copyTable(): void { this.copyRows(this.results(), false); }
+
+  /**
+   * Legacy loop: for each row with dig_typ1 and dig_dig_no — copy <scan|waves|photos|private>\NN\NN\no.typ
+   * to <folder>\<mn_app_no><filter_desc(title)><Str(day)-Str(month)-Str(year)>.<typ>; a missing file →
+   * MsgBox "<no> هذه المقالة غير موجودة في الارشيف"; with isrec ticked every such row is also a line of
+   * one new request (op_result + upd_result/insr_result). Then "لقد انتهى نسخ المقالات....".
+   */
+  private async copyRows(rows: ArchiveSearchResult[], clearMarks: boolean): Promise<void> {
+    if (this.copying()) return;
+    this.copying.set(true);
+    const logged: ArchiveSearchResult[] = [];
+    for (const row of rows) {
+      const type1 = (row.documentType1 ?? '').trim();
+      const no = (row.digitNo ?? '').trim();
+      if (!type1 || !no) continue;
+      if (['01', '02', '03', '05'].includes(type1)) {
+        try {
+          const blob = await firstValueFrom(this.archiveSearchService.downloadAsset(no, type1, row.documentType));
+          await this.writeCopy(this.copyName(row), blob);
+          if (clearMarks) {
+            await firstValueFrom(this.searchScreenService.setChoice(no, type1, 0)).catch(() => null);
+            row.choice = 0;
+          }
+        } catch {
+          this.snackBar.open(no + ' ' + this.translate.instant('SEARCH_SCREEN.FILE_MISSING'), '', { duration: 4000 });
+        }
+      } else {
+        this.snackBar.open(no + ' ' + this.translate.instant('SEARCH_SCREEN.FILE_MISSING'), '', { duration: 4000 });
+      }
+      if (this.isRec()) logged.push(row);
+    }
+    if (this.isRec() && logged.length) {
+      const v = this.logRequestForm.getRawValue();
+      try {
+        await firstValueFrom(this.digitizationService.logUsageRequest({
+          items: logged.map(r => ({ catalogueAppNo: r.appNo, digitNo: r.digitNo ?? undefined, type: r.documentType?.trim() || undefined, type1: r.documentType1?.trim() || undefined })),
+          person: v.person ?? '', cote: v.cote || undefined, permit: v.permit || undefined, subject: v.subject || undefined
+        }));
+      } catch (e: any) {
+        this.snackBar.open(e?.error?.message || this.translate.instant('APP.ERROR'), '', { duration: 4000 });
+      }
+    }
+    this.results.set([...this.results()]);
+    this.copying.set(false);
+    this.copyPanelOpen.set(false);
+    this.snackBar.open(this.translate.instant('SEARCH_SCREEN.COPY_DONE'), '', { duration: 4000 });
+  }
+
+  /** v_nam = mn_app_no + filter_desc(Trim(MN_ACT_TTL)) + Str(Day) + "-" + Str(Month) + "-" + Str(Year) + "." + dig_typ */
+  private copyName(row: ArchiveSearchResult): string {
+    const filter = (t: string) => t.trimStart().replace(/['"\/?<>*\\|؟:\r\n]/g, ' ');
+    let name = (row.appNo ?? '').trim() + filter((row.activeTitleAr ?? '').trim());
+    if (row.articleDate) {
+      const dt = new Date(row.articleDate);
+      name += ' ' + dt.getDate() + '- ' + (dt.getMonth() + 1) + '- ' + dt.getFullYear();   // VB Str() keeps a leading space
+    }
+    return name + '.' + (row.documentType ?? '').trim();
+  }
+
+  private async writeCopy(name: string, blob: Blob): Promise<void> {
+    if (this.copyFolder) {
+      const fh = await this.copyFolder.getFileHandle(name, { create: true });
+      const w = await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
   private startLogRequest(rows: ArchiveSearchResult[]): void {
@@ -548,8 +669,8 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
       items: rows.map(row => ({
         catalogueAppNo: row.appNo,
         digitNo: row.digitNo ?? undefined,
-        type: row.documentType ?? undefined,
-        type1: row.documentType1 ?? undefined
+        type: row.documentType?.trim() || undefined,
+        type1: row.documentType1?.trim() || undefined
       })),
       person: v.person!,
       cote: v.cote || undefined,

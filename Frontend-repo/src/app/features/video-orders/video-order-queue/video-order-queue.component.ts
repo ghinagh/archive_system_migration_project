@@ -1,8 +1,8 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
-import { Subscription, interval, switchMap } from 'rxjs';
+import { Subscription, interval, switchMap, catchError, throwError } from 'rxjs';
 import { DigitizationService } from '../../digitization/services/digitization.service';
 import {
   DemandQueueContext, DemandQueueCriteria, DemandQueueMechanism, DemandQueueUser, DeliveryJobStatus, DigitDemand,
@@ -380,7 +380,13 @@ export class VideoOrderQueueComponent implements OnInit, OnDestroy {
     this.mTime = record.inSeconds;
     this.mTime1 = record.outSeconds;
     this.mTm = this.mTime;
-    this.digitizationService.downloadMedia(fileStock, ext).subscribe({
+    // Legacy Dir(M_NAM) check with dmd_path's extension; a master extension (.avi / .mxf) has no
+    // browser-playable low copy, so the .mp4 proxy of the same stock is tried next.
+    this.digitizationService.downloadMedia(fileStock, ext).pipe(
+      catchError(err => ext && ext.toLowerCase() !== 'mp4'
+        ? this.digitizationService.downloadMedia(record.stock, 'mp4')
+        : throwError(() => err))
+    ).subscribe({
       next: blob => {
         this.releasePreview();
         this.loadedRecord.set(record);
@@ -667,6 +673,36 @@ export class VideoOrderQueueComponent implements OnInit, OnDestroy {
   }
 
   /** Local calendar date (legacy Format(Date, "dd/mm/yyyy")), not the UTC date. */
+  /** M_dmd_dte / M_dmd_dte1 (MaskEdBox "__/__/____"): digits typed freely → dd/mm/yyyy;
+   *  the signal holds yyyy-mm-dd once the date is complete and real, '' otherwise. */
+  onDateMask(event: Event, which: 'dateFrom' | 'dateTo'): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 8);
+    input.value = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(x => x).join('/');
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(input.value);
+    let iso = '';
+    if (m) {
+      const dt = new Date(+m[3], +m[2] - 1, +m[1]);
+      if (dt.getFullYear() === +m[3] && dt.getMonth() === +m[2] - 1 && dt.getDate() === +m[1]) iso = `${m[3]}-${m[2]}-${m[1]}`;
+    }
+    (which === 'dateFrom' ? this.dateFrom : this.dateTo).set(iso);
+  }
+
+  isoToDmy(iso: string): string {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso ?? '');
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+  }
+
+  /** F1 / F2 / F5 wherever focus is (laptop Fn keys, focus outside the grid), but not while
+   *  typing in a field; F1 would otherwise open the browser's help. Delete stays grid-only. */
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(e: KeyboardEvent): void {
+    if (!['F1', 'F2', 'F5'].includes(e.key) || e.defaultPrevented) return;
+    const t = e.target as HTMLElement | null;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    this.onGridKey(e);
+  }
+
   private today(): string {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

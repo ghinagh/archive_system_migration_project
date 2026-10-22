@@ -24,6 +24,8 @@ export interface DigitRecord {
   type1Description?: string | null;
   /** Resolved "form" table name for chartGeo ("مكان التصوير/النشر"). */
   chartGeoName?: string | null;
+  materialTypeDescription?: string | null;
+  chartTypeDescription?: string | null;
 }
 
 export interface DigitRecordRequest {

@@ -416,3 +416,64 @@
     border-color: var(--accent);
   }
 }
+
+// M_MN_RESULT (abstract) row
+.abstract-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0;
+  .full-width { flex: 1; }
+}
+
+// Command4 "البحث عن كلمة": occurrences shown in red, like HighlightWords(vbRed)
+.text-highlight {
+  white-space: pre-wrap;
+  border: 1px solid rgba(127, 127, 127, 0.4);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+  max-height: 200px;
+  overflow: auto;
+  .hit { color: #e53935; font-weight: 700; }
+}
+
+// Text3: typable relation number
+.relation-no-input {
+  width: 3.2em;
+  text-align: center;
+  font: inherit;
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(127, 127, 127, 0.6);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+// DBList13 "المناصب" (F2 / المناصب button): a floating window in the middle of the screen, so it is
+// seen from wherever the user is on the page — the lists that open it sit far below the top.
+.positions-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: min(420px, calc(100vw - 32px));
+  max-height: 70vh;
+  overflow: auto;
+  background: #1e3243;
+  color: #e9f1f6;
+  border: 1px solid #4f7691;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+// WindowsMediaPlayer1
+.player-box {
+  .analysis-player { width: 100%; max-height: 320px; background: #000; border-radius: 4px; }
+  .player-controls {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px;
+    .step-input { width: 4.5em; text-align: center; font: inherit; background: transparent; color: inherit;
+                  border: 1px solid rgba(127, 127, 127, 0.6); border-radius: 4px; padding: 4px; }
+    .player-time { margin-inline-start: auto; font-family: monospace; }
+  }
+}

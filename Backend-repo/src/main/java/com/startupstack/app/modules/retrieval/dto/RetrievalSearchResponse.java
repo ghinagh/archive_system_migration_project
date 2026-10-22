@@ -34,5 +34,11 @@ public class RetrievalSearchResponse {
          */
         private String appNo;
         private Map<String, Object> values;
+        /**
+         * BANK only: the row's DIGIT file and the MAIN/ARTICLE columns frm_result's keys read
+         * (dig_DIG_NO, dig_typ1, dig_typ, DIG_choice, dig_o..dig_s1, dig_typ_high, MN_ACT_TTL,
+         * art_dte — F9/F2/F6/double-click/نسخ, frm_result.frm:1193-1630). Not a displayed column.
+         */
+        private Map<String, Object> digit;
     }
 }

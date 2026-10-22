@@ -61,7 +61,13 @@ public class ArchiveSearchService {
                 "v.dig_typ2, v.art_dte, v.ART_pg_no, v.art_per_no, " +
                 "v.dig_dig_no, v.dig_typ, v.dig_typ1, v.dig_choice, " +
                 "v.dig_s, v.dig_o, v.dig_m, " +
-                "v.dig_s1, v.dig_o1, v.dig_m1, v.aut_nam ");
+                "v.dig_s1, v.dig_o1, v.dig_m1, v.aut_nam, " +
+                // dig_typ_high is in the legacy SELECT (Form_Load / Command4) and read by F6 / in;
+                // view_result does not carry it, so it comes from the same DIGIT row.
+                "(SELECT dh.\"dig_typ_high\" FROM \"DIGIT\" dh WHERE dh.\"DIG_NO\" = v.mn_app_no " +
+                "AND dh.\"DIG_DIG_NO\" = v.dig_dig_no AND dh.\"DIG_TYP1\" = v.dig_typ1 LIMIT 1) AS dig_typ_high, " +
+                // mch_result1 — the abstract Frame3 (F6) shows with the search word highlighted
+                "v.mn_result ");
 
         // Build JOINs dynamically based on which filters are active
         StringBuilder joins = new StringBuilder("FROM view_result v ");
@@ -78,7 +84,8 @@ public class ArchiveSearchService {
             int i = 0;
             for (String token : request.getWord().trim().split("\\s+")) {
                 String p = "word" + i++;
-                String pattern = buildWordPattern(request.getSearchMode(), token);
+                // Command1 :2947 — always "like '%word%'"; Option1/Option2 only drive the name lookups.
+                String pattern = "%" + token + "%";
                 // Legacy concatenates 3 fields into 1 string, then applies LIKE
                 // This is DIFFERENT from OR'ing individual field matches
                 where.add("(CONCAT(" +
@@ -104,7 +111,9 @@ public class ArchiveSearchService {
         // ========== FILTER 5: Article type (m_mch_typ) ==========
         // LEGACY: art_sub_ty = code
         if (notBlank(request.getArticleType())) {
-            where.add("v.art_sub_ty = :articleType");
+            // legacy base query joins ARTICLE; view_result does not expose ART_SUB_TY
+            joins.append("LEFT JOIN \"ARTICLE\" art2 ON v.mn_app_no = art2.\"ART_APP_NO\" ");
+            where.add("art2.\"ART_SUB_TY\" = :articleType");
             params.put("articleType", request.getArticleType());
         }
 
@@ -134,15 +143,18 @@ public class ArchiveSearchService {
         // LEGACY: file_add_1.fad_fad_no = value AND fad_fad_t2 = '1' with LEFT JOIN
         if (notBlank(request.getGeneralIndexNo2())) {
             joins.append("LEFT JOIN \"FILE_ADD\" fa1 ON v.mn_app_no = fa1.\"FAD_APP_NO\" ");
-            where.add("fa1.\"FAD_FAD_NO\" = :generalIndexNo2");
+            // DBList1_DblClick m_tabindex 7: m_t = 1 → "and file_add_1.fad_fad_t2 = '1'"
+            where.add("fa1.\"FAD_FAD_NO\" = :generalIndexNo2 AND fa1.\"FAD_FAD_T2\" = '1'");
             params.put("generalIndexNo2", request.getGeneralIndexNo2());
-            // Note: legacy also filters by fad_fad_t2, but may need additional param if strict migration required
         }
 
         // ========== FILTER 10: Scene location (m_file_geo) ==========
         // LEGACY: dig_geochrt = code (from DIGIT table, included in view_result)
         if (notBlank(request.getGeoLocation())) {
-            where.add("v.dig_geochrt = :geoLocation");
+            // dig_geochrt of the row's own DIGIT file (legacy selects from dbo.digit directly)
+            joins.append("LEFT JOIN \"DIGIT\" dgg ON dgg.\"DIG_NO\" = v.mn_app_no AND dgg.\"DIG_DIG_NO\" = v.dig_dig_no "
+                    + "AND dgg.\"DIG_TYP1\" = v.dig_typ1 ");
+            where.add("dgg.\"dig_geochrt\" = :geoLocation");
             params.put("geoLocation", request.getGeoLocation());
         }
 
@@ -166,8 +178,9 @@ public class ArchiveSearchService {
         // ========== FILTER 13: Full text (m_txt_text) ==========
         // LEGACY: txt_text LIKE '%value%' with LEFT JOIN
         if (notBlank(request.getFullText())) {
-            joins.append("LEFT JOIN \"TEXT\" txt ON v.mn_app_no = txt.\"TXT_NO\" ");
-            where.add("txt.\"TXT_TEXT\" LIKE :fullText");
+            // left join dbo.text1 — the text typed on التحليل › فتح النص
+            joins.append("LEFT JOIN text1 txt ON v.mn_app_no = txt.txt_no ");
+            where.add("txt.txt_text LIKE :fullText");
             params.put("fullText", "%" + request.getFullText() + "%");
         }
 
@@ -211,8 +224,8 @@ public class ArchiveSearchService {
                     castString(r[10]),                   // documentType1 = dig_typ1
                     castString(r[4]),                    // docTypeDescription = dig_typ2
                     castInteger(r[11]),                  // choice = dig_choice
-                    null,                                // highType (not in view_result)
-                    null,                                // machineStock (not in view_result)
+                    castString(r[19]),                   // highType = dig_typ_high
+                    castString(r[8]),                    // machineStock = V_MCH_STOCK = dig_DIG_NO (datagrid1_DblClick)
                     castInteger(r[13]),                  // durationHours = dig_o (from)
                     castInteger(r[14]),                  // durationMinutes = dig_m (from)
                     castInteger(r[12]),                  // durationSeconds = dig_s (from)
@@ -221,23 +234,10 @@ public class ArchiveSearchService {
                     castInteger(r[15]),                  // durationSeconds1 = dig_s1 (to)
                     castString(r[18]),                   // responsiblePersonName = aut_nam
                     null,                                // language (not in view_result)
-                    null));                              // abstractText (not in view_result)
+                    castString(r[20])));                 // abstractText = mn_result (F6 / Frame3)
         }
 
         return new PageImpl<>(results, pageable, total);
-    }
-
-    /**
-     * Build LIKE pattern based on legacy search mode.
-     * LEGACY: m_typ_serh = 1 → STARTS_WITH, m_typ_serh = 2 → CONTAINS
-     * Default (if not specified): CONTAINS ('%token%')
-     */
-    private String buildWordPattern(String searchMode, String token) {
-        if ("STARTS_WITH".equals(searchMode) || "1".equals(searchMode)) {
-            return token + "%";
-        } else {
-            return "%" + token + "%";
-        }
     }
 
     private String castString(Object value) {
@@ -252,7 +252,11 @@ public class ArchiveSearchService {
     }
 
     private LocalDateTime castLocalDateTime(Object value) {
-        return (value instanceof LocalDateTime) ? (LocalDateTime) value : null;
+        // native queries return java.sql.Timestamp for timestamp columns
+        if (value instanceof LocalDateTime ldt) return ldt;
+        if (value instanceof java.sql.Timestamp ts) return ts.toLocalDateTime();
+        if (value instanceof java.util.Date d) return new java.sql.Timestamp(d.getTime()).toLocalDateTime();
+        return null;
     }
 
     private boolean notBlank(String s) {
@@ -285,10 +289,11 @@ public class ArchiveSearchService {
     @Transactional(readOnly = true)
     public List<CodingOptionResponse> getArticleTypes() {
         try {
-            // Legacy: filters to codes starting with '03' (view_coding filter)
+            // m_mch_typ RowSource = coding_typ1 (USER_INTERFACE1.frx) = "select * from VIEW_coding";
+            // view_coding = CODING where SUBSTRING(SUB_CODE,1,2) = '03'.
             String sql = "SELECT c.\"SUB_CODE\", c.\"SUB_DESC\" FROM \"CODING\" c " +
                         "WHERE SUBSTRING(c.\"SUB_CODE\", 1, 2) = '03' " +
-                        "ORDER BY c.\"SUB_DESC\"";
+                        "ORDER BY c.\"SUB_CODE\"";
             Query query = entityManager.createNativeQuery(sql);
             List<?> rows = query.getResultList();
 

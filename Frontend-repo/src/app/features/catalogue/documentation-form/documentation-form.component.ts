@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, HostListener, ViewChild, ElementRef, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -83,11 +84,9 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   @ViewChild('filesGrid') filesGrid?: DigitalFilesGridComponent;
   @ViewChild('authorInputEl') authorInputEl?: ElementRef<HTMLInputElement>;
 
-  // Legacy DBList2 (نوع المصدر) is CODING-bound the same way as appDoc/dataEntry —
-  // Mid(DBList2.BoundText, 3, 2) confirms the compound-key pattern. Domain prefix "29"
-  // is inferred from the only unused CODING-domain artifact left in Form6.frm
-  // (view_coding29, otherwise unreferenced) — unlike 01/02/03/34 there's no explicit
-  // "XX" + code literal proving this number; verify against real data if available.
+  // Legacy DBList2 (نوع المسؤولية) is CODING-bound the same way as appDoc/dataEntry —
+  // Mid(DBList2.BoundText, 3, 2). Its row source is coding5 = VIEW_CODING5 (SUB_CODE '04%'),
+  // and view_res3 joins '04' + RES_APP_TY = VIEW_CODING5.SUB_CODE (legacy DDL :3167, :4458).
   resourceTypeOptions = signal<CodingOption[]>([]);
 
   // Legacy m_mn_app_doc / m_mn_data_en DataCombos are bound to CODING via the compound
@@ -103,7 +102,9 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   articleLangOptions = signal<CodingOption[]>([]);
 
   form = this.fb.group({
-    appNo: ['', [Validators.required, Validators.maxLength(7)]],
+    // Form6.frm m_mn_app_no is Enabled = False and nothing enables it: the number only ever comes
+    // from سجل جديد (op_article) or from loading a record, never from typing.
+    appNo: [{ value: '', disabled: true }, [Validators.required, Validators.maxLength(7)]],
     entryDate: [null as string | null],
     appDoc: ['', Validators.maxLength(2)],
     dataEntry: ['', Validators.maxLength(2)],
@@ -174,7 +175,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
       }
     });
 
-    this.autoSvc.getCodingByCodePrefix('29').subscribe({
+    this.autoSvc.getCodingByCodePrefix('04').subscribe({
       next: (res) => {
         console.log('Author Type (29) options loaded:', res.data?.length || 0, res.data);
         this.resourceTypeOptions.set(res.data || []);
@@ -258,9 +259,10 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
     return code.length > 2 ? code.slice(2) : code;
   }
 
-  private toDatetimeLocal(d: Date): string {
+  /** تاريخ الادخال is a date only, as in legacy (MaskEdBox "##/##/####", saved as Format(…, "yyyy/mm/dd")). */
+  private toDateInput(d: Date): string {
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   // mat-select's second click closes because its CDK overlay has a backdrop that
@@ -351,7 +353,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
       additionalCatalogueTitle: v.additionalCatalogueTitle || null,
       dataEntry: v.dataEntry || null,
       appDoc: v.appDoc || null,
-      entryDate: v.entryDate || null,
+      entryDate: v.entryDate ? `${v.entryDate.slice(0, 10)}T00:00:00` : null,
       result: v.result || null,
       documentNature: v.documentNature || null,
       date: v.date || null,
@@ -373,7 +375,8 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
 
     this.form.patchValue({
       appNo: r.appNo,
-      entryDate: r.entryDate,
+      // Stored values written before the date-only change may carry a time; only the date is shown.
+      entryDate: r.entryDate ? r.entryDate.slice(0, 10) : null,
       appDoc: r.appDoc,
       dataEntry: r.dataEntry,
       date: r.date,
@@ -541,7 +544,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
         // document nature to "ع" — Form6.frm:3120-3122, 3137-3138.
         const user = this.authService.getCurrentUser();
         this.form.patchValue({
-          entryDate: this.toDatetimeLocal(new Date()),
+          entryDate: this.toDateInput(new Date()),
           appDoc: user?.user_doc ?? '',
           dataEntry: user?.user_ent ?? '',
           lang1: '01',
@@ -554,8 +557,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
 
   /** Blank form, no record — the state legacy is left in after a confirmed cancel (Form6.frm:2880-2896). */
   private resetForm(): void {
-    this.form.reset();
-    this.form.get('appNo')?.enable();
+    this.form.reset();   // الرقم stays disabled (reset keeps the control's disabled state)
     this.authorRoleForm.reset();
     this.onCancelAddAuthor();
 
@@ -572,28 +574,50 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   }
 
   // ---- Toolbar: تسجيل ----
+  /**
+   * Form6.frm Command1_Click (:2799-2845): with no record number → "رقم الاستمارة فارغ يجب ان تضغط
+   * على سجل جديد" and nothing is sent (:2840); a locked record → is_trans's message and nothing is sent
+   * (bok.bas:93-102); otherwise upd_main + upd_article2 — every field may be empty. Only an existing
+   * record is ever saved (الرقم can't be typed), so this is always the update, never a create.
+   */
   onSave(): void {
+    if (!this.canSaveLoadedRecord()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     this.isSaving.set(true);
     const req = this.buildRequest();
-    const op$ = this.isEditMode()
-      ? this.svc.update(req.appNo, req)
-      : this.svc.create(req);
-
-    op$.subscribe({
+    this.svc.update(req.appNo, req).subscribe({
       next: res => {
         this.isSaving.set(false);
         this.snack.open(this.t.instant('APP.SUCCESS'), '', { duration: 3000 });
         this.patchFromResponse(res.data);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
-        this.snack.open(this.t.instant('APP.ERROR'), '', { duration: 3000 });
+        this.showSaveError(err);
       }
     });
+  }
+
+  /** The two guards both legacy save paths run before upd_main (Command1_Click, Command16_Click). */
+  private canSaveLoadedRecord(): boolean {
+    if (!this.savedAppNo()) {
+      this.snack.open(this.t.instant('DOC_FORM.NO_RECORD_LOADED'), '', { duration: 4000 });
+      return false;
+    }
+    if (this.isLocked()) {
+      this.snack.open(this.t.instant('DOC_FORM.CANCEL_BLOCKED_LOCKED'), '', { duration: 4000 });
+      return false;
+    }
+    return true;
+  }
+
+  /** The server's own message (e.g. the lock check) when it sent one, else the generic error. */
+  private showSaveError(err: HttpErrorResponse): void {
+    const message = err?.error?.message;
+    this.snack.open(typeof message === 'string' && message ? message : this.t.instant('APP.ERROR'), '', { duration: 4000 });
   }
 
   // ---- Toolbar: بحث (jump directly to a record number) ----
@@ -670,35 +694,46 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
       panelClass: 'doc-form-dialog',
       data: { isLocked: this.isLocked() }
     });
-    ref.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return;
-      this.catalogueService.unlock(appNo).subscribe({
+    ref.afterClosed().subscribe((key: string | false | undefined) => {
+      if (typeof key !== 'string') return;
+      this.catalogueService.unlock(appNo, key).subscribe({
         next: () => {
           this.isLocked.set(false);
           this.snack.open(this.t.instant('DOC_FORM.UNLOCK_SUCCESS'), '', { duration: 3000 });
         },
-        error: () => this.snack.open(this.t.instant('DOC_FORM.UNLOCK_DENIED'), '', { duration: 3000 })
+        // "كلمة السر خطا....؟" from the server on a wrong key
+        error: (err: HttpErrorResponse) => this.showSaveError(err)
       });
     });
   }
 
   // ---- Toolbar: التحليل (prompt: go to page 2, with/without saving first) ----
   onAnalysis(): void {
+    // Command3_Click (:3225, :3296-3298): no record number → the same message, before any prompt.
+    if (!this.savedAppNo()) {
+      this.snack.open(this.t.instant('DOC_FORM.NO_RECORD_LOADED'), '', { duration: 4000 });
+      return;
+    }
     const ref = this.dialog.open(Page2PromptDialogComponent, { panelClass: 'doc-form-dialog' });
     ref.afterClosed().subscribe((result: Page2PromptResult) => {
       if (result === 'with-saving') {
+        // Command16_Click (:2968-3017): is_trans guards only upd_main/upd_article2; Form2 opens anyway.
+        if (this.isLocked()) {
+          this.snack.open(this.t.instant('DOC_FORM.CANCEL_BLOCKED_LOCKED'), '', { duration: 4000 });
+          this.openPage2Dialog();
+          return;
+        }
         if (this.form.invalid) {
           this.form.markAllAsTouched();
           return;
         }
         const req = this.buildRequest();
-        const op$ = this.isEditMode() ? this.svc.update(req.appNo, req) : this.svc.create(req);
-        op$.subscribe({
+        this.svc.update(req.appNo, req).subscribe({
           next: res => {
             this.patchFromResponse(res.data);
             this.openPage2Dialog();
           },
-          error: () => this.snack.open(this.t.instant('APP.ERROR'), '', { duration: 3000 })
+          error: (err: HttpErrorResponse) => this.showSaveError(err)
         });
       } else if (result === 'without-saving') {
         this.openPage2Dialog();
@@ -754,7 +789,24 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
   onGotoRecord(): void {
     const ref = this.dialog.open(GotoRecordDialogComponent, { panelClass: 'doc-form-dialog' });
     ref.afterClosed().subscribe(appNo => {
-      if (appNo) this.loadRecord(appNo);
+      if (!appNo) return;
+      // Form6.frm Command12_Click: SERCH_main; EOF → MsgBox "لا يوجد استمارة لهذا الرقم !!!!" and the
+      // current record stays on screen (display_fld is not called).
+      this.isLoading.set(true);
+      this.svc.getById(appNo).subscribe({
+        next: res => {
+          this.isLoading.set(false);
+          this.patchFromResponse(res.data);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.isLoading.set(false);
+          if (err.status === 404) {
+            this.snack.open(this.t.instant('DOC_FORM.NUMBER_NOT_FOUND'), '', { duration: 4000 });
+          } else {
+            this.showSaveError(err);
+          }
+        }
+      });
     });
   }
 }

@@ -5,7 +5,7 @@
     <div class="dialog-row">
       <mat-form-field appearance="outline">
         <mat-label>{{ 'CATALOGUE.DIG_TYPE1' | translate }}</mat-label>
-        <mat-select formControlName="type1">
+        <mat-select formControlName="type1" panelClass="doc-form-panel">
           <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
           @for (opt of type1Options(); track opt.code) {
             <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
@@ -66,9 +66,9 @@
     <div class="dialog-row">
       <mat-form-field appearance="outline">
         <mat-label>{{ 'CATALOGUE.DIG_MATERIAL_TYPE' | translate }}</mat-label>
-        <mat-select formControlName="materialType">
+        <mat-select formControlName="materialType" panelClass="doc-form-panel">
           <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
-          @for (opt of unresolvedDomainOptions(); track opt.code) {
+          @for (opt of materialTypeOptions(); track opt.code) {
             <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
           }
         </mat-select>
@@ -98,9 +98,9 @@
     <div class="dialog-row">
       <mat-form-field appearance="outline">
         <mat-label>{{ 'CATALOGUE.DIG_CHART_TYPE' | translate }}</mat-label>
-        <mat-select formControlName="chartType">
+        <mat-select formControlName="chartType" panelClass="doc-form-panel">
           <mat-option value="">{{ 'APP.NONE' | translate }}</mat-option>
-          @for (opt of unresolvedDomainOptions(); track opt.code) {
+          @for (opt of chartTypeOptions(); track opt.code) {
             <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
           }
         </mat-select>
@@ -117,7 +117,7 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>{{ 'CATALOGUE.DIG_CHART_GEO' | translate }}</mat-label>
       <input matInput [formControl]="chartGeoCtrl" [matAutocomplete]="chartGeoAuto">
-      <mat-autocomplete #chartGeoAuto="matAutocomplete" [displayWith]="displayForm">
+      <mat-autocomplete #chartGeoAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
         @for (opt of chartGeoOptions(); track opt.formNo) {
           <mat-option [value]="opt">{{ opt.name }}</mat-option>
         }

@@ -37,6 +37,10 @@ public interface AuthorCodingRepository extends Repository<AuthorEntity, Double>
             + "ORDER BY \"AUT_NAM\"", nativeQuery = true)
     List<AuthorEntity> findByNameLike(@Param("pattern") String pattern);
 
+    /** Duplicate guard formerly done by UNIQUE ("AUT_NO"); the legacy table has no key. */
+    @Query(value = "SELECT count(*) FROM \"AUTHER\" WHERE \"AUT_NO\" = :number", nativeQuery = true)
+    long countByNumber(@Param("number") Double number);
+
     /** insr_auther */
     @Transactional
     @Modifying

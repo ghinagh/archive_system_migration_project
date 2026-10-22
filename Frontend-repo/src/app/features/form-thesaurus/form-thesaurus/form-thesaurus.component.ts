@@ -460,6 +460,42 @@ export class FormThesaurusComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** The drill-down chain, outermost first; each list's Esc hands control back to the previous one. */
+  private static readonly DRILL_CHAIN: ListKey[] = ['l1', 'l2', 'countries', 'names', 'positions'];
+  private returning: Promise<void> = Promise.resolve();
+
+  /**
+   * A click / double-click on a row of a list that a drill-down disabled (e.g. DBList1 after
+   * DBList1_DblClick sets DBList1.Enabled = False, coding.frm:2658). coding.frm only re-enables it
+   * through Esc in the list below (DBList2_KeyPress Case 27, :2702-2705; DataList1/DataList2/DBList5
+   * the same way), so a mouse user was stuck until the page was reloaded. Run exactly those Esc
+   * transitions, deepest list first, until the clicked list is the enabled one, then act on the click
+   * — the state afterwards is what legacy reaches with Esc followed by the click.
+   */
+  activateDisabled(key: ListKey, e: { index: number; dbl: boolean }): Promise<void> {
+    this.returning = this.returning.then(async () => {
+      if (!(await this.returnTo(key))) return;
+      if (e.dbl) await this.dblClick(key, e.index);
+      else this.select(key, e.index);
+    });
+    return this.returning;
+  }
+
+  private async returnTo(target: ListKey): Promise<boolean> {
+    const chain = FormThesaurusComponent.DRILL_CHAIN;
+    const targetPos = chain.indexOf(target);
+    if (targetPos < 0 || !this.sig(target)().visible) return false;
+    // Relation lists, the DBList8 picker and the message/input boxes have their own Esc handling.
+    if (this.formRels().visible || this.subjRels().visible || this.picker().visible
+        || this.messageBox() || this.inputBox()) return false;
+    for (let step = 0; step < chain.length && !this.sig(target)().enabled; step++) {
+      const active = [...chain].reverse().find(k => this.sig(k)().visible && this.sig(k)().enabled);
+      if (!active || chain.indexOf(active) <= targetPos) return false;
+      await this.keypress(active, 'Escape');
+    }
+    return this.sig(target)().enabled;
+  }
+
   async dblClick(key: ListKey, index: number): Promise<void> {
     this.select(key, index);
     switch (key) {

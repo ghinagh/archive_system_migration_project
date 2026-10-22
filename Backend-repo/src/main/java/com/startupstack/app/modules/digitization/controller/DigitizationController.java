@@ -1,5 +1,6 @@
 package com.startupstack.app.modules.digitization.controller;
 
+import java.util.Map;
 import com.startupstack.app.modules.digitization.dto.AddSceneRequest;
 import com.startupstack.app.modules.digitization.dto.DemandBulkFulfilRequest;
 import com.startupstack.app.modules.digitization.dto.DemandBulkStatusRequest;
@@ -251,6 +252,17 @@ public class DigitizationController {
             @Valid @RequestBody DeliveryJobRequest request) {
         return ResponseEntity.accepted()
                 .body(ApiResponse.success(digitizationService.startExtractClips(request.getIds())));
+    }
+
+    /** USER_INTERFACE1 Command7 "تنفيذ" — DV PAL render of the queued scenes; body {ids, outputName}. */
+    @Permission(PermissionConstants.PERM_UPDATE)
+    @PostMapping("/demands/render-dv")
+    public ResponseEntity<ApiResponse<DeliveryJobStatus>> renderDv(@RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Integer> ids = ((List<Object>) body.getOrDefault("ids", List.of())).stream()
+                .map(o -> ((Number) o).intValue()).toList();
+        return ResponseEntity.accepted()
+                .body(ApiResponse.success(digitizationService.startRenderDv(ids, (String) body.get("outputName"))));
     }
 
     /** Progress and outcome of a delivery batch — drives the queue's progress indicator. */

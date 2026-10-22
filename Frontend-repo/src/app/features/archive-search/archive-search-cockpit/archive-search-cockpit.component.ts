@@ -1,8 +1,9 @@
-import { Component, ElementRef, ViewChild, ViewChildren, QueryList, signal, inject, computed, effect, OnInit, DestroyRef } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, ViewChildren, QueryList, signal, inject, computed, effect, OnInit, DestroyRef } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap, of, catchError, map, timer, takeWhile, Observable, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { PageEvent } from '@angular/material/paginator';
 import { TranslateService } from '@ngx-translate/core';
@@ -12,7 +13,7 @@ import { ArchiveSearchRequest, ArchiveSearchResult } from '../models/archive-sea
 import { DigitDemand, DeliveryJobStatus } from '../../digitization/models/digitization.model';
 import { SearchService } from '../../../core/services/search.service';
 import { SearchResult } from '../../../core/models/search.models';
-import { AutocompleteService, AuthorOption } from '../../../core/services/autocomplete.service';
+import { AutocompleteService, AuthorOption, FormOption } from '../../../core/services/autocomplete.service';
 import { SubjectsService } from '../../subjects/services/subjects.service';
 import { MacnzSubject, CodingEntry } from '../../subjects/models/subject.model';
 import { SitesService } from '../../sites/services/sites.service';
@@ -67,6 +68,22 @@ function todayIso(): string {
 
 /** Widens a yyyy-MM-dd box to the instant bounding its local day, so dmd_dte comparisons
  *  cover the whole date the way legacy's date-only dd/mm/yyyy masks did. */
+/** MaskEdBox "__/__/____": digits typed freely, slashes inserted → dd/mm/yyyy. */
+function maskDmy(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 8);
+  return [d.slice(0, 2), d.slice(2, 4), d.slice(4, 8)].filter(x => x).join('/');
+}
+
+/** "dd/mm/yyyy" → "yyyy-mm-dd" when it is a real date, else null. */
+function dmyToIso(value: string | null | undefined): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((value ?? '').trim());
+  if (!m) return null;
+  const [_, dd, mm, yyyy] = m;
+  const dt = new Date(+yyyy, +mm - 1, +dd);
+  if (dt.getFullYear() !== +yyyy || dt.getMonth() !== +mm - 1 || dt.getDate() !== +dd) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function dayStartIso(date: string): string | undefined {
   return date ? new Date(`${date}T00:00:00`).toISOString() : undefined;
 }
@@ -117,6 +134,7 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   private archiveSearchService = inject(ArchiveSearchService);
   private digitizationService = inject(DigitizationService);
   private searchService = inject(SearchService);
+  private router = inject(Router);
   private autocompleteService = inject(AutocompleteService);
   private subjectsService = inject(SubjectsService);
   private sitesService = inject(SitesService);
@@ -144,7 +162,8 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   form = this.fb.group({
     word: [''],
     /** Legacy Option1/Option2 "البحث بداية الاسم" / "البحث كلمة معينة". */
-    searchMode: ['CONTAINS' as 'STARTS_WITH' | 'CONTAINS'],
+    // Form_Load: Option1.value = True — "البحث بداية الاسم" is the default.
+    searchMode: ['STARTS_WITH' as 'STARTS_WITH' | 'CONTAINS'],
     dateFrom: [''],
     dateTo: [''],
     fullText: ['']
@@ -171,9 +190,11 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   // extracts the actual filter value either way, so pasting a known code still works
   // without requiring a dropdown pick, same as legacy. ---
 
-  generalIndexNoControl = new FormControl<string | SearchResult | null>('');
-  generalIndexNo2Control = new FormControl<string | SearchResult | null>('');
-  geoLocationControl = new FormControl<string | SearchResult | null>('');
+  // m_file_no / m_file_no1 / m_file_geo: names from view_form (serh_allform / serh_wrdform2),
+  // compared on sub_cod = SUB_TYP + SUB_NO.
+  generalIndexNoControl = new FormControl<string | FormOption | null>('');
+  generalIndexNo2Control = new FormControl<string | FormOption | null>('');
+  geoLocationControl = new FormControl<string | FormOption | null>('');
   responsiblePersonControl = new FormControl<string | AuthorOption | null>('');
   private responsiblePersonValue = toSignal(this.responsiblePersonControl.valueChanges.pipe(
     tap(v => console.log('[DEBUG] responsiblePersonControl value changed:', v))
@@ -187,9 +208,9 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   textSearchControl = new FormControl<string>('');
   demandDescriptionControl = new FormControl<string>('');
 
-  generalIndexNoOptions = signal<SearchResult[]>([]);
-  generalIndexNo2Options = signal<SearchResult[]>([]);
-  geoLocationOptions = signal<SearchResult[]>([]);
+  generalIndexNoOptions = signal<FormOption[]>([]);
+  generalIndexNo2Options = signal<FormOption[]>([]);
+  geoLocationOptions = signal<FormOption[]>([]);
   descriptorNumberOptions = signal<SearchResult[]>([]);
   narrativeDescriptorOptions = signal<SearchResult[]>([]);
   private responsiblePersonAll = signal<AuthorOption[]>([]);
@@ -327,13 +348,40 @@ export class ArchiveSearchCockpitComponent implements OnInit {
       console.log('[DEBUG] responsiblePersonAll signal set to:', this.responsiblePersonAll());
     });
 
-    this.wireCatalogueLookup(this.generalIndexNoControl, this.generalIndexNoOptions);
-    this.wireCatalogueLookup(this.generalIndexNo2Control, this.generalIndexNo2Options);
-    this.wireCatalogueLookup(this.geoLocationControl, this.geoLocationOptions);
+    this.wireFormLookup(this.generalIndexNoControl, this.generalIndexNoOptions);
+    this.wireFormLookup(this.generalIndexNo2Control, this.generalIndexNo2Options);
+    this.wireFormLookup(this.geoLocationControl, this.geoLocationOptions);
     this.wireCatalogueLookup(this.descriptorNumberControl, this.descriptorNumberOptions);
     this.wireCatalogueLookup(this.narrativeDescriptorControl, this.narrativeDescriptorOptions);
   }
 
+
+  /** Legacy DBList1 over view_form: m_file_no_Change / m_file_no1_Change / m_file_geo_Change run
+   *  serh_allform (Option1, name starts with) or serh_wrdform2 (Option2, contains a word). */
+  private wireFormLookup(control: FormControl<string | FormOption | null>, options: ReturnType<typeof signal<FormOption[]>>): void {
+    control.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(term => {
+        const q = typeof term === 'string' ? term.trim() : '';
+        if (!q) { return of<FormOption[]>([]); }
+        const mode = this.searchModeValue() === 'STARTS_WITH' ? 'prefix' : undefined;
+        return this.autocompleteService.searchForms(q, mode).pipe(
+          map(r => r?.data?.content ?? []),
+          catchError(() => of<FormOption[]>([])));
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(rows => options.set(rows));
+  }
+
+  /** view_form.sub_cod = SUB_TYP + SUB_NO — what file_add.fad_fad_no and dig_geochrt hold. */
+  private formCodeOf(value: string | FormOption | null | undefined): string | undefined {
+    if (value == null || typeof value === 'string') return undefined;
+    return (value.formType ?? '') + value.formNo;
+  }
+
+  displayForm = (value: string | FormOption | null): string =>
+    value == null ? '' : typeof value === 'string' ? value : value.name;
 
   /** Legacy DBList1 popup. m_typ_serh selects serh_allform (prefix) or serh_wrdform2
    *  (contains); the shared catalogue endpoint always does a contains match, so prefix mode
@@ -533,21 +581,45 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   abstractRemark = signal('');
   isSavingRemark = signal(false);
 
+  /** The 11 Frame1 criteria (+ the two radio options, never locked). */
+  private criteriaControls(): FormControl[] {
+    const f = this.form.controls;
+    return [f.word, f.dateFrom, f.dateTo, f.fullText, this.articleTypeControl, this.documentTypeControl,
+      this.generalIndexNoControl, this.generalIndexNo2Control, this.geoLocationControl,
+      this.descriptorControl, this.narrowerDescriptorControl, this.responsiblePersonControl] as FormControl[];
+  }
+
+  /** Lookups count only once a list entry is picked (legacy reads the DBList bookmark / BoundText). */
+  private isCommitted(ctrl: FormControl): boolean {
+    const v = ctrl.value;
+    const f = this.form.controls;
+    if (ctrl === (f.dateFrom as any) || ctrl === (f.dateTo as any)) return dmyToIso(v) != null;
+    return v != null && v !== '' && (typeof v !== 'string' || [f.word, f.fullText].includes(ctrl as any));
+  }
+
   search(): void {
+    // Command1: "يجب طرح السؤال اولا....." when no criterion is set; otherwise every criterion
+    // used is locked (Enabled = False) until بحث جديد.
+    const used = this.criteriaControls().filter(c => this.isCommitted(c));
+    if (used.length === 0) {
+      this.snackBar.open('يجب طرح السؤال اولا.....', '', { duration: 4000 });
+      return;
+    }
+    used.forEach(c => c.disable({ emitEvent: false }));
     this.isSearching.set(true);
     this.hasSearched.set(true);
-    const v = this.form.value;
-    const generalIndexNo = codeOf<SearchResult>(this.generalIndexNoControl.value, 'appNo');
-    const generalIndexNo2 = codeOf<SearchResult>(this.generalIndexNo2Control.value, 'appNo');
-    const geoLocation = codeOf<SearchResult>(this.geoLocationControl.value, 'appNo');
+    const v = this.form.getRawValue();
+    const generalIndexNo = this.formCodeOf(this.generalIndexNoControl.value);
+    const generalIndexNo2 = this.formCodeOf(this.generalIndexNo2Control.value);
+    const geoLocation = this.formCodeOf(this.geoLocationControl.value);
     const descriptorNumber = codeOf<SearchResult>(this.descriptorNumberControl.value, 'appNo');
     const narrativeDescriptor = codeOf<SearchResult>(this.narrativeDescriptorControl.value, 'appNo');
     const responsiblePerson = codeOf<AuthorOption>(this.responsiblePersonControl.value, 'id');
     const request: ArchiveSearchRequest = {
       word: v.word || undefined,
       searchMode: v.searchMode || undefined,
-      dateFrom: v.dateFrom ? new Date(v.dateFrom).toISOString() : undefined,
-      dateTo: v.dateTo ? new Date(v.dateTo).toISOString() : undefined,
+      dateFrom: dmyToIso(v.dateFrom) ? new Date(dmyToIso(v.dateFrom)!).toISOString() : undefined,
+      dateTo: dmyToIso(v.dateTo) ? new Date(dmyToIso(v.dateTo)!).toISOString() : undefined,
       // Legacy strips the CODING domain prefix before comparing — see stripCodingPrefix().
       articleType: stripCodingPrefix(codeOf<CodingEntry>(this.articleTypeControl.value, 'code'), 3),
       documentType: stripCodingPrefix(codeOf<CodingEntry>(this.documentTypeControl.value, 'code'), 2),
@@ -580,7 +652,9 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   }
 
   clearSearch(): void {
-    this.form.reset({ word: '', searchMode: 'CONTAINS', dateFrom: '', dateTo: '', fullText: '' });
+    // Command4 "بحث جديد": every criterion back to Enabled = True and empty.
+    this.criteriaControls().forEach(c => c.enable({ emitEvent: false }));
+    this.form.reset({ word: '', searchMode: 'STARTS_WITH', dateFrom: '', dateTo: '', fullText: '' });
     this.generalIndexNoControl.setValue('');
     this.generalIndexNo2Control.setValue('');
     this.geoLocationControl.setValue('');
@@ -630,11 +704,36 @@ export class ArchiveSearchCockpitComponent implements OnInit {
     return all.map(row => row.map(cell => `"${(cell ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
   }
 
+  maskDate(event: Event, ctrl: FormControl): void {
+    const input = event.target as HTMLInputElement;
+    const masked = maskDmy(input.value);
+    input.value = masked;
+    ctrl.setValue(masked, { emitEvent: false });
+  }
+
+  /** M_dmd_dte / M_dmd_dte1: the list reloads once a complete date is typed. */
+  maskDemandDate(event: Event, which: 'from' | 'to'): void {
+    const input = event.target as HTMLInputElement;
+    input.value = maskDmy(input.value);
+    const iso = dmyToIso(input.value);
+    if (!iso) return;
+    if (which === 'from') this.onDemandDateFromChange(iso); else this.onDemandDateToChange(iso);
+  }
+
+  isoToDmy(iso: string): string {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso ?? '');
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+  }
+
+  /** Command3 "عدد المشاهد": "عدد المقالات = n", or "لايوجد مقالات لهذا السؤال". */
   showStatistics(): void {
     const total = this.totalResults();
-    const displayed = this.results().length;
-    const message = this.translate.instant('ARCHIVE_SEARCH.STATISTICS', { total, displayed });
-    this.snackBar.open(message, '', { duration: 5000 });
+    this.snackBar.open(total === 0 ? 'لايوجد مقالات لهذا السؤال' : 'عدد المقالات = ' + total, '', { duration: 5000 });
+  }
+
+  /** Command2 "خــروج": Unload USER_INTERFACE1. */
+  exitScreen(): void {
+    this.router.navigate(['/catalogue']);
   }
 
   /**
@@ -647,7 +746,7 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   selectResult(result: ArchiveSearchResult): void {
     this.selectedResult.set(result);
     this.selectedSceneForScenes.set(result);
-    this.sceneDescription.set(this.defaultSceneDescription(result));
+    this.focusedResult.set(result);
     this.videoUnavailable.set(false);
     this.abstractViewerOpen.set(false);
     this.abstractRemark.set('');
@@ -655,8 +754,10 @@ export class ArchiveSearchCockpitComponent implements OnInit {
     this.assetIsImage.set(false);
     // Legacy seeds deb_tm/fin_tm from the record's stored range at load time, so the
     // from/to jumps are live before any manual marking (W8).
-    this.markedIn.set(this.toSeconds(result.durationHours, result.durationMinutes, result.durationSeconds));
-    this.markedOut.set(this.toSeconds(result.durationHours1, result.durationMinutes1, result.durationSeconds1));
+    this.recordStart.set(this.toSeconds(result.durationHours, result.durationMinutes, result.durationSeconds));
+    this.recordEnd.set(this.toSeconds(result.durationHours1, result.durationMinutes1, result.durationSeconds1));
+    this.stepCursor = this.recordStart();
+    this.clearMarks();
 
     const type1 = result.documentType1?.trim() ?? '';
     if (NON_VIDEO_ASSET_CLASSES.has(type1)) {
@@ -713,154 +814,167 @@ export class ArchiveSearchCockpitComponent implements OnInit {
     if (url) window.open(url, '_blank');
   }
 
+  // Command12 "in" / Command13 "out": is_in / is_out and the marked stream points.
+  isIn = signal(false);
+  isOut = signal(false);
+  // deb_tm / fin_tm (m_time / m_time1): the played record's stored clip range, used by from / to.
+  recordStart = signal(0);
+  recordEnd = signal(0);
+  // m_tm: the step cursor of Command10 / Command11 and the step box keys.
+  private stepCursor = 0;
+  // DataGrid1 current row — the row the "add whole clip" path reads (RESULT.Recordset).
+  focusedResult = signal<ArchiveSearchResult | null>(null);
+
+  /** Command12 "in": only once a file is playing (V_MCH_STOCK); is_in = 1, streamstart = position. */
   markIn(): void {
     const t = this.mediaEl?.currentTime;
-    if (t == null) return;
+    if (t == null || !this.selectedResult()) return;
+    this.isIn.set(true);
     this.markedIn.set(t);
   }
 
+  /** Command13 "out": "لم تضغط زر ال in " without in; "انتبه للتوقيت .....!!!! " when not after in. */
   markOut(): void {
+    if (!this.isIn()) {
+      this.snackBar.open('لم تضغط زر ال in ', '', { duration: 3000 });
+      return;
+    }
     const t = this.mediaEl?.currentTime;
     if (t == null) return;
-    if (this.markedIn() == null) {
-      this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.IN_NOT_MARKED'), '', { duration: 3000 });
+    if (t <= (this.markedIn() ?? 0)) {
+      this.snackBar.open('انتبه للتوقيت .....!!!! ', '', { duration: 3000 });
       return;
     }
-    if (t <= this.markedIn()!) {
-      this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.OUT_BEFORE_IN'), '', { duration: 3000 });
-      return;
-    }
+    this.isOut.set(true);
     this.markedOut.set(t);
   }
 
   clearMarks(): void {
+    this.isIn.set(false);
+    this.isOut.set(false);
     this.markedIn.set(null);
     this.markedOut.set(null);
   }
 
-  /** Legacy Command27 "from" — re-seek playback to the marked in point for preview. */
+  /** Command27 "from": position = m_time (the record's stored start), paused. */
   seekToIn(): void {
-    if (this.markedIn() != null) this.setCurrentTime(this.markedIn()!);
+    this.setCurrentTime(this.recordStart());
+    this.mediaEl?.pause();
   }
 
-  /** Legacy Command28 "to" — re-seek playback to the marked out point for preview. */
+  /** Command28 "to": position = m_time1 (the record's stored end), paused. */
   seekToOut(): void {
-    if (this.markedOut() != null) this.setCurrentTime(this.markedOut()!);
+    this.setCurrentTime(this.recordEnd());
+    this.mediaEl?.pause();
   }
 
-  /** Legacy Command10 — step playback forward by jogStep() seconds. */
+  /** Command10: m_tm = max(position, m_tm) + step; play. */
   jogForward(): void {
     const t = this.mediaEl?.currentTime;
     if (t == null) return;
-    this.setCurrentTime(t + this.jogStep());
+    if (t > this.stepCursor) this.stepCursor = t;
+    this.stepCursor += this.jogStep();
+    this.setCurrentTime(this.stepCursor);
+    this.mediaEl?.play();
   }
 
-  /** Legacy Command11 — step playback backward by jogStep() seconds. */
+  /** Command11: m_tm = m_tm - step; play. */
   jogBackward(): void {
-    const t = this.mediaEl?.currentTime;
-    if (t == null) return;
-    this.setCurrentTime(Math.max(0, t - this.jogStep()));
+    if (!this.mediaEl) return;
+    this.stepCursor = Math.max(0, this.stepCursor - this.jogStep());
+    this.setCurrentTime(this.stepCursor);
+    this.mediaEl.play();
+  }
+
+  /** m_step KeyPress / KeyDown: j / l = -/+0.04 s paused, k = pause, left / right = -/+1 s, Space = pause. */
+  onStepKey(event: KeyboardEvent): void {
+    const el = this.mediaEl;
+    if (!el) return;
+    const fwdBase = () => { if (el.currentTime > this.stepCursor) this.stepCursor = el.currentTime; };
+    switch (event.key) {
+      case 'j': event.preventDefault(); this.stepCursor -= 0.04; this.setCurrentTime(this.stepCursor); el.pause(); break;
+      case 'l': event.preventDefault(); fwdBase(); this.stepCursor += 0.04; this.setCurrentTime(this.stepCursor); el.pause(); break;
+      case 'k': event.preventDefault(); el.pause(); break;
+      case 'ArrowLeft': event.preventDefault(); this.stepCursor -= 1; this.setCurrentTime(this.stepCursor); el.play(); break;
+      case 'ArrowRight': event.preventDefault(); fwdBase(); this.stepCursor += 1; this.setCurrentTime(this.stepCursor); el.play(); break;
+      case ' ': event.preventDefault(); el.pause(); break;
+    }
   }
 
   private setCurrentTime(seconds: number): void {
     const el = this.mediaEl;
-    if (el) el.currentTime = seconds;
+    if (el) el.currentTime = Math.max(0, seconds);
   }
 
-  /**
-   * Legacy datagrid1_DblClick:4890-4928 pauses, sets currentPosition to the record's stored
-   * in-point, then plays — so selecting a row lands you at the marked scene, not at 0.
-   */
+  /** datagrid1_DblClick: pause, position = m_time (record start), play. */
   onMediaLoaded(): void {
-    const start = this.markedIn();
-    if (start != null && start > 0) this.setCurrentTime(start);
-    // Legacy immediately plays after setting position (line 4913: WindowsMediaPlayer1.Controls.Play)
+    const start = this.recordStart();
+    if (start > 0) this.setCurrentTime(start);
     this.playMedia();
   }
 
-  /** Adds the manually marked in/out range, or falls back to the whole clip's stored duration if no marks were made. */
-  addScene(): void {
-    const result = this.selectedResult();
-    if (!result) return;
-
-    // markedIn/markedOut are seeded from the record's stored range on selection (W8), so this
-    // covers both legacy paths: a manual mark and the :3600-3620 fallback to the stored
-    // duration. An empty stored range with no manual mark still has nothing to add.
-    const inSeconds = this.markedIn() ?? 0;
-    const outSeconds = this.markedOut() ?? 0;
-    if (outSeconds <= inSeconds) {
-      this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.NO_MARKS_OR_DURATION'), '', { duration: 4000 });
-      return;
-    }
-
-    // Legacy :3520 caps a scene at MAX_SCENE_SECONDS unless the operator is privileged.
-    // The authoritative check is server-side (DigitizationService exempts privileged users);
-    // client-side validation removed to allow privileged users to bypass the cap.
-
-    this.digitizationService.addScene({
-      demandNo: this.currentDemandNo() ?? undefined,
-      machineNo: result.appNo,
-      machineStock: result.machineStock ?? undefined,
-      description: sanitiseSceneDescription(this.sceneDescription() || this.defaultSceneDescription(result)),
-      inSeconds,
-      outSeconds,
-      // Lets the backend resolve dmd_path against the HIGH tier with this record's own
-      // extension, matching legacy Command12_Click's high_stock_path + dig_typ_high.
-      highExtension: result.highType ?? undefined
-    }).subscribe({
-      next: r => {
-        this.currentDemandNo.set(r.data.demandNo);
-        this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.SCENE_ADDED'), '', { duration: 3000 });
-        this.clearMarks();
-        this.loadScenes();
-      }
-    });
-  }
-
   /**
-   * Legacy :3506-3516 — when the description box is left empty the stored value is
-   * {@code Str(stock) & " _ " & Mid(title, 1, 80)}, sanitised. The previous default was the
-   * full untruncated title with no stock prefix.
+   * Command15 "اضافة" (:3468-3707).
+   * - in / out marked: start = in, length = out - in, or 60 s when only in was pressed;
+   *   empty description -> Str(stock) & " _ " & Mid(title, 1, 80), filtered.
+   * - nothing marked: the DataGrid1 current row's stored clip (dig_o/m/s -> dig_o1/m1/s1).
+   * The 400 s cap (box_user_start >= 2) is enforced by the server with the legacy message.
+   * The scene joins the request of the current DataGrid2 row, or opens a new request when
+   * the list is empty (m_dmd_ser = 0).
    */
-  private defaultSceneDescription(result: ArchiveSearchResult): string {
-    const title = sanitiseSceneDescription(result.activeTitleAr ?? '').substring(0, 80);
-    const stock = result.machineStock?.trim();
-    return stock ? `${stock} _ ${title}` : title;
-  }
-
-  /** Add scene from the اختیار المشاهد section (same as the player's add scene) */
-  addSceneToList(): void {
-    const result = this.selectedSceneForScenes();
-    const sceneTitle = this.scenesForm.get('sceneNewTitle')?.value?.trim();
-
-    if (!result || !sceneTitle) return;
-
-    // Use the custom title from the scenes section if provided
-    const inSeconds = this.markedIn() ?? 0;
-    const outSeconds = this.markedOut() ?? 0;
-    if (outSeconds <= inSeconds) {
-      this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.NO_MARKS_OR_DURATION'), '', { duration: 4000 });
-      return;
+  addScene(): void {
+    let row: ArchiveSearchResult | null;
+    let inSeconds: number;
+    let length: number;
+    let description: string;
+    if (this.isIn() || this.isOut()) {
+      row = this.selectedResult();
+      if (!row) return;
+      inSeconds = this.markedIn() ?? 0;
+      length = this.isOut() ? (this.markedOut() ?? inSeconds) - inSeconds : 60;
+      description = this.sceneDescription().trim()
+        ? sanitiseSceneDescription(this.sceneDescription().trimStart())
+        : this.defaultSceneDescription(row);
+    } else {
+      row = this.focusedResult() ?? this.selectedResult();
+      if (!row || !row.digitNo) return;
+      inSeconds = this.toSeconds(row.durationHours, row.durationMinutes, row.durationSeconds);
+      length = this.toSeconds(row.durationHours1, row.durationMinutes1, row.durationSeconds1) - inSeconds;
+      description = this.sceneDescription().trim()
+        ? sanitiseSceneDescription(this.sceneDescription().trimStart())
+        : this.legacyStr(row.machineStock) + ' _ ' + (row.activeTitleAr ?? '').substring(0, 80);
     }
 
     this.digitizationService.addScene({
       demandNo: this.currentDemandNo() ?? undefined,
-      machineNo: result.appNo,
-      machineStock: result.machineStock ?? undefined,
-      description: sanitiseSceneDescription(sceneTitle),
+      machineNo: row.appNo,
+      machineStock: row.machineStock ?? undefined,
+      description,
       inSeconds,
-      outSeconds,
-      highExtension: result.highType ?? undefined
+      outSeconds: inSeconds + length,
+      highExtension: row.highType ?? undefined
     }).subscribe({
       next: r => {
         this.currentDemandNo.set(r.data.demandNo);
-        this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.SCENE_ADDED'), '', { duration: 3000 });
-        this.scenesForm.get('sceneNewTitle')?.reset();
-        this.selectedSceneForScenes.set(null);
-        this.clearMarks();
+        this.sceneDescription.set('');
+        this.isIn.set(false);
+        this.isOut.set(false);
         this.loadScenes();
-      }
+      },
+      error: e => this.snackBar.open(e?.error?.message || this.translate.instant('APP.ERROR'), '', { duration: 5000 })
     });
+  }
+
+  /** VB Str(V_MCH_STOCK): the stock number as a number with the sign space (" 901"). */
+  private legacyStr(stock: string | null | undefined): string {
+    const raw = (stock ?? '').trim();
+    const n = Number(raw);
+    return raw === '' || Number.isNaN(n) ? ' ' + raw : (n < 0 ? String(n) : ' ' + n);
+  }
+
+  private defaultSceneDescription(result: ArchiveSearchResult): string {
+    return sanitiseSceneDescription(this.legacyStr(result.machineStock) + ' _ '
+      + (result.activeTitleAr ?? '').trimStart().substring(0, 80));
   }
 
   /** Send queued scenes to EDLC — Legacy Command5 (:4095-4404) re-encodes each dmd_chek=1
@@ -870,24 +984,111 @@ export class ArchiveSearchCockpitComponent implements OnInit {
     this.sendToEdlc();
   }
 
-  /** Legacy Command16_Click — show total duration of ALL scenes in the list (مدة المشاهد) */
+  /** Command16 "مدة المشاهد": "عدد المشاهد = n المدة الاجمالية : h:m:s" over the listed scenes. */
   showSceneDuration(): void {
-    const allScenes = this.scenes();
-    if (allScenes.length === 0) {
-      this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.NO_SCENES'), '', { duration: 4000 });
+    const all = this.scenes();
+    if (all.length === 0) {
+      this.snackBar.open('لايوجد مقالات لهذا السؤال', '', { duration: 4000 });
       return;
     }
-
-    // Sum all scene durations (legacy: som_out = som_out + view_demand.Recordset![dmd_out])
-    const totalDurationSeconds = allScenes.reduce((sum, scene) => sum + (scene.time ?? 0), 0);
-    const formatted = this.formatDuration(totalDurationSeconds);
-
-    this.snackBar.open(
-      `عدد المشاهد = ${allScenes.length} — المدة الإجمالية: ${formatted}`,
-      '',
-      { duration: 4000 }
-    );
+    const total = Math.round(all.reduce((sum, sc) => sum + Number(sc.outputSize ?? sc.time ?? 0), 0));
+    const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), sec = total % 60;
+    this.snackBar.open(`عدد المشاهد = ${all.length} المدة الاجمالية : ${h}:${m}:${sec}`, '', { duration: 6000 });
   }
+
+  /** DataGrid1_KeyDown F6 → Frame3: title + abstract (word highlighted) + ملاحظات المستفيد. */
+  onResultsKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'F6') return;
+    event.preventDefault();
+    const row = this.focusedResult();
+    if (!row) return;
+    this.frame3Word.set(this.form.getRawValue().word ?? '');
+    this.abstractRemark.set('');
+    this.frame3Row.set(row);
+  }
+
+  /** F6 wherever focus is (laptops / browsers that keep focus off the grid row), once a
+   *  DataGrid1 row is current — but not while typing in a field. */
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'F6' || event.defaultPrevented) return;
+    const t = event.target as HTMLElement | null;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    this.onResultsKeydown(event);
+  }
+
+  frame3Row = signal<ArchiveSearchResult | null>(null);
+  frame3Word = signal('');
+
+  closeFrame3(): void {
+    this.frame3Row.set(null);
+  }
+
+  focusResultRow(row: ArchiveSearchResult): void {
+    this.focusedResult.set(row);
+  }
+
+  /** Command7 "تنفيذ": Save dialog name → DV PAL render of every dmd_chek = 1 scene. */
+  renderScenes(): void {
+    const ids = this.selectedSceneIds();
+    if (ids.length === 0) {
+      this.snackBar.open('لا يوجد مواد مختارة للتنفيذ...', '', { duration: 4000 });
+      return;
+    }
+    const name = prompt('اسم الملف');
+    if (!name || !name.trim()) return;
+    this.startDeliveryJob(list => this.digitizationService.renderDemandsDv(list, name.trim()));
+  }
+
+  /**
+   * Command24 "save EDL" / Command9 "save EDL & Vegas": a Vegas EDL text (.txt) — one VIDEO
+   * line then one AUDIO line per dmd_chek = 1 scene (times in ms, StartTime accumulating),
+   * then those scenes become dmd_chek = 2. "لا يوجد مواد مختارة للتنفيذ..." when none.
+   * Command9 then launched vegas.exe on the file; a browser can only hand the file over.
+   */
+  saveEdl(): void {
+    const rows = this.scenes().filter(sc => sc.checked === 1 && (sc.path ?? '').trim() !== '');
+    if (rows.length === 0) {
+      this.snackBar.open('لا يوجد مواد مختارة للتنفيذ...', '', { duration: 4000 });
+      return;
+    }
+    const name = prompt('اسم الملف');
+    if (!name || !name.trim()) return;
+    const q = (x: string) => '"' + x + '"';
+    const header = ['ID', 'Track', 'StartTime', 'Length', 'PlayRate', 'Locked', 'Normalized', 'StretchMethod',
+      'Looped', 'OnRuler', 'MediaType', 'FileName', 'Stream', 'StreamStart', 'StreamLength', 'FadeTimeIn',
+      'FadeTimeOut', 'SustainGain', 'CurveIn', 'GainIn', 'CurveOut', 'GainOut', 'Layer', 'Color', 'CurveInR',
+      'CurveOutR', 'PlayPitch', 'LockPitch'].map(q).join(';');
+    const str = (n: number) => (n < 0 ? String(n) : ' ' + n);   // VB Str()
+    const lines = [header];
+    let id = 0;
+    let start = 0;
+    for (const sc of rows) {
+      const len = Number(sc.outputSize ?? 0) * 1000;
+      const streamStart = Number(sc.inputSize ?? 0) * 1000;
+      id++;
+      lines.push(`${id};    1;${str(start)};${str(len)};    1.000000;    FALSE;    FALSE;    0;    TRUE;    FALSE;    VIDEO;${q((sc.path ?? '').trim())};   0;${str(streamStart)};${str(len)};  0.0000;    0.0000;    1.000000;    4;    0.000000;    4;    0.000000;    0;    -1;    4;    4;    0.000000;    FALSE `);
+      start += len;
+    }
+    start = 0;
+    for (const sc of rows) {
+      const len = Number(sc.outputSize ?? 0) * 1000;
+      const streamStart = Number(sc.inputSize ?? 0) * 1000;
+      id++;
+      lines.push(`${id};    0;${str(start)};${str(len)};    1.000000;    FALSE;    FALSE;    0;    TRUE;    FALSE;    AUDIO;${q((sc.path ?? '').trim())};   0;${str(streamStart)};${str(len)};  10.0000;    10.0000;    1.000000;    2;    0.000000;    -2;    0.000000;    0;    -1;    -2;    2;    0.000000;    FALSE `);
+      start += len;
+    }
+    const blob = new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name.trim() + '.txt';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    this.digitizationService.setDemandsChecked(rows.map(r => r.id), 2).subscribe({ next: () => this.loadScenes() });
+  }
+
+  /** Command17 "ارسال الطلب" / Command6 "مساعدة": no handler in the legacy form. */
+  noLegacyAction(): void {}
 
   /** Legacy Command14_Click — execute/extract all checked scenes in the list (تنفيذ) */
   executeScene(): void {
@@ -911,10 +1112,11 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   positions = signal<Position[]>([]);
   isLoadingPositions = signal(false);
 
-  showPositionsFor(option: SearchResult, event: Event): void {
+  showPositionsFor(option: FormOption, event: Event): void {
     // The option row is inside a mat-option; without this the click also selects the entry.
     event.stopPropagation();
-    const formCode = option.appNo?.trim();
+    // DBList1_KeyDown F2: m_code = sub_typ + sub_no → proc_pos
+    const formCode = ((option.formType ?? '') + option.formNo).trim();
     if (!formCode) return;
 
     this.positionsFormCode.set(formCode);
@@ -946,14 +1148,16 @@ export class ArchiveSearchCockpitComponent implements OnInit {
 
   /** Legacy Command22 "تسجيل" inside Frame3 — logs the beneficiary's remark about missing info. */
   saveRemark(): void {
-    const result = this.selectedResult();
+    // Command22: upd_mchd_rmrk(row, m_mch_user_rmrk), then Frame3 closes.
+    const result = this.frame3Row() ?? this.selectedResult();
     const remark = this.abstractRemark().trim();
-    if (!result || !remark) return;
+    if (!result) return;
     this.isSavingRemark.set(true);
     this.archiveSearchService.saveRemark(result.appNo, remark).subscribe({
       next: () => {
         this.isSavingRemark.set(false);
         this.abstractRemark.set('');
+        this.frame3Row.set(null);
         this.snackBar.open(this.translate.instant('ARCHIVE_SEARCH.REMARK_SAVED'), '', { duration: 3000 });
       },
       error: () => this.isSavingRemark.set(false)
@@ -981,15 +1185,16 @@ export class ArchiveSearchCockpitComponent implements OnInit {
       fulfilled: this.unfulfilledOnly() ? false : undefined
     }).subscribe({
       next: r => {
-        // Legacy "order by dmd_no, dmd_ser desc".
+        // Legacy tmp_demand: "order by dmd_no, dmd_ser desc" (request number ascending).
         const rows = [...r.data.content].sort((a, b) =>
-          b.demandNo.localeCompare(a.demandNo) || b.serial - a.serial);
+          a.demandNo.localeCompare(b.demandNo) || b.serial - a.serial);
         this.scenes.set(rows);
-        // Legacy :5637-5645 seeds m_dmd_ser from the first row of the refreshed set, so a
-        // cold open appends to the newest existing request instead of opening a fresh one.
-        if (!this.currentDemandNo() && rows.length) {
-          this.currentDemandNo.set(rows[0].demandNo);
-        }
+        // view_demand's current row decides the request a new scene joins (:3550
+        // m_dmd_no1 = view_demand.Recordset![dmd_no]); after a refresh that is the first row,
+        // and an empty list means m_dmd_ser = 0 → the next scene opens a new request.
+        const kept = rows.find(x => x.id === this.selectedSceneRow()?.id) ?? null;
+        this.selectedSceneRow.set(kept ?? rows[0] ?? null);
+        this.currentDemandNo.set((kept ?? rows[0])?.demandNo ?? null);
         this.isLoadingScenes.set(false);
       },
       error: () => this.isLoadingScenes.set(false)
@@ -1019,46 +1224,60 @@ export class ArchiveSearchCockpitComponent implements OnInit {
   /** Legacy DataGrid2 click — single-click selects the row for context */
   selectSceneRow(scene: DigitDemand): void {
     this.selectedSceneRow.set(scene);
+    this.currentDemandNo.set(scene.demandNo);
   }
 
-  /** Legacy DataGrid2_DblClick (:4964-4999) — loads scene media and auto-plays from in point */
+  /** DataGrid2_KeyUp Delete → Frame2 "الغاء المشهد من الجدول ......؟" (تنفيذ / الغاء الامر). */
+  onSceneGridKeyup(event: KeyboardEvent): void {
+    if (event.key !== 'Delete') return;
+    const row = this.selectedSceneRow();
+    if (row) this.removeScene(row);
+  }
+
+  /**
+   * DataGrid2_DblClick (:4964-4999): V_MCH_STOCK = the scene's stock, extension = last three
+   * characters of dmd_path, file = low_stock_path(stock) + stock + "." + ext; position = dmd_in
+   * (m_time, also the step cursor m_tm), then play. The scene's row also becomes the current row.
+   */
   selectAndLoadSceneRow(scene: DigitDemand): void {
-    this.selectedSceneRow.set(scene);
-    // Load the media file using the machine stock and path, similar to legacy playback
+    this.selectSceneRow(scene);
     if (!scene.machineStock) return;
-    this.isLoadingVideo.set(true);
-    this.archiveSearchService.downloadMedia(scene.machineStock, 'LOW', scene.cote).subscribe({
-      next: blob => {
-        this.videoBlobUrl.set(URL.createObjectURL(blob));
-        this.isLoadingVideo.set(false);
-        // Auto-play from the in point (time1 field)
-        if (this.mediaEl) {
-          this.mediaEl.currentTime = scene.time1 ? parseFloat(scene.time1) : 0;
-          setTimeout(() => {
-            if (this.mediaEl) this.mediaEl.play();
-          }, 100);
-        }
-      },
-      error: () => {
-        this.videoUnavailable.set(true);
-        this.isLoadingVideo.set(false);
-      }
+    const path = (scene.path ?? '').trim();
+    const ext = path.length >= 3 ? path.substring(path.length - 3) : null;
+    const inS = Math.round(Number(scene.inputSize ?? 0));
+    const outS = inS + Math.round(Number(scene.outputSize ?? 0));
+    const hms = (t: number) => [Math.floor(t / 3600), Math.floor((t % 3600) / 60), t % 60];
+    const [h, m, sec] = hms(inS);
+    const [h1, m1, sec1] = hms(outS);
+    // Played through the same path as a results double-click, so the player panel, from / to
+    // (m_time / m_time1) and the step cursor all follow this scene. Legacy's Dir(M_NAM) check
+    // becomes a resolve: when no low copy exists with dmd_path's extension (a master in .avi /
+    // .mxf, which a browser cannot play anyway), the browser-playable .mp4 proxy is used.
+    const play = (lowExt: string | null) => this.selectResult({
+      appNo: scene.machineNo, activeTitleAr: scene.catalogueTitle ?? '', additionalTitle: null,
+      articleDate: null, pageNo: null, periodicalName: null,
+      digitNo: scene.machineStock, documentType: lowExt, documentType1: '04', docTypeDescription: null,
+      choice: null, highType: null, machineStock: scene.machineStock,
+      durationHours: h, durationMinutes: m, durationSeconds: sec,
+      durationHours1: h1, durationMinutes1: m1, durationSeconds1: sec1,
+      responsiblePersonName: null, language: null, abstractText: null
+    });
+    this.archiveSearchService.resolveMedia(scene.machineStock, 'LOW', ext).subscribe({
+      next: r => play(r.data?.fileExists ? ext : 'mp4'),
+      error: () => play(ext)
     });
   }
 
   /** Legacy Command20_Click (:3843-3853) skips del_demand entirely when dmd_chek = 2. */
   removeScene(scene: DigitDemand): void {
+    if (!confirm('الغاء المشهد من الجدول ......؟')) return;
+    // Command20: del_demand only when dmd_chek <> 2; the frame closes either way.
     if (this.isSceneFulfilled(scene)) return;
-    if (!confirm(this.translate.instant('APP.CONFIRM_DELETE'))) return;
     this.digitizationService.deleteDemand(scene.id).subscribe({
       next: () => this.loadScenes()
     });
   }
 
-  newRequest(): void {
-    this.currentDemandNo.set(null);
-    this.loadScenes();
-  }
 
   /**
    * Legacy Command5 "ارسل الى EDLC" (:4095-4405) — re-encodes each queued scene to DV PAL,

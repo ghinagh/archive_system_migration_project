@@ -4,7 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { ApiResponse } from '../../../core/models/api-response.model';
 import { TranslateService } from '@ngx-translate/core';
 import { PeriodicalsService } from '../services/periodicals.service';
 import { Periodical, PeriodicalRequest } from '../models/periodical.model';
@@ -199,6 +200,10 @@ export class PeriodicalFormComponent implements OnInit {
         if (p.publisher) {
           this.selectedPublisherId.set(p.publisher);
           this.publisherCtrl.setValue(String(p.publisher), { emitEvent: false });
+          // DBCombo ListField = AUT_NAM: show the publisher's name, not its number.
+          this.autoSvc.getAuthorById(p.publisher).subscribe({
+            next: a => this.publisherCtrl.setValue(a.data.name, { emitEvent: false })
+          });
         }
 
         const fieldValues: Record<FormLookupField, string> = {
@@ -210,9 +215,9 @@ export class PeriodicalFormComponent implements OnInit {
           if (code) {
             this.formLookupSelectedCode[field] = code;
             // Resolve the stored code to its display name (legacy ListField=sub_name).
-            const resolve = (field === 'geo' || field === 'geo1')
+            const resolve: Observable<ApiResponse<{ name: string }>> = (field === 'geo' || field === 'geo1')
               ? this.autoSvc.getPaysFormByCode(code)
-              : this.autoSvc.getFormByCode(code);
+              : this.autoSvc.getFormNameByTypedCode(code);   // EXEC SERH_SUB_NAME
             resolve.subscribe({
               next: fr => this.formLookupCtrls[field].setValue(fr.data.name, { emitEvent: false }),
               error: () => this.formLookupCtrls[field].setValue(code, { emitEvent: false })
@@ -268,11 +273,16 @@ export class PeriodicalFormComponent implements OnInit {
 
   onFormLookupSelected(field: FormLookupField, e: MatAutocompleteSelectedEvent): void {
     const opt = e.option.value as FormOption;
-    this.formLookupSelectedCode[field] = opt.formNo;
+    // مكان الصدور 1/2 are DBCombos with BoundColumn = SUB_NO; the six people fields store
+    // m_no = sub_typ + sub_no (PERIOD1.frm DBList1_KeyPress), SUB_NO alone being ambiguous.
+    this.formLookupSelectedCode[field] = (field === 'geo' || field === 'geo1')
+      ? opt.formNo
+      : (opt.formType ?? '') + opt.formNo;
     this.formLookupCtrls[field].setValue(opt.name, { emitEvent: false });
   }
 
   onSubmit(): void {
+    if (this.isSaving()) return;   // one save at a time — a second click while saving re-sent the insert
     if (this.perNoParam() == null) {
       this.snack.open(this.t.instant('PERIODICALS.NO_ACTIVE_RECORD'), '', { duration: 3000 });
       return;

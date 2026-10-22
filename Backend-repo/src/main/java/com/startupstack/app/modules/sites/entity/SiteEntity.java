@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.sites.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,6 +25,7 @@ public class SiteEntity {
     private String siteNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "sit_no", referencedColumnName = "SUB_NO", insertable = false, updatable = false)
     private FormEntity form;
 

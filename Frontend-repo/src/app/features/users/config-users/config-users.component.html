@@ -1,0 +1,63 @@
+<div class="screen" dir="rtl">
+  <header class="title-bar">
+    <h1 class="title">{{ 'NAV.USERS' | translate }}</h1>
+    <button type="button" class="close" (click)="close()" [attr.aria-label]="'APP.CLOSE' | translate">✕</button>
+  </header>
+
+  <!-- Label1 "نوع الاستمارة" / m_ist_no (DataCombo on VIEW_CODING38) — top right, above the grids -->
+  <div class="form-type">
+    <label for="cu-ist">نوع الاستمارة</label>
+    <select id="cu-ist" [value]="formType()" (change)="formType.set($any($event.target).value)">
+      @if (!formTypeKnown()) { <option [value]="formType()" selected></option> }
+      @for (f of formTypes(); track f.code) {
+        <option [value]="f.code" [selected]="f.code === formType()">{{ f.desc }}</option>
+      }
+    </select>
+    <span class="code" dir="ltr">{{ formType() }}</span>
+    @if (formTypesLoaded() && formTypes().length === 0) {
+      <span class="hint">{{ 'CONFIG_USERS.NO_FORM_TYPES' | translate }}</span>
+    }
+  </div>
+
+  <!-- DataGrid1 ← RESULT (select config.* from config) -->
+  <app-legacy-grid #grid1 gridId="cu-users" class="g1" [columns]="userColumns" [rows]="users()" [writer]="userWriter"
+                   backColor="#c0c0ff" [loading]="loading().users"
+                   (gridDblClick)="onUserDblClick()" (gridKeyup)="onUserKeyup($event)" (gridKeydown)="onUserKeydown($event)">
+  </app-legacy-grid>
+
+  <!-- DataGrid3 ← t_bnkout (view_user_bnkout / proc_user_bnkout / proc_user_pout) -->
+  <app-legacy-grid #grid3 gridId="cu-fields" class="g3" [columns]="fieldColumns" [rows]="fieldRows()" [writer]="fieldWriter"
+                   [allowAddNew]="false" [allowDelete]="false" backColor="#c0ffff" [loading]="loading().fields">
+  </app-legacy-grid>
+
+  <!-- DataGrid2 ← ranj (select ranjpath.* from ranjpath) -->
+  <app-legacy-grid #grid2 gridId="cu-ranges" class="g2" [columns]="rangeColumns" [rows]="rangeRows()" [writer]="rangeWriter"
+                   backColor="#ffc080" [loading]="loading().ranges" (gridKeydown)="onRangeKeydown($event)">
+  </app-legacy-grid>
+
+  @if (inputBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <p class="modal-text">{{ box.prompt }}</p>
+        <input #inputBoxField class="modal-input" [value]="box.value"
+               (input)="inputBox.set({ prompt: box.prompt, value: $any($event.target).value, resolve: box.resolve })"
+               (keydown.enter)="answer(true)" (keydown.escape)="answer(false)">
+        <div class="modal-actions">
+          <button mat-raised-button color="primary" type="button" (click)="answer(true)">{{ 'CONFIG_USERS.OK' | translate }}</button>
+          <button mat-button type="button" (click)="answer(false)">{{ 'APP.CANCEL' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (messageBox(); as box) {
+    <div class="modal-backdrop">
+      <div class="modal" role="alertdialog" aria-modal="true">
+        <p class="modal-text" dir="auto">{{ box.text }}</p>
+        <div class="modal-actions">
+          <button #msgOkBtn mat-raised-button color="primary" type="button" (click)="closeMessage()">{{ 'CONFIG_USERS.OK' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

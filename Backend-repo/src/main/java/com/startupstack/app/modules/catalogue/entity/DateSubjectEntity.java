@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.catalogue.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,27 +23,28 @@ import java.time.LocalDateTime;
 public class DateSubjectEntity {
 
     @Id
-    @Column(name = "DTE_APP_NO", columnDefinition = "char(7)")
+    @Column(name = "dte_app_no", columnDefinition = "char(7)")
     private String dteAppNo;
 
     @Id
-    @Column(name = "DTE_SER_NO", columnDefinition = "char(2)")
+    @Column(name = "dte_ser_no", columnDefinition = "char(2)")
     private String dteSerNo;
 
     @Id
-    @Column(name = "DTE_REL_NO", columnDefinition = "char(2)")
+    @Column(name = "dte_rel_no", columnDefinition = "char(2)")
     private String dteRelNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DTE_APP_NO", referencedColumnName = "MN_APP_NO", insertable = false, updatable = false)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
+    @JoinColumn(name = "dte_app_no", referencedColumnName = "MN_APP_NO", insertable = false, updatable = false)
     private CatalogueEntity catalogue;
 
-    @Column(name = "DTE_DESC_NO", columnDefinition = "char(9)")
+    @Column(name = "dte_desc_no", columnDefinition = "char(9)")
     private String dteDescNo;
 
-    @Column(name = "DTE_DTE_DEB")
+    @Column(name = "dte_dte_deb")
     private LocalDateTime dteDteDeb;
 
-    @Column(name = "DTE_DTE_FIN")
+    @Column(name = "dte_dte_fin")
     private LocalDateTime dteDteFin;
 }

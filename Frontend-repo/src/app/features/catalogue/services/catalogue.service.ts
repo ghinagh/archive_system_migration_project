@@ -46,8 +46,14 @@ export class CatalogueService {
     return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${appNo}`);
   }
 
-  unlock(appNo: string): Observable<ApiResponse<CatalogueItem>> {
-    return this.http.patch<ApiResponse<CatalogueItem>>(`${this.baseUrl}/${appNo}/unlock`, {});
+  /** فتح صلاحية — upd_main_trans, gated by the legacy key (891045). */
+  unlock(appNo: string, key: string): Observable<ApiResponse<CatalogueItem>> {
+    return this.http.patch<ApiResponse<CatalogueItem>>(`${this.baseUrl}/${appNo}/unlock`, { key });
+  }
+
+  /** اقفال الوثائق المفتوحة — upd_main_trans1, gated by the legacy key (891045). */
+  lockAll(key: string): Observable<ApiResponse<{ locked: number }>> {
+    return this.http.post<ApiResponse<{ locked: number }>>(`${this.baseUrl}/lock-all`, { key });
   }
 
   getNarrowerTerms(appNo: string): Observable<ApiResponse<NarowerTerm[]>> {
@@ -80,6 +86,25 @@ export class CatalogueService {
 
   addSubject(appNo: string, req: SubjectDescriptorRequest): Observable<ApiResponse<SubjectDescriptor>> {
     return this.http.post<ApiResponse<SubjectDescriptor>>(`${this.baseUrl}/${appNo}/subjects`, req);
+  }
+
+  /** upd_analis — replace the descriptor code of an ANALIS row, keeping its serial. */
+  replaceSubject(appNo: string, id: number, descriptorNo: string): Observable<ApiResponse<SubjectDescriptor>> {
+    return this.http.put<ApiResponse<SubjectDescriptor>>(`${this.baseUrl}/${appNo}/subjects/${id}`, { descriptorNo });
+  }
+
+  /** serh_text1 — the text of one descriptor serial + relation number (pages joined). */
+  getAnalysisText(appNo: string, serNo: string, relNo: string): Observable<ApiResponse<{ text: string; pages: number }>> {
+    return this.http.get<ApiResponse<{ text: string; pages: number }>>(`${this.baseUrl}/${appNo}/analysis-text`, { params: { serNo, relNo } });
+  }
+
+  saveAnalysisText(appNo: string, req: { serNo: string; relNo: string; descNo: string; text: string }): Observable<ApiResponse<{ text: string; pages: number }>> {
+    return this.http.put<ApiResponse<{ text: string; pages: number }>>(`${this.baseUrl}/${appNo}/analysis-text`, req);
+  }
+
+  /** upd_mn_result — the document abstract. */
+  saveAbstract(appNo: string, result: string): Observable<ApiResponse<void>> {
+    return this.http.put<ApiResponse<void>>(`${this.baseUrl}/${appNo}/abstract`, { result });
   }
 
   deleteSubject(appNo: string, id: number): Observable<ApiResponse<void>> {

@@ -79,8 +79,10 @@ export class DigitRecordDialogComponent implements OnInit {
 
   /** Domain '24' — PROVEN. */
   type1Options = signal<CodingOption[]>([]);
-  /** Unfiltered CODING — domain NOT FOUND for either; closest defensible source, shared. */
-  unresolvedDomainOptions = signal<CodingOption[]>([]);
+  /** نوع المادة: DBList6 → view_coding29 (SUB_CODE '29%'), per Form6.frx bindings. */
+  materialTypeOptions = signal<CodingOption[]>([]);
+  /** نوع الشريط: DBList5 → view_coding26 (SUB_CODE '26%'), per Form6.frx bindings. */
+  chartTypeOptions = signal<CodingOption[]>([]);
 
   displayForm = (value: string | FormOption | null): string =>
     typeof value === 'string' ? value : (value?.name ?? '');
@@ -90,9 +92,13 @@ export class DigitRecordDialogComponent implements OnInit {
       next: r => this.type1Options.set(r.data ?? []),
       error: () => this.type1Options.set([])
     });
-    this.autoSvc.getCoding().subscribe({
-      next: r => this.unresolvedDomainOptions.set(r.data ?? []),
-      error: () => this.unresolvedDomainOptions.set([])
+    this.autoSvc.getCodingByCodePrefix('29').subscribe({
+      next: r => this.materialTypeOptions.set(r.data ?? []),
+      error: () => this.materialTypeOptions.set([])
+    });
+    this.autoSvc.getCodingByCodePrefix('26').subscribe({
+      next: r => this.chartTypeOptions.set(r.data ?? []),
+      error: () => this.chartTypeOptions.set([])
     });
 
     this.chartGeoCtrl.valueChanges.pipe(
@@ -118,10 +124,16 @@ export class DigitRecordDialogComponent implements OnInit {
     return code.length > 2 ? code.slice(2) : code;
   }
 
+  /** dig_geochrt holds view_form.sub_cod = SUB_TYP + SUB_NO (char 10), and legacy only set it by
+   *  picking a row from DBList12 — so a picked option stores type + number, an untouched value
+   *  keeps the record's stored code, and text typed without picking stores no place at all. */
   private codeOf(value: string | FormOption | null): string | undefined {
     if (value == null) return undefined;
-    if (typeof value === 'string') return value.trim() || undefined;
-    return value.formNo || undefined;
+    if (typeof value === 'string') {
+      const shown = this.data.record?.chartGeoName ?? this.data.record?.chartGeo ?? '';
+      return value.trim() !== '' && value === shown ? (this.data.record?.chartGeo ?? undefined) : undefined;
+    }
+    return value.formNo ? (value.formType ?? '') + value.formNo : undefined;
   }
 
   /** Legacy Form6.frm datagrid1_KeyPress (:3574) never sends "04" through the browse dialog —

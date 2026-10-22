@@ -1,3 +1,4 @@
+import { LockAllComponent } from './lock-all/lock-all.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
@@ -23,11 +24,13 @@ const routes: Routes = [
   { path: 'files-retrieval', component: FilesRetrievalComponent },
   { path: '', component: CatalogueListComponent },
   { path: 'new', component: DocumentationFormComponent },
+  { path: 'lock-all', component: LockAllComponent },
   { path: ':appNo', component: CatalogueDetailComponent }
 ];
 
 @NgModule({
   declarations: [
+    LockAllComponent,
     CatalogueListComponent,
     CatalogueDetailComponent,
     CatalogueFormComponent,

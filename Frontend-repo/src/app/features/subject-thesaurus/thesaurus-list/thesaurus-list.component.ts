@@ -53,6 +53,16 @@ export class ThesaurusListComponent {
     this.mouseDown = false;
   }
 
+  /** A click on the empty part of the list (below the rows) still gives it focus, like a VB list. */
+  onAreaMouseDown(event: MouseEvent): void {
+    if ((event.target as HTMLElement).closest('.list-item')) return;
+    event.preventDefault();   // the default mousedown would move focus to <body> right after
+    if (!this.enabled) return;
+    this.mouseDown = true;
+    this.listBox?.nativeElement.focus();
+    this.mouseDown = false;
+  }
+
   onFocus(): void {
     this.gotFocus.emit({ byMouse: this.mouseDown });
   }

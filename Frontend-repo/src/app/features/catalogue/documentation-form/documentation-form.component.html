@@ -68,7 +68,7 @@
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>{{ 'DOC_FORM.ENTRY_DATE' | translate }}</mat-label>
-              <input matInput type="datetime-local" formControlName="entryDate" #entryDateInput>
+              <input matInput type="date" formControlName="entryDate" #entryDateInput>
               <button type="button" mat-icon-button matSuffix (click)="entryDateInput.showPicker()">
                 <mat-icon>calendar_today</mat-icon>
               </button>
@@ -157,7 +157,7 @@
           </mat-form-field>
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>{{ 'DOC_FORM.SUBTITLE' | translate }}</mat-label>
-            <input matInput formControlName="additionalCatalogueTitle" maxlength="125">
+            <input matInput formControlName="additionalCatalogueTitle" maxlength="125" (keydown.enter)="onSave()">
           </mat-form-field>
         </div>
 
@@ -165,7 +165,7 @@
           <div class="doc-row cols-5">
             <mat-form-field appearance="outline">
               <mat-label>{{ 'DOC_FORM.DOC_TYPE' | translate }}</mat-label>
-              <mat-select formControlName="subjectType" panelClass="doc-form-panel">
+              <mat-select formControlName="subjectType" panelClass="doc-form-panel" (keydown.enter)="onSave()">
                 @for (opt of subjectTypeOptions(); track opt.code) {
                   <mat-option [value]="codeSuffix(opt.code)">{{ opt.description }}</mat-option>
                 }
@@ -276,7 +276,7 @@
            message instead of opening the dialog. -->
       <div class="doc-panel">
         <p class="doc-panel-title doc-panel-title-lg">{{ 'DOC_FORM.FILES_GRID' | translate }}</p>
-        <app-digital-files-grid #filesGrid [docNo]="savedAppNo()" [blockedMessageKey]="gridBlockedKey()"></app-digital-files-grid>
+        <app-digital-files-grid #filesGrid [docNo]="savedAppNo()" [locked]="isLocked()" [blockedMessageKey]="gridBlockedKey()"></app-digital-files-grid>
       </div>
 
       <!-- Abstract -->

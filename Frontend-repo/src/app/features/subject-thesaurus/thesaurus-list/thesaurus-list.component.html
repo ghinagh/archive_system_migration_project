@@ -1,5 +1,6 @@
 <div class="list-shell" [class.disabled]="!enabled" [class.loading]="loading">
-  <cdk-virtual-scroll-viewport #viewport [itemSize]="itemSize" class="list-viewport">
+  <cdk-virtual-scroll-viewport #viewport [itemSize]="itemSize" class="list-viewport"
+                               (mousedown)="onAreaMouseDown($event)">
     <div #listBox class="list-box" role="listbox"
          [attr.tabindex]="enabled ? 0 : -1"
          [attr.aria-label]="ariaLabel"

@@ -1,5 +1,6 @@
 package com.startupstack.app.modules.digitization.service;
 
+import com.startupstack.app.shared.util.FilenameSanitiser;
 import com.startupstack.app.modules.digitization.dto.DeliveryJobStatus;
 import com.startupstack.app.modules.digitization.entity.DemandEntity;
 import com.startupstack.app.modules.digitization.repository.DemandRepository;
@@ -134,6 +135,32 @@ public class DeliveryJobService {
                     entity.getDescription(), entity.getSerial(), extensionOf(entity));
             ffmpegService.streamCopyTrim(sourceFor(entity), destination,
                     entity.getInputSize(), entity.getOutputSize());
+            entity.setChecked(2);
+            return destination;
+        });
+    }
+
+    /**
+     * USER_INTERFACE1 Command7 "تنفيذ" (:4412-4659) — for every dmd_chek = 1 scene: ffmpeg
+     * -ss in -i dmd_path -acodec pcm_s16le -s 720x576 -vcodec dvvideo -t len, written as
+     * "<save name><desc> Clip <ser><ext>" ("<save name><k>_<desc> Clip <ser><ext>" when taken),
+     * then dmd_chek = 2. The Save dialog's folder becomes the server archive directory.
+     */
+    @Async("mediaJobExecutor")
+    public void runRenderDv(String jobId, List<Integer> ids, String outputName) {
+        String base = mediaService.archiveDirectory().resolve(outputName.trim()).toString();
+        run(jobId, ids, (entity, status) -> {
+            String ext = extensionOf(entity);
+            String suffix = ext == null || ext.isBlank() ? "" : "." + ext;
+            String desc = FilenameSanitiser.sanitise(trimmed(entity.getDescription()));
+            String tail = desc + " Clip " + entity.getSerial() + suffix;
+            String destination = base + tail;
+            int k = 1;
+            while (exists(destination)) {
+                destination = base + k + "_" + tail;
+                k++;
+            }
+            ffmpegService.encodeDvPal(sourceFor(entity), destination, entity.getInputSize(), entity.getOutputSize());
             entity.setChecked(2);
             return destination;
         });

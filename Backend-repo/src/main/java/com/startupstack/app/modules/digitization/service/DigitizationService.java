@@ -117,9 +117,24 @@ public class DigitizationService {
             codingRepository.findFirstBySubCode("24" + response.getType1().trim())
                     .ifPresent(c -> response.setType1Description(c.getSubDesc()));
         }
+        if (response.getMaterialType() != null && !response.getMaterialType().isBlank()) {
+            codingRepository.findFirstBySubCode("29" + response.getMaterialType().trim())
+                    .ifPresent(c -> response.setMaterialTypeDescription(c.getSubDesc()));
+        }
+        if (response.getChartType() != null && !response.getChartType().isBlank()) {
+            codingRepository.findFirstBySubCode("26" + response.getChartType().trim())
+                    .ifPresent(c -> response.setChartTypeDescription(c.getSubDesc()));
+        }
         if (response.getChartGeo() != null && !response.getChartGeo().isBlank()) {
-            formRepository.findById(response.getChartGeo().trim())
-                    .ifPresent(f -> response.setChartGeoName(f.getName()));
+            // Legacy joins DIGIT.dig_geochrt = view_form.sub_cod (SUB_TYP + SUB_NO, 10 chars);
+            // an 8-char value is an older migrated row that stored SUB_NO alone.
+            String geo = response.getChartGeo().trim();
+            if (geo.length() > 8) {
+                formRepository.findNameByTypeAndNumber(geo.substring(0, 2), geo.substring(2))
+                        .ifPresent(name -> response.setChartGeoName(name.trim()));
+            } else {
+                formRepository.findById(geo).ifPresent(f -> response.setChartGeoName(f.getName()));
+            }
         }
         return response;
     }
@@ -147,6 +162,7 @@ public class DigitizationService {
     public DigitResponse createRecord(DigitRequest request) {
         catalogueRepository.findById(request.getDocNo())
                 .orElseThrow(() -> new ResourceNotFoundException("Catalogue record not found: " + request.getDocNo()));
+        assertDocumentEditable(request.getDocNo());
         DigitEntity entity = digitMapper.toEntity(request);
         return resolveDescriptions(digitMapper.toResponse(digitRepository.save(entity)));
     }
@@ -177,6 +193,7 @@ public class DigitizationService {
      */
     @Transactional
     public DigitResponse uploadDigitFile(DigitUploadRequest request, MultipartFile file) {
+        assertDocumentEditable(request.getDocNo());
         if (file == null || file.isEmpty()) {
             throw new BusinessException("No file was selected");
         }
@@ -257,8 +274,22 @@ public class DigitizationService {
         }
     }
 
+    /**
+     * Form6.frm DataGrid1 (digital files): Insert / F5 / Space / Delete each run is_trans first
+     * and DataGrid1.AllowUpdate is False on a locked document (main.mn_trans = 1).
+     */
+    private void assertDocumentEditable(String docNo) {
+        if (docNo == null) return;
+        catalogueRepository.findById(docNo.trim()).ifPresent(c -> {
+            if (c.getTrans() != null && c.getTrans() == 1) {
+                throw new BusinessException(com.startupstack.app.modules.catalogue.service.CatalogueLockGuard.LOCKED_MESSAGE);
+            }
+        });
+    }
+
     @Transactional
     public DigitResponse updateRecord(String docNo, Integer serial, DigitRequest request) {
+        assertDocumentEditable(docNo);
         DigitId id = new DigitId();
         id.setDocNo(docNo);
         id.setSerial(serial);
@@ -270,13 +301,24 @@ public class DigitizationService {
 
     @Transactional
     public void deleteRecord(String docNo, Integer serial) {
+        assertDocumentEditable(docNo);
         DigitId id = new DigitId();
         id.setDocNo(docNo);
         id.setSerial(serial);
-        if (!digitRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Digit record not found: " + docNo + "/" + serial);
+        DigitEntity entity = digitRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Digit record not found: " + docNo + "/" + serial));
+        String type1 = entity.getType1() == null ? null : entity.getType1().trim();
+        String extension = entity.getType() == null ? null : entity.getType().trim();
+        String digitNo = entity.getDigitNo() == null ? null : entity.getDigitNo().trim();
+        digitRepository.delete(entity);
+        digitRepository.flush();
+        // Legacy (Form6.frm :3037-3090) refused the delete while the file was still in the archive
+        // and the operator removed it by hand. Web users cannot reach the server's files, so the
+        // uploaded file goes with its row — only for the uploadable classes, never tape video (04).
+        if (digitNo != null && !digitNo.isEmpty() && extension != null && !extension.isEmpty()
+                && mediaService.isNonVideoAssetClass(type1)) {
+            mediaService.deleteQuietly(mediaService.resolveAssetPath(digitNo, type1, extension));
         }
-        digitRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
@@ -535,6 +577,16 @@ public class DigitizationService {
         return status;
     }
 
+    /** USER_INTERFACE1 Command7 "تنفيذ" — DV PAL render of every queued scene under a save name. */
+    public DeliveryJobStatus startRenderDv(List<Integer> ids, String outputName) {
+        if (outputName == null || outputName.isBlank()) {
+            throw new BusinessException("Output name is required");
+        }
+        DeliveryJobStatus status = deliveryJobService.start(ids);
+        deliveryJobService.runRenderDv(status.getJobId(), ids, FilenameSanitiser.sanitise(outputName));
+        return status;
+    }
+
     /** Legacy Command14 "تنفيد". */
     public DeliveryJobStatus startExtractClips(List<Integer> ids) {
         DeliveryJobStatus status = deliveryJobService.start(ids);
@@ -548,9 +600,9 @@ public class DigitizationService {
 
     /** Legacy {@code box_user_start < 2} — low-privilege accounts bypass the scene-length cap. */
     private boolean isExemptFromSceneCap(UserEntity user) {
-        return user != null
-                && user.getUserStart() != null
-                && user.getUserStart() < demandProperties.getPrivilegedUserStartLevel();
+        // box_user_start is a VB numeric read from config.user_start: NULL reads as 0 → exempt.
+        int start = user == null || user.getUserStart() == null ? 0 : user.getUserStart();
+        return start < demandProperties.getPrivilegedUserStartLevel();
     }
 
     private String currentUserNo() {
@@ -636,8 +688,8 @@ public class DigitizationService {
         BigDecimal sceneLength = request.getOutSeconds().subtract(request.getInSeconds());
         if (!isExemptFromSceneCap(user)
                 && sceneLength.compareTo(BigDecimal.valueOf(demandProperties.getMaxSceneSeconds())) >= 0) {
-            throw new BusinessException("A scene may not be longer than "
-                    + demandProperties.getMaxSceneSeconds() + " seconds");
+            // Command15_Click — the legacy text says 500 although the limit is 400.
+            throw new BusinessException("لا يمكن اضافة المشهد لان مدته اكثر من 500 ثانية");
         }
 
         // dmd_path addresses the broadcast MASTER, not the preview proxy — legacy
@@ -650,7 +702,8 @@ public class DigitizationService {
         }
 
         var length = request.getOutSeconds().subtract(request.getInSeconds());
-        long totalSeconds = length.longValue();
+        // m_time Mod 60 on the scene length — rounded, so 59.9999 s (float in-point) is 1:00 as in legacy
+        long totalSeconds = length.setScale(0, java.math.RoundingMode.HALF_UP).longValue();
 
         DemandEntity entity = new DemandEntity();
         entity.setDemandNo(demandNo);
@@ -719,7 +772,8 @@ public class DigitizationService {
         }
 
         BigDecimal length = request.getOutSeconds().subtract(request.getInSeconds());
-        long totalSeconds = length.longValue();
+        // m_time Mod 60 on the scene length — rounded, so 59.9999 s (float in-point) is 1:00 as in legacy
+        long totalSeconds = length.setScale(0, java.math.RoundingMode.HALF_UP).longValue();
 
         DemandEntity entity = new DemandEntity();
         entity.setDemandNo(demandNo);
@@ -820,7 +874,8 @@ public class DigitizationService {
     @Transactional
     public List<ResultResponse> logUsageRequest(LogUsageRequestBatch request) {
         int nextResultNo = resultRepository.findMaxNumericResultNo() + 1;
-        String resultNo = String.format("%07d", nextResultNo);
+        // op_result: substring('0000000', 1, 6 - len) + n — a 6-character request number
+        String resultNo = String.format("%06d", nextResultNo);
         LocalDateTime now = LocalDateTime.now();
         String userNo = currentUserNo();
 

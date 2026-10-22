@@ -17,7 +17,7 @@ public interface ResultRepository extends JpaRepository<ResultEntity, Integer>,
      *  number can have several serial rows, and both procs act on all of them at once. */
     List<ResultEntity> findByResultNo(String resultNo);
 
-    @Query(value = "SELECT COALESCE(MAX(CAST(res_no AS INTEGER)), 0) FROM result WHERE res_no ~ '^[0-9]+$'",
+    @Query(value = "SELECT COALESCE(MAX(CAST(TRIM(res_no) AS INTEGER)), 0) FROM result WHERE TRIM(res_no) ~ '^[0-9]+$'",
             nativeQuery = true)
     Integer findMaxNumericResultNo();
 }

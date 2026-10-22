@@ -57,6 +57,17 @@ public class DescriptorController {
                 .body(ApiResponse.success(descriptorService.addSubject(appNo, request)));
     }
 
+    /** Form2.frm DBList1 Space / "M" → DBList11 pick → upd_analis (replace, keep serial). */
+    @Permission(PermissionConstants.PERM_UPDATE)
+    @PutMapping("/subjects/{id}")
+    public ResponseEntity<ApiResponse<SubjectAnalysisResponse>> replaceSubject(
+            @PathVariable String appNo,
+            @PathVariable Integer id,
+            @Valid @RequestBody com.startupstack.app.modules.descriptors.dto.SubjectReplaceRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(
+                descriptorService.replaceSubjectDescriptor(appNo, id, request.descriptorNo())));
+    }
+
     @Permission(PermissionConstants.PERM_DELETE)
     @DeleteMapping("/subjects/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteSubject(

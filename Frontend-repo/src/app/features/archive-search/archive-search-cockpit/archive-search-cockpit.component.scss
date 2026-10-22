@@ -754,3 +754,40 @@ mat-paginator {
     border: 1px solid rgba(0, 0, 0, 0.15);
   }
 }
+
+// Frame3 (F6) — fixed, centred, above everything
+.frame3-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+}
+
+.frame3-window {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  z-index: 1001;
+  padding: 16px 20px;
+  background: #fff;
+  direction: rtl;
+
+  h3 {
+    margin: 8px 0 4px;
+    font-size: .95rem;
+  }
+
+  .remark-field {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .frame3-actions {
+    display: flex;
+    gap: 8px;
+  }
+}

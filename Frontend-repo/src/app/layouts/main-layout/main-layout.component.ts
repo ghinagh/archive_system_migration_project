@@ -49,11 +49,12 @@ export class MainLayoutComponent implements OnInit {
         { icon: 'topic', labelKey: 'NAV.SUBJECT_THESAURUS', route: '/subject-thesaurus' },
         { icon: 'style', labelKey: 'NAV.FORM_THESAURUS', route: '/form-thesaurus' },
         { icon: 'badge', labelKey: 'NAV.AUTHORS', route: '/authors' },
-        { icon: 'construction', labelKey: 'NAV.RETRIEVAL_BUILDER', route: '/maintenance', queryParams: { tab: 'fields' }, adminOnly: true },
-        { icon: 'lock_open', labelKey: 'NAV.UNLOCK_DOCUMENTS', route: '/maintenance', queryParams: { tab: 'unlock' }, adminOnly: true },
-        { icon: 'admin_panel_settings', labelKey: 'NAV.USERS', route: '/users', adminOnly: true },
-        { icon: 'tune', labelKey: 'NAV.RETRIEVAL_FIELDS', route: '/maintenance', queryParams: { tab: 'fields' }, adminOnly: true },
-        { icon: 'backup', labelKey: 'NAV.DB_BACKUP', route: '/maintenance', queryParams: { tab: 'backup' }, adminOnly: true }
+        { icon: 'construction', labelKey: 'NAV.RETRIEVAL_BUILDER', route: '/retrieval-build/form4' },   // m9: key a5g5 / ش5ل5 → Form4
+        // ARCHIVE.frm m30: key 891045 → upd_main_trans1 (lock every open document)
+        { icon: 'lock', labelKey: 'NAV.UNLOCK_DOCUMENTS', route: '/catalogue/lock-all' },
+        { icon: 'admin_panel_settings', labelKey: 'NAV.USERS', route: '/users' },   // m31: key 261015, no user check
+        { icon: 'tune', labelKey: 'NAV.RETRIEVAL_FIELDS', route: '/retrieval-build/cat-out' },   // M32: key 261015 → CAT_OUTFRM
+        { icon: 'backup', labelKey: 'NAV.DB_BACKUP', route: '/retrieval-build/backup' }   // m33: no key, no user check
       ]
     },
     {

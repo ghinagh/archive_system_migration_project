@@ -15,6 +15,8 @@ export class FormThesaurusService {
   private http = inject(HttpClient);
   private access = inject(FormThesaurusAccessService);
   private api = `${environment.apiUrl}/api/form-thesaurus`;
+  /** tmp_file.frm is also opened from the analysis screen (no thesaurus key there). */
+  private filesApi = `${environment.apiUrl}/api/additional-files`;
 
   private opts(params?: object) {
     let p = new HttpParams();
@@ -109,19 +111,19 @@ export class FormThesaurusService {
 
   // ─── "ملفات اضافية للادخال" (tmp_file.frm) ───
   searchAdditionalFiles(criteria: AdditionalFileCriterion[]): Observable<ApiResponse<AdditionalFileRow[]>> {
-    return this.http.post<ApiResponse<AdditionalFileRow[]>>(`${this.api}/additional-files/search`, { criteria }, this.opts());
+    return this.http.post<ApiResponse<AdditionalFileRow[]>>(`${this.filesApi}/search`, { criteria });
   }
   opTmp(fileNo: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.api}/additional-files/op-tmp`, { fileNo }, this.opts());
+    return this.http.post<ApiResponse<void>>(`${this.filesApi}/op-tmp`, { fileNo });
   }
   updateAdditionalFile(original: AdditionalFileRow, column: string, value: string): Observable<ApiResponse<void>> {
-    return this.http.put<ApiResponse<void>>(`${this.api}/additional-files`, { original, column, value }, this.opts());
+    return this.http.put<ApiResponse<void>>(`${this.filesApi}`, { original, column, value });
   }
   insertAdditionalFile(values: Record<string, string>): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.api}/additional-files`, { values }, this.opts());
+    return this.http.post<ApiResponse<void>>(`${this.filesApi}`, { values });
   }
   deleteAdditionalFile(original: AdditionalFileRow): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.api}/additional-files/delete`, { original }, this.opts());
+    return this.http.post<ApiResponse<void>>(`${this.filesApi}/delete`, { original });
   }
 
   // ─── MACNZ picker ───

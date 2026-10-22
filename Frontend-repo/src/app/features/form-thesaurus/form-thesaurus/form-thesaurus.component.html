@@ -10,6 +10,7 @@
       <app-coding-list #l1List idPrefix="ft-l1" [ariaLabel]="'FORM_THESAURUS.LEVEL1' | translate"
                        [labels]="labels.l1()" [selectedIndex]="l1().selected" [enabled]="l1().enabled" [loading]="l1().loading"
                        (selectIndex)="select('l1', $event)" (rowDblClick)="dblClick('l1', $event)"
+                       (disabledRowActivate)="activateDisabled('l1', $event)"
                        (listKeydown)="keydown('l1', $event)" (listKeyup)="keyup('l1', $event)"
                        (navKeydown)="navKeydown('l1')"></app-coding-list>
       <input class="code-display" type="text" disabled [value]="text1()" [attr.aria-label]="'FORM_THESAURUS.CODE' | translate">
@@ -20,6 +21,7 @@
       <app-coding-list #l2List idPrefix="ft-l2" [ariaLabel]="'FORM_THESAURUS.LEVEL2' | translate"
                        [labels]="labels.l2()" [selectedIndex]="l2().selected" [enabled]="l2().enabled" [loading]="l2().loading"
                        (selectIndex)="select('l2', $event)" (rowDblClick)="dblClick('l2', $event)"
+                       (disabledRowActivate)="activateDisabled('l2', $event)"
                        (listKeydown)="keydown('l2', $event)" (listKeyup)="keyup('l2', $event)"
                        (navKeydown)="navKeydown('l2')"></app-coding-list>
       <input class="code-display" type="text" disabled [value]="text2()" [attr.aria-label]="'FORM_THESAURUS.CODE' | translate">
@@ -33,6 +35,7 @@
                          [labels]="labels.countries()" [selectedIndex]="countries().selected" [enabled]="countries().enabled"
                          [loading]="countries().loading"
                          (selectIndex)="select('countries', $event)" (rowDblClick)="dblClick('countries', $event)"
+                       (disabledRowActivate)="activateDisabled('countries', $event)"
                          (listKeydown)="keydown('countries', $event)" (listKeyup)="keyup('countries', $event)"
                          (navKeydown)="navKeydown('countries')"></app-coding-list>
       }
@@ -49,6 +52,7 @@
                          [labels]="labels.names()" [selectedIndex]="names().selected" [enabled]="names().enabled"
                          [loading]="names().loading"
                          (selectIndex)="select('names', $event)" (rowDblClick)="dblClick('names', $event)"
+                       (disabledRowActivate)="activateDisabled('names', $event)"
                          (listKeydown)="keydown('names', $event)" (listKeyup)="keyup('names', $event)"
                          (navKeydown)="navKeydown('names')"></app-coding-list>
       }
@@ -175,6 +179,7 @@
                            [labels]="labels.positions()" [selectedIndex]="positions().selected" [enabled]="positions().enabled"
                            [loading]="positions().loading"
                            (selectIndex)="select('positions', $event)" (rowDblClick)="dblClick('positions', $event)"
+                       (disabledRowActivate)="activateDisabled('positions', $event)"
                            (listKeydown)="keydown('positions', $event)" (listKeyup)="keyup('positions', $event)"
                            (navKeydown)="navKeydown('positions')"></app-coding-list>
         </section>

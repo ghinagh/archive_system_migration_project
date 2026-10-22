@@ -161,12 +161,12 @@ $vq-border: #5a4a3a;
 
 .vq-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
 
   .vq-btn {
-    flex: 1;
-    min-width: 0;
-    padding: 0 2px;
+    flex: 1 1 auto;
+    padding: 0 4px;
   }
 }
 
@@ -410,4 +410,15 @@ $vq-border: #5a4a3a;
 .vq-nb {
   width: 60px;
   text-align: center;
+}
+
+
+// Search-panel buttons: wrap long captions inside the button instead of overflowing it.
+.vq-buttons .vq-btn {
+  height: auto;
+  min-height: 38px;
+  white-space: normal;
+  overflow-wrap: normal;
+  font-size: 12px;
+  padding: 2px 4px;
 }

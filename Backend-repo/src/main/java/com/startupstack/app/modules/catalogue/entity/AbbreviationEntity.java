@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.catalogue.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,6 +33,7 @@ public class AbbreviationEntity {
     private String relRltvN;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "REL_APP_NO", referencedColumnName = "MN_APP_NO", insertable = false, updatable = false)
     private CatalogueEntity catalogue;
 

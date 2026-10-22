@@ -12,7 +12,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [FormThesaurusComponent, CodingListComponent, AdditionalFilesComponent],
+  declarations: [FormThesaurusComponent, CodingListComponent],
   imports: [SharedModule, ScrollingModule, DragDropModule, RouterModule.forChild(routes)]
 })
 export class FormThesaurusModule { }

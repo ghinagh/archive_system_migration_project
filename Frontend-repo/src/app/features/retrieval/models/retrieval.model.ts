@@ -76,9 +76,30 @@ export interface RetrievalColumn {
   label: string;
 }
 
+/** BANK rows only: the DIGIT file behind the row and the MAIN/ARTICLE columns frm_result's keys read. */
+export interface RetrievalDigit {
+  digitNo: string | null;
+  type1: string | null;
+  type: string | null;
+  choice: number | null;
+  hours: number | null;
+  minutes: number | null;
+  seconds: number | null;
+  hours1: number | null;
+  minutes1: number | null;
+  seconds1: number | null;
+  highType: string | null;
+  title: string | null;
+  articleDate: string | null;
+  /** Only when a FILE_ADD field took part in the question (F4). */
+  fadSerNo?: string | null;
+  fadRelNo?: string | null;
+}
+
 export interface RetrievalResultRow {
   appNo: string;
   values: Record<string, unknown>;
+  digit?: RetrievalDigit | null;
 }
 
 export interface RetrievalSearchResponse {

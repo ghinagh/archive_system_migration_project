@@ -36,6 +36,7 @@ import { AdvancedSearchComponent } from './components/advanced-search/advanced-s
 import { RequiresLevelDirective } from '../features/users/directives/requires-level.directive';
 import { HighlightPipe } from './pipes/highlight.pipe';
 import { AccessKeyDialogComponent } from './components/access-key-dialog/access-key-dialog.component';
+import { AdditionalFilesComponent } from '../features/form-thesaurus/additional-files/additional-files.component';
 
 const MATERIAL_MODULES = [
   MatButtonModule,
@@ -66,8 +67,12 @@ const MATERIAL_MODULES = [
   MatProgressBarModule
 ];
 
+import { LegacyGridComponent } from '../features/users/legacy-grid/legacy-grid.component';
+
 @NgModule({
   declarations: [
+    LegacyGridComponent,
+    AdditionalFilesComponent,
     LoadingSpinnerComponent,
     GlobalSearchComponent,
     VideoPreviewComponent,
@@ -85,6 +90,8 @@ const MATERIAL_MODULES = [
     ...MATERIAL_MODULES
   ],
   exports: [
+    LegacyGridComponent,
+    AdditionalFilesComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

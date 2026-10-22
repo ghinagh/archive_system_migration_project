@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { FormThesaurusService } from '../services/form-thesaurus.service';
@@ -54,6 +54,8 @@ export class AdditionalFilesComponent implements OnInit {
   private api = inject(FormThesaurusService);
   private translate = inject(TranslateService);
   private dialogRef = inject(MatDialogRef<AdditionalFilesComponent>);
+  /** Form2.Text1 — the analysed document when opened from التحليل (Command8); none from المكنز الشكلي. */
+  private data = inject<{ fileNo?: string } | null>(MAT_DIALOG_DATA, { optional: true });
 
   @ViewChild('resultBtn', { read: ElementRef }) resultBtn?: ElementRef<HTMLButtonElement>;
   @ViewChild('msgOkBtn', { read: ElementRef }) msgOkBtn?: ElementRef<HTMLButtonElement>;
@@ -249,6 +251,7 @@ export class AdditionalFilesComponent implements OnInit {
     const c = this.current() ?? 0;
     const next = to === 'first' ? 0 : to === 'last' ? n - 1 : to === 'prev' ? Math.max(0, c - 1) : Math.min(n - 1, c + 1);
     this.setCurrent(next);
+    setTimeout(() => this.grid?.nativeElement.querySelector(`tr[data-row="${next}"]`)?.scrollIntoView({ block: 'nearest' }));
   }
 
   // ═══ DataGrid1 ═══
@@ -345,9 +348,9 @@ export class AdditionalFilesComponent implements OnInit {
   async onGridKeyup(e: KeyboardEvent): Promise<void> {
     if (this.editing()) return;
     if (e.key === 'Insert') {
-      // execute op_tmp Form2.Text1, box_user_no, today — Form2 (التحليل) holds no document here
+      // execute op_tmp Form2.Text1, box_user_no, today — the analysed document, or none from المكنز الشكلي
       try {
-        await firstValueFrom(this.api.opTmp(''));
+        await firstValueFrom(this.api.opTmp(this.data?.fileNo ?? ''));
       } catch (err) {
         this.handleError(err);
       }

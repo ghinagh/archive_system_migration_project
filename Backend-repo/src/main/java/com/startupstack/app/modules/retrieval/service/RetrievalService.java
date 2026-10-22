@@ -50,6 +50,24 @@ import java.util.stream.Collectors;
 @Service
 public class RetrievalService {
 
+    /** frm_result recordset columns read by its keys/buttons → JPQL over the BANK skeleton (dg = DIGIT, c = MAIN, a = ARTICLE). */
+    private static final Map<String, String> BANK_DIGIT_COLUMNS = new LinkedHashMap<>();
+    static {
+        BANK_DIGIT_COLUMNS.put("digitNo", "dg.digitNo");
+        BANK_DIGIT_COLUMNS.put("type1", "dg.type1");
+        BANK_DIGIT_COLUMNS.put("type", "dg.type");
+        BANK_DIGIT_COLUMNS.put("choice", "dg.choice");
+        BANK_DIGIT_COLUMNS.put("hours", "dg.durationHours");
+        BANK_DIGIT_COLUMNS.put("minutes", "dg.durationMinutes");
+        BANK_DIGIT_COLUMNS.put("seconds", "dg.durationSeconds");
+        BANK_DIGIT_COLUMNS.put("hours1", "dg.durationHours1");
+        BANK_DIGIT_COLUMNS.put("minutes1", "dg.durationMinutes1");
+        BANK_DIGIT_COLUMNS.put("seconds1", "dg.durationSeconds1");
+        BANK_DIGIT_COLUMNS.put("highType", "dg.highType");
+        BANK_DIGIT_COLUMNS.put("title", "c.activeTitleAr");
+        BANK_DIGIT_COLUMNS.put("articleDate", "a.date");
+    }
+
     private final RetrievalFieldRepository fieldRepository;
     private final RetrievalUserFieldRepository userFieldRepository;
 
@@ -269,7 +287,15 @@ public class RetrievalService {
         }
 
         boolean keyed = !scope.distinctOnOutputOnly();
+        // BANK rows carry the DIGIT file behind them (one row per file), so the results grid can
+        // offer frm_result's F9 / F2 / F6 / double-click / نسخ الاختيار / نسخ الجدول.
+        boolean withDigit = scope == RetrievalScope.BANK;
+        // F4 reads fad_ser_no / fad_rltv_n, which legacy's recordset only had when a FILE_ADD
+        // field took part in the question — so they are added only then (no extra rows otherwise).
+        boolean withFileAdd = withDigit && (outputAliases.contains("fa") || conditionAliases.contains("fa"));
         String jpql = "SELECT DISTINCT " + (keyed ? scope.rootKey() + ", " : "") + String.join(", ", selectParts)
+                + (withDigit ? ", " + String.join(", ", BANK_DIGIT_COLUMNS.values()) : "")
+                + (withFileAdd ? ", fa.serialNo, fa.relativeNo" : "")
                 + scope.fromClause(conditionAliases, outputAliases) + whereClause + orderClause;
         Query dataQuery = entityManager.createQuery(jpql);
         params.forEach(dataQuery::setParameter);
@@ -295,7 +321,20 @@ public class RetrievalService {
             for (int i = 0; i < outputKeys.size(); i++) {
                 values.put(outputKeys.get(i), row[i + offset]);
             }
-            rows.add(new RetrievalSearchResponse.RetrievalResultRow(appNo, values));
+            Map<String, Object> digit = null;
+            if (withDigit) {
+                digit = new LinkedHashMap<>();
+                int i = offset + outputKeys.size();
+                for (String name : BANK_DIGIT_COLUMNS.keySet()) {
+                    Object v = row[i++];
+                    digit.put(name, v instanceof String s ? s.trim() : v);
+                }
+                if (withFileAdd) {
+                    digit.put("fadSerNo", row[i] instanceof String s ? s.trim() : row[i]);
+                    digit.put("fadRelNo", row[i + 1] instanceof String s ? s.trim() : row[i + 1]);
+                }
+            }
+            rows.add(new RetrievalSearchResponse.RetrievalResultRow(appNo, values, digit));
         }
 
         return new RetrievalSearchResponse(columns, rows, total, page, size);

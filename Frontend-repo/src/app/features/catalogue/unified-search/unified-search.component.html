@@ -57,7 +57,7 @@
             <mat-label>{{ 'SEARCH_SCREEN.ADDITIONAL_FILE' | translate }}</mat-label>
             <input matInput [formControl]="additionalFileControl" [matAutocomplete]="fileAuto">
             <mat-autocomplete #fileAuto="matAutocomplete" [displayWith]="displayForm" (optionSelected)="lockControl(additionalFileControl)">
-              @for (opt of additionalFileOptions(); track opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+              @for (opt of additionalFileOptions(); track opt.formType + opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
             </mat-autocomplete>
           </mat-form-field>
 
@@ -65,7 +65,7 @@
             <mat-label>{{ 'SEARCH_SCREEN.GEO_LOCATION' | translate }}</mat-label>
             <input matInput [formControl]="geoLocationControl" [matAutocomplete]="geoAuto">
             <mat-autocomplete #geoAuto="matAutocomplete" [displayWith]="displayForm" (optionSelected)="lockControl(geoLocationControl)">
-              @for (opt of geoLocationOptions(); track opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+              @for (opt of geoLocationOptions(); track opt.formType + opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
             </mat-autocomplete>
           </mat-form-field>
 
@@ -73,7 +73,7 @@
             <mat-label>{{ 'SEARCH_SCREEN.PHOTO_PLACE' | translate }}</mat-label>
             <input matInput [formControl]="photoPlaceControl" [matAutocomplete]="photoAuto">
             <mat-autocomplete #photoAuto="matAutocomplete" [displayWith]="displayForm" (optionSelected)="lockControl(photoPlaceControl)">
-              @for (opt of photoPlaceOptions(); track opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
+              @for (opt of photoPlaceOptions(); track opt.formType + opt.formNo) { <mat-option [value]="opt">{{ opt.name }}</mat-option> }
             </mat-autocomplete>
           </mat-form-field>
 
@@ -84,14 +84,14 @@
             <mat-label>{{ 'SEARCH_SCREEN.DOCUMENT_TYPE' | translate }}</mat-label>
             <mat-select formControlName="documentType" (selectionChange)="commitField('documentType')">
               <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
-              @for (opt of documentTypeOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+              @for (opt of documentTypeOptions(); track opt.code) { <mat-option [value]="opt.code.substring(2, 4)">{{ opt.description }}</mat-option> }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>{{ 'SEARCH_SCREEN.DATA_ENTRY_OPERATOR' | translate }}</mat-label>
             <mat-select formControlName="dataEntryOperator" (selectionChange)="commitField('dataEntryOperator')">
               <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
-              @for (opt of dataEntryOperatorOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+              @for (opt of dataEntryOperatorOptions(); track opt.code) { <mat-option [value]="opt.code.substring(2, 4)">{{ opt.description }}</mat-option> }
             </mat-select>
           </mat-form-field>
         </div>
@@ -152,7 +152,7 @@
             <mat-label>{{ 'SEARCH_SCREEN.LANGUAGE' | translate }}</mat-label>
             <mat-select formControlName="language" (selectionChange)="commitField('language')">
               <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
-              @for (opt of languageOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+              @for (opt of languageOptions(); track opt.code) { <mat-option [value]="opt.code.substring(2, 4)">{{ opt.description }}</mat-option> }
             </mat-select>
           </mat-form-field>
 
@@ -160,7 +160,7 @@
             <mat-label>{{ 'SEARCH_SCREEN.ARTICLE_TYPE' | translate }}</mat-label>
             <mat-select formControlName="articleType" (selectionChange)="commitField('articleType')">
               <mat-option value="">{{ 'APP.ALL' | translate }}</mat-option>
-              @for (opt of articleTypeOptions(); track opt.code) { <mat-option [value]="opt.code">{{ opt.description }}</mat-option> }
+              @for (opt of articleTypeOptions(); track opt.code) { <mat-option [value]="opt.code.substring(2, 4)">{{ opt.description }}</mat-option> }
             </mat-select>
           </mat-form-field>
 
@@ -213,36 +213,45 @@
          - Double-click → opens the row's digitized asset (scan/wave/photo/private)
        ================================================================== -->
 
-  @if (logRequestRows().length > 0) {
+  @if (copyPanelOpen()) {
+    <!-- Frame2 (F3): folder (drvlist/Dirlist), isrec, المستفيد / الجهة المستفيدة / الجهة الموافقة / الموضوع,
+         نسخ الاختيار / نسخ الجدول / الغاء الامر -->
     <mat-card class="log-request-card" [formGroup]="logRequestForm">
-      <h3>
-        @if (logRequestRows().length === 1) {
-          {{ 'SEARCH_SCREEN.LOG_REQUEST_FOR' | translate: { title: logRequestRows()[0].activeTitleAr } }}
-        } @else {
-          {{ 'SEARCH_SCREEN.LOG_REQUEST_FOR_COUNT' | translate: { count: logRequestRows().length } }}
-        }
-      </h3>
+      <div class="log-request-row">
+        <button mat-stroked-button type="button" (click)="chooseCopyFolder()">
+          <mat-icon>folder_open</mat-icon> {{ 'SEARCH_SCREEN.CHOOSE_FOLDER' | translate }}
+        </button>
+        <span class="folder-name">{{ copyFolderName() || ('SEARCH_SCREEN.FOLDER_DOWNLOADS' | translate) }}</span>
+        <mat-checkbox [checked]="isRec()" (change)="isRec.set($event.checked)">{{ 'SEARCH_SCREEN.WITH_REQUEST' | translate }}</mat-checkbox>
+      </div>
       <div class="log-request-row">
         <mat-form-field appearance="outline">
           <mat-label>{{ 'SEARCH_SCREEN.BENEFICIARY' | translate }}</mat-label>
           <input matInput formControlName="person">
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.APPROVING_BODY' | translate }}</mat-label>
-          <input matInput formControlName="cote">
+          <mat-label>{{ 'SEARCH_SCREEN.BENEFICIARY_ENTITY' | translate }}</mat-label>
+          <mat-select formControlName="cote" panelClass="doc-form-panel">
+            <mat-option value="">—</mat-option>
+            @for (o of beneficiaryEntityOptions(); track o.code) { <mat-option [value]="o.code.substring(2, 4)">{{ o.description }}</mat-option> }
+          </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>{{ 'SEARCH_SCREEN.BENEFICIARY_ENTITY' | translate }}</mat-label>
-          <input matInput formControlName="permit">
+          <mat-label>{{ 'SEARCH_SCREEN.APPROVING_BODY' | translate }}</mat-label>
+          <mat-select formControlName="permit" panelClass="doc-form-panel">
+            <mat-option value="">—</mat-option>
+            @for (o of approvingBodyOptions(); track o.code) { <mat-option [value]="o.code.substring(2, 4)">{{ o.description }}</mat-option> }
+          </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline" class="span-2">
           <mat-label>{{ 'SEARCH_SCREEN.SUBJECT_FIELD' | translate }}</mat-label>
           <input matInput formControlName="subject">
         </mat-form-field>
-        <div class="log-request-actions">
-          <button mat-raised-button color="primary" (click)="submitLogRequest()">{{ 'SEARCH_SCREEN.LOG_REQUEST' | translate }}</button>
-          <button mat-button (click)="cancelLogRequest()">{{ 'APP.CANCEL' | translate }}</button>
-        </div>
+      </div>
+      <div class="log-request-actions">
+        <button mat-raised-button color="primary" type="button" [disabled]="copying()" (click)="copySelection()">{{ 'SEARCH_SCREEN.COPY_SELECTION' | translate }}</button>
+        <button mat-raised-button type="button" [disabled]="copying()" (click)="copyTable()">{{ 'SEARCH_SCREEN.COPY_TABLE' | translate }}</button>
+        <button mat-button type="button" (click)="cancelCopy()">{{ 'SEARCH_SCREEN.CANCEL_COMMAND' | translate }}</button>
       </div>
     </mat-card>
   }

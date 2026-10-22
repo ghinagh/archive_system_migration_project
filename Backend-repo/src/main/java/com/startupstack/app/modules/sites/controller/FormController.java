@@ -1,6 +1,7 @@
 package com.startupstack.app.modules.sites.controller;
 
 import com.startupstack.app.modules.sites.dto.Form1Response;
+import com.startupstack.app.modules.sites.dto.FormCodeNameResponse;
 import com.startupstack.app.modules.sites.dto.FormRequest;
 import com.startupstack.app.modules.sites.dto.FormResponse;
 import com.startupstack.app.modules.sites.dto.RelFormRequest;
@@ -71,8 +72,14 @@ public class FormController {
     public ResponseEntity<ApiResponse<Page<FormResponse>>> getAll(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String type,
+            @RequestParam(required = false) String mode,
             Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.success(formService.findAll(name, type, pageable)));
+        return ResponseEntity.ok(ApiResponse.success(formService.findAll(name, type, mode, pageable)));
+    }
+
+    @GetMapping("/by-code/{code}")
+    public ResponseEntity<ApiResponse<FormCodeNameResponse>> getByCode(@PathVariable String code) {
+        return ResponseEntity.ok(ApiResponse.success(formService.findByCode(code)));
     }
 
     @GetMapping("/{formNo}")

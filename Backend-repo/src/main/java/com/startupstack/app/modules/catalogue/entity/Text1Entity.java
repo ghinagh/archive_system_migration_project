@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.catalogue.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,6 +29,7 @@ public class Text1Entity {
     private String txtSerNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "txt_no", referencedColumnName = "MN_APP_NO", insertable = false, updatable = false)
     private CatalogueEntity catalogue;
 

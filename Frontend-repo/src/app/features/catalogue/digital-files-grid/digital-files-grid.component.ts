@@ -43,6 +43,15 @@ export class DigitalFilesGridComponent implements OnChanges {
    * the MAIN row the moment سجل جديد is pressed).
    */
   @Input() blockedMessageKey = 'DOC_FORM.NO_RECORD_LOADED';
+  /** main.mn_trans = 1 — Form6 DataGrid1: Insert / F5 / Space / Delete run is_trans and refuse. */
+  @Input() locked = false;
+
+  /** bok.bas is_trans: MsgBox "لاتستطيع التعدل او الالغاء ....لان الوثيقة مقفلة." */
+  private refuseIfLocked(): boolean {
+    if (!this.locked) return false;
+    this.snackBar.open(this.translate.instant('DOC_FORM.CANCEL_BLOCKED_LOCKED'), '', { duration: 4000 });
+    return true;
+  }
 
   private digitizationService = inject(DigitizationService);
   private archiveSearchService = inject(ArchiveSearchService);
@@ -109,6 +118,7 @@ export class DigitalFilesGridComponent implements OnChanges {
       this.showBlocked();
       return;
     }
+    if (this.refuseIfLocked()) return;
     const ref = this.dialog.open(DigitRecordDialogComponent, {
       panelClass: 'doc-form-dialog',
       data: { docNo: this.docNo, nextSerial: this.nextSerial(), record: null }
@@ -133,6 +143,14 @@ export class DigitalFilesGridComponent implements OnChanges {
    */
   openAssetOnDblClick(row: DigitRecord): void {
     const type1 = row.type1?.trim();
+    if (row.digitNo && type1 === '04') {
+      // legacy opens the tape (ranjpath rjp_typ 2) in its player window — here the browser's player
+      this.digitizationService.downloadMedia(row.digitNo.trim(), row.type?.trim() || undefined).subscribe({
+        next: blob => window.open(URL.createObjectURL(blob), '_blank'),
+        error: () => this.snackBar.open(this.translate.instant('DOC_FORM.FILE_NOT_FOUND'), '', { duration: 4000 })
+      });
+      return;
+    }
     if (!row.digitNo || !type1 || !OPENDOC_ASSET_CLASSES.has(type1)) {
       this.snackBar.open(this.translate.instant('DOC_FORM.FILE_NOT_FOUND'), '', { duration: 4000 });
       return;
@@ -145,6 +163,7 @@ export class DigitalFilesGridComponent implements OnChanges {
 
   openEditDialog(record: DigitRecord): void {
     if (!this.docNo) return;
+    if (this.refuseIfLocked()) return;
     const ref = this.dialog.open(DigitRecordDialogComponent, {
       panelClass: 'doc-form-dialog',
       data: { docNo: this.docNo, nextSerial: record.serial, record }
@@ -160,6 +179,7 @@ export class DigitalFilesGridComponent implements OnChanges {
   delete(serial: number): void {
     const docNo = this.docNo;
     if (!docNo) return;
+    if (this.refuseIfLocked()) return;
     const ref = this.dialog.open(ConfirmPromptDialogComponent, {
       panelClass: 'doc-form-dialog',
       data: { messageKey: 'DOC_FORM.CONFIRM_DELETE_ROW' }

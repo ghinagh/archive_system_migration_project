@@ -15,9 +15,11 @@ import java.util.List;
 public class DateSubjectService {
 
     private final DateSubjectRepository dateSubjectRepository;
+    private final CatalogueLockGuard lockGuard;
 
-    public DateSubjectService(DateSubjectRepository dateSubjectRepository) {
+    public DateSubjectService(DateSubjectRepository dateSubjectRepository, CatalogueLockGuard lockGuard) {
         this.dateSubjectRepository = dateSubjectRepository;
+        this.lockGuard = lockGuard;
     }
 
     @Transactional(readOnly = true)
@@ -33,10 +35,9 @@ public class DateSubjectService {
         id.setDteAppNo(appNo);
         id.setDteSerNo(request.dteSerNo());
         id.setDteRelNo(request.dteRelNo());
-        if (dateSubjectRepository.existsById(id)) {
-            return toResponse(dateSubjectRepository.findById(id).orElseThrow());
-        }
-        DateSubjectEntity entity = new DateSubjectEntity();
+        lockGuard.assertEditable(appNo);
+        // Form2.frm m_dte_deb/m_dte_fin Enter: insr_dte_subject when none, otherwise upd_dte_subject.
+        DateSubjectEntity entity = dateSubjectRepository.findById(id).orElseGet(DateSubjectEntity::new);
         entity.setDteAppNo(appNo);
         entity.setDteSerNo(request.dteSerNo());
         entity.setDteRelNo(request.dteRelNo());
@@ -48,6 +49,7 @@ public class DateSubjectService {
 
     @Transactional
     public void deleteDateSubject(String appNo, String serNo, String relNo) {
+        lockGuard.assertEditable(appNo);
         DateSubjectId id = new DateSubjectId();
         id.setDteAppNo(appNo);
         id.setDteSerNo(serNo);

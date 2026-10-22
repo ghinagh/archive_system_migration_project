@@ -126,6 +126,9 @@ public class SubjectThesaurusService {
     public void insert(ThesaurusTermInsertRequest request) {
         requireWriter();
         String code = truncate(nullToEmpty(request.code()), CODE_PARAM_LENGTH);
+        if (repository.countByCode(code) > 0) {
+            throw new BusinessException("لا يمكن التسجيل: الرمز " + code + " مستخدم سابقا في المكنز");
+        }
         try {
             repository.insert(truncate(nullToEmpty(request.description()), DESC_PARAM_LENGTH), code,
                     truncate(nullToEmpty(request.level()), 1));
@@ -186,6 +189,9 @@ public class SubjectThesaurusService {
             throw new BusinessException("تعذر توليد رمز المستوى الثالث تحت الرمز " + sub);
         }
         String newCode = truncate(sub + nextSuffix(max), CODE_PARAM_LENGTH);
+        if (repository.countByCode(newCode) > 0) {
+            throw new BusinessException("لا يمكن الاضافة: الرمز " + newCode + " مستخدم سابقا في المكنز");
+        }
         try {
             repository.insertLevelThreePlaceholder(newCode);
             entityManager.flush();

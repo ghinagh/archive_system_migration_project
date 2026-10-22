@@ -1,0 +1,47 @@
+<div #grid class="grid" tabindex="0" role="grid" [attr.id]="gridId || null" [class.loading]="loading"
+     [style.background-color]="backColor"
+     (keydown)="onKeydown($event)" (keyup)="onKeyup($event)" (focusout)="onGridFocusOut($event)"
+     (dblclick)="onDblClick($event)">
+  <table>
+    <thead>
+      <tr>
+        <th class="selector"></th>
+        @for (c of columns; track c.key) { <th [style.width.px]="c.width ?? null" [style.min-width.px]="c.width ?? null" [style.max-width.px]="c.width ?? null">{{ c.label }}</th> }
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of rows; track $index; let i = $index) {
+        <tr [class.current]="current() === i" [class.row-selected]="rowSelected() && current() === i">
+          <td class="selector" (click)="selectRow(i)">{{ current() === i ? '▶' : '' }}</td>
+          @for (c of columns; track c.key) {
+            <td [class.cell-current]="current() === i && currentCol() === c.key" [class.locked]="c.locked"
+                [style.width.px]="c.width ?? null" [style.min-width.px]="c.width ?? null" [style.max-width.px]="c.width ?? null"
+                (click)="setCurrent(i, c.key)">
+              @if (editing()?.row === i && editing()?.col === c.key) {
+                <input #cellEditor class="cell-editor" [value]="editing()!.value"
+                       (input)="editing.set({ row: i, col: c.key, value: $any($event.target).value })"
+                       (keydown)="onEditorKeydown($event)" (blur)="commitEdit()">
+              } @else { <span class="v">{{ cellText(r, c.key) }}</span> }
+            </td>
+          }
+        </tr>
+      }
+      @if (allowAddNew) {
+        <!-- the AllowAddNew line -->
+        <tr class="new-row" [class.current]="onNewRow()">
+          <td class="selector">{{ onNewRow() ? '✎' : '*' }}</td>
+          @for (c of columns; track c.key) {
+            <td [class.cell-current]="onNewRow() && currentCol() === c.key" (click)="goNewRow(c.key)"
+                [style.width.px]="c.width ?? null" [style.min-width.px]="c.width ?? null" [style.max-width.px]="c.width ?? null">
+              @if (editing()?.row === 'new' && editing()?.col === c.key) {
+                <input #cellEditor class="cell-editor" [value]="editing()!.value"
+                       (input)="editing.set({ row: 'new', col: c.key, value: $any($event.target).value })"
+                       (keydown)="onEditorKeydown($event)" (blur)="commitEdit()">
+              } @else { <span class="v">{{ newRow()[c.key] || '' }}</span> }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

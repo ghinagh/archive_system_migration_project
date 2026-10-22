@@ -15,9 +15,11 @@ import java.util.List;
 public class TimeDescriptorService {
 
     private final TimeDescriptorRepository timeDescriptorRepository;
+    private final CatalogueLockGuard lockGuard;
 
-    public TimeDescriptorService(TimeDescriptorRepository timeDescriptorRepository) {
+    public TimeDescriptorService(TimeDescriptorRepository timeDescriptorRepository, CatalogueLockGuard lockGuard) {
         this.timeDescriptorRepository = timeDescriptorRepository;
+        this.lockGuard = lockGuard;
     }
 
     @Transactional(readOnly = true)
@@ -33,10 +35,9 @@ public class TimeDescriptorService {
         id.setTmAppNo(appNo);
         id.setTmSerNo(request.tmSerNo());
         id.setTmRltvNo(request.tmRltvNo());
-        if (timeDescriptorRepository.existsById(id)) {
-            return toResponse(timeDescriptorRepository.findById(id).orElseThrow());
-        }
-        TimeDescriptorEntity entity = new TimeDescriptorEntity();
+        lockGuard.assertEditable(appNo);
+        // Form2.frm m_mch_*_KeyPress: insr_time when time_proc finds no row, otherwise upd_time.
+        TimeDescriptorEntity entity = timeDescriptorRepository.findById(id).orElseGet(TimeDescriptorEntity::new);
         entity.setTmAppNo(appNo);
         entity.setTmSerNo(request.tmSerNo());
         entity.setTmRltvNo(request.tmRltvNo());
@@ -52,6 +53,7 @@ public class TimeDescriptorService {
 
     @Transactional
     public void delete(String appNo, String serNo, String rltvNo) {
+        lockGuard.assertEditable(appNo);
         TimeDescriptorId id = new TimeDescriptorId();
         id.setTmAppNo(appNo);
         id.setTmSerNo(serNo);

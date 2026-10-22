@@ -1,5 +1,6 @@
 {
   "APP": {
+    "CLEAR": "Clear",
     "TITLE": "Form Documenting Platform",
     "LOADING": "Loading...",
     "SAVE": "Save",
@@ -227,6 +228,17 @@
     "TM_HOUR": "Hour",
     "TM_MINUTE": "Minute",
     "TM_SECOND": "Second",
+    "ABSTRACT": "Abstract",
+    "ABSTRACT_HINT": "Esc to save",
+    "POSITIONS_PICK_NAME": "Pick a name from the list, then press F2",
+    "POSITIONS": "Positions",
+    "FIND_WORD": "Find word",
+    "REPLACE_SUBJECT": "Replace descriptor",
+    "MEDIA_FILE": "File shown",
+    "MEDIA_LOADING": "Loading file...",
+    "MARK_IN_HINT": "Start mark from the play position",
+    "MARK_OUT_HINT": "End mark from the play position",
+    "STEP_HINT": "Step in seconds — ← → one second, j / l a frame, k pause",
     "CLOSE_PAGE": "Close Page",
     "EXPAND_ANALYSIS": "Open Page",
     "TEXT_EXISTS": "Text Exists",
@@ -282,6 +294,8 @@
     "WITHOUT_SAVING": "Without Saving",
     "WITH_SAVING": "With Saving",
     "ENTER_TITLE": "Enter the main title",
+    "NUMBER_NOT_FOUND": "No form with this number !!!!",
+    "LOCK_ALL_DONE": "Locking finished.......",
     "NO_MATCH": "No record found for this title",
     "CONFIRM_CANCEL_FORM": "Do you want to cancel this form?",
     "CONFIRM_DELETE_ROW": "Do you want to delete this row?",
@@ -349,7 +363,9 @@
     "BACK_TO_BUILDER": "Back to Retrieval",
     "TOTAL_MATCHES": "Total Matches",
     "NO_PENDING_QUERY": "No pending query. Go back to the retrieval screen to build one",
-    "OPEN_RECORD": "Open Record"
+    "OPEN_RECORD": "Open Record",
+    "WORD": "Word",
+    "FIND_WORD": "Find word"
   },
   "BOOKS": {
     "TITLE": "Books Management",
@@ -909,6 +925,14 @@
     "MANAGE_NOT_FOUND": "Request not found"
   },
   "SEARCH_SCREEN": {
+    "CHOOSE_FOLDER": "Choose folder",
+    "FOLDER_DOWNLOADS": "Downloads folder",
+    "WITH_REQUEST": "Log the request",
+    "COPY_SELECTION": "Copy selection",
+    "COPY_TABLE": "Copy table",
+    "CANCEL_COMMAND": "Cancel",
+    "FILE_MISSING": "is not in the archive",
+    "COPY_DONE": "Copying finished....",
     "TITLE": "Search Screen",
     "MODE_STARTS_WITH": "Search by name start",
     "MODE_CONTAINS": "Search by specific word",
@@ -1233,6 +1257,7 @@
     "MSG_PERSON_FORM": "The person form (person_f) has not been migrated yet",
     "MSG_INSTITUTION_FORM": "The institution form (instit_F) has not been migrated yet",
     "FILES": {
+      "DELETE_HINT": "To delete a row: click the small box at the row's edge, then press Delete",
       "TITLE": "Additional files for entry",
       "FROM": "From date",
       "TO": "To date",
@@ -1248,5 +1273,10 @@
       "COUNT": "عدد المقالات =",
       "QUERY_FAILED": "The query could not run (invalid condition) — press New search"
     }
+  },
+  "CONFIG_USERS": {
+    "OK": "OK",
+    "ASK_DELETE_FIELDS": "Delete this user's display fields? (y/n)",
+    "NO_FORM_TYPES": "No form types in CODING (level-2 38xx codes)"
   }
 }

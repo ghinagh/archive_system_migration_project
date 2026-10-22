@@ -6,7 +6,9 @@ import com.startupstack.app.modules.paysform.mapper.PaysFormMapper;
 import com.startupstack.app.modules.paysform.repository.PaysFormRepository;
 import com.startupstack.app.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +23,10 @@ public class PaysFormService {
     }
 
     public Page<PaysFormResponse> findAll(String name, Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            // legacy view: ORDER BY SUB_NAME
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name"));
+        }
         Page<PaysFormEntity> page = (name == null || name.isBlank())
                 ? paysFormRepository.findAll(pageable)
                 : paysFormRepository.findByNameContainingIgnoreCase(name, pageable);

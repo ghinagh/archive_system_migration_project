@@ -90,8 +90,10 @@ export class AutocompleteService {
     return this.http.get<ApiResponse<MacnzOption[]>>(`${environment.apiUrl}/api/lookups/subjects`);
   }
 
-  searchForms(query: string): Observable<ApiResponse<PageResponse<FormOption>>> {
-    const params = new HttpParams().set('name', query).set('page', '0').set('size', '20');
+  /** mode 'prefix' = serh_allform (name starts with), otherwise serh_wrdform (contains). */
+  searchForms(query: string, mode?: 'prefix' | 'contains'): Observable<ApiResponse<PageResponse<FormOption>>> {
+    let params = new HttpParams().set('name', query).set('page', '0').set('size', '20');
+    if (mode === 'prefix') params = params.set('mode', 'prefix');
     return this.http.get<ApiResponse<PageResponse<FormOption>>>(
       `${environment.apiUrl}/api/forms`, { params }
     );
@@ -102,6 +104,16 @@ export class AutocompleteService {
    * is never shown to the user by itself. Used to resolve a code picked from
    * searchForms() back into a display name once it's saved as a plain string.
    */
+  /** Legacy serh_sub_name: a name stored as SUB_TYP + SUB_NO (e.g. "0197100001"). */
+  getFormNameByTypedCode(code: string): Observable<ApiResponse<{ code: string; name: string }>> {
+    return this.http.get<ApiResponse<{ code: string; name: string }>>(
+      `${environment.apiUrl}/api/forms/by-code/${encodeURIComponent(code)}`);
+  }
+
+  getAuthorById(autNo: number): Observable<ApiResponse<{ autNo: number; name: string }>> {
+    return this.http.get<ApiResponse<{ autNo: number; name: string }>>(`${environment.apiUrl}/api/authors/${autNo}`);
+  }
+
   getFormByCode(formNo: string): Observable<ApiResponse<FormOption>> {
     return this.http.get<ApiResponse<FormOption>>(`${environment.apiUrl}/api/forms/${formNo}`);
   }
@@ -116,6 +128,12 @@ export class AutocompleteService {
     return this.http.get<ApiResponse<PageResponse<FormOption>>>(
       `${environment.apiUrl}/api/pays-form`, { params }
     );
+  }
+
+  /** proc_pos — positions of a name, keyed by SUB_TYP + SUB_NO. */
+  getPositionsByFormCode(formCode: string): Observable<ApiResponse<{ posNo: string; name: string | null }[]>> {
+    return this.http.get<ApiResponse<{ posNo: string; name: string | null }[]>>(
+      `${environment.apiUrl}/api/positions/by-form/${encodeURIComponent(formCode)}`);
   }
 
   getPaysFormByCode(formNo: string): Observable<ApiResponse<FormOption>> {

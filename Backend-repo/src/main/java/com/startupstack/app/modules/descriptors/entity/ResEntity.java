@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.descriptors.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.authors.entity.AuthorEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,6 +36,7 @@ public class ResEntity {
     private Double authorNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "RES_RES_NO", referencedColumnName = "AUT_NO", insertable = false, updatable = false)
     private AuthorEntity author;
 }

@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.articles.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.catalogue.entity.CatalogueEntity;
 import com.startupstack.app.modules.periodicals.entity.PeriodicalEntity;
 import jakarta.persistence.Column;
@@ -26,6 +28,7 @@ public class ArticleEntity {
     private String appNo;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "ART_APP_NO", referencedColumnName = "MN_APP_NO", insertable = false, updatable = false)
     private CatalogueEntity catalogue;
 
@@ -45,6 +48,7 @@ public class ArticleEntity {
     private Double periodicalNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "ART_PER_NO", referencedColumnName = "PER_PER_NO")
     private PeriodicalEntity periodical;
 

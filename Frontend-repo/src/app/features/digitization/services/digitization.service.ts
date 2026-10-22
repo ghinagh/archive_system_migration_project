@@ -112,6 +112,12 @@ export class DigitizationService {
       `${this.api}/api/digitization/demands/extract-clips`, { ids });
   }
 
+  /** USER_INTERFACE1 Command7 "تنفيذ" — DV PAL render of the queued scenes under a save name. */
+  renderDemandsDv(ids: number[], outputName: string): Observable<ApiResponse<DeliveryJobStatus>> {
+    return this.http.post<ApiResponse<DeliveryJobStatus>>(
+      `${this.api}/api/digitization/demands/render-dv`, { ids, outputName });
+  }
+
   getDeliveryJob(jobId: string): Observable<ApiResponse<DeliveryJobStatus>> {
     return this.http.get<ApiResponse<DeliveryJobStatus>>(
       `${this.api}/api/digitization/demands/jobs/${encodeURIComponent(jobId)}`);

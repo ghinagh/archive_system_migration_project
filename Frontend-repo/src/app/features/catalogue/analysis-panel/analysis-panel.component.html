@@ -6,13 +6,14 @@
       <mat-icon>article</mat-icon>
       {{ 'CATALOGUE.ADD_FULL_TEXT' | translate }}
     </button>
-    <button type="button" mat-raised-button (click)="isTempFilesOpen.set(!isTempFilesOpen())">
+    <button type="button" mat-raised-button (click)="openAdditionalFiles()">
       <mat-icon>attach_file</mat-icon>
       {{ 'CATALOGUE.PENDING_FILES' | translate }}
     </button>
-    <button type="button" mat-raised-button (click)="toggleCollapsed()">
-      <mat-icon>{{ isCollapsed() ? 'expand_more' : 'expand_less' }}</mat-icon>
-      {{ (isCollapsed() ? 'CATALOGUE.EXPAND_ANALYSIS' : 'CATALOGUE.CLOSE_PAGE') | translate }}
+    <!-- Command1 "اغلاق الصفحة": Unload Form2 — استمارة التوثيق is still open on the same record -->
+    <button type="button" mat-raised-button (click)="closePage()">
+      <mat-icon>close</mat-icon>
+      {{ 'CATALOGUE.CLOSE_PAGE' | translate }}
     </button>
   </div>
 
@@ -29,7 +30,20 @@
       </span>
     </div>
 
-    @if (!isCollapsed()) {
+    <!-- M_MN_RESULT: the document abstract, editable here; Esc -> upd_mn_result -->
+    <div class="abstract-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'CATALOGUE.ABSTRACT' | translate }}</mat-label>
+        <textarea matInput rows="2" maxlength="1000" [formControl]="abstractCtrl"
+                  (keydown.escape)="$event.preventDefault(); $event.stopPropagation(); saveAbstract()"></textarea>
+        <mat-hint>{{ 'CATALOGUE.ABSTRACT_HINT' | translate }}</mat-hint>
+      </mat-form-field>
+      <button type="button" mat-stroked-button (click)="saveAbstract()" [disabled]="!abstractCtrl.dirty">
+        <mat-icon>save</mat-icon> {{ 'APP.SAVE' | translate }}
+      </button>
+    </div>
+
+    @if (true) {
 
     <div class="search-mode-row">
       <mat-radio-group [value]="searchMode()" (change)="searchMode.set($event.value)">
@@ -40,55 +54,112 @@
     </div>
 
     @if (isTextOpen()) {
+      <!-- Frame1 "النص": m_txt_text of the selected descriptor + relation number; Esc saves -->
       <div class="analysis-panel-box text-popup">
-        <form [formGroup]="textForm">
-          <div class="add-row">
-            <mat-form-field appearance="outline" class="add-field-sm">
-              <mat-label>{{ 'CATALOGUE.TXT_SER_NO' | translate }}</mat-label>
-              <input matInput formControlName="txtSerNo" maxlength="2">
-            </mat-form-field>
-          </div>
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>{{ 'CATALOGUE.TXT_TEXT' | translate }}</mat-label>
-            <textarea matInput formControlName="txtText" rows="5" maxlength="4000"></textarea>
+        <div class="list-box-header">{{ 'CATALOGUE.TXT_TEXT' | translate }} — {{ selectedSubject()?.serialNo }} / {{ activeRelativeNo() }}</div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'CATALOGUE.TXT_TEXT' | translate }}</mat-label>
+          <textarea matInput rows="8" [formControl]="textCtrl"
+                    (keydown.escape)="$event.preventDefault(); $event.stopPropagation(); onSaveText()"></textarea>
+        </mat-form-field>
+        <!-- m_word + Command4 "البحث عن كلمة": the word shown in red inside the text -->
+        <div class="add-row">
+          <mat-form-field appearance="outline" class="add-field">
+            <mat-label>{{ 'CATALOGUE.FIND_WORD' | translate }}</mat-label>
+            <input matInput [formControl]="wordCtrl" (keydown.enter)="$event.preventDefault(); highlightWord()">
           </mat-form-field>
-          <div class="form-actions">
-            <button type="button" mat-raised-button color="primary" (click)="onSaveText()" [disabled]="textForm.invalid || !selectedSubject()">
-              <mat-icon>save</mat-icon>
-              {{ 'APP.SAVE' | translate }}
-            </button>
-            <button type="button" mat-stroked-button (click)="isTextOpen.set(false)">
-              <mat-icon>close</mat-icon>
-              {{ 'APP.CANCEL' | translate }}
-            </button>
+          <button type="button" mat-stroked-button (click)="highlightWord()">
+            <mat-icon>search</mat-icon> {{ 'CATALOGUE.FIND_WORD' | translate }}
+          </button>
+        </div>
+        @if (highlightedText().length) {
+          <div class="text-highlight" dir="auto">
+            @for (seg of highlightedText(); track $index) {
+              @if (seg.hit) { <span class="hit">{{ seg.text }}</span> } @else { <span>{{ seg.text }}</span> }
+            }
           </div>
-        </form>
+        }
+        <div class="form-actions">
+          <button type="button" mat-raised-button color="primary" (click)="onSaveText()" [disabled]="!selectedSubject()">
+            <mat-icon>save</mat-icon>
+            {{ 'APP.SAVE' | translate }}
+          </button>
+          <button type="button" mat-stroked-button (click)="isTextOpen.set(false)">
+            <mat-icon>close</mat-icon>
+            {{ 'APP.CANCEL' | translate }}
+          </button>
+        </div>
       </div>
     }
 
-    @if (isTempFilesOpen()) {
-      <div class="analysis-panel-box">
-        <app-temp-files [appNo]="appNo"></app-temp-files>
+    @if (positionsOf(); as po) {
+      <!-- DBList13 "المناصب": F2 on a name in the picker (proc_pos); Esc closes -->
+      <div class="analysis-panel-box text-popup positions-popup" tabindex="-1" (keydown.escape)="positionsOf.set(null)">
+        <div class="list-box-header">{{ 'CATALOGUE.POSITIONS' | translate }} — {{ po.name }}</div>
+        <div class="list-box-body">
+          @for (p of positions(); track $index) {
+            <div class="list-row"><span>{{ p }}</span></div>
+          } @empty {
+            <p class="no-data">{{ 'APP.NO_DATA' | translate }}</p>
+          }
+        </div>
+        <div class="form-actions">
+          <button type="button" mat-stroked-button (click)="positionsOf.set(null)"><mat-icon>close</mat-icon> {{ 'APP.CLOSE' | translate }}</button>
+        </div>
       </div>
     }
+
+    <!-- Command8 "ملفات اضافية للترميز": tmp_file.Show — the same window as in المكنز الشكلي -->
 
     <div class="analysis-body">
 
       <!-- LEFT: relation stepper + the 4 relation-scoped lists + time/date marks -->
       <div class="analysis-left">
 
-        <!-- Form2.frm's WindowsMediaPlayer1 — no file-hosting backend yet, kept as a
-             spatial placeholder rather than a fake player. -->
-        <div class="media-placeholder">
-          <mat-icon>videocam_off</mat-icon>
-          <span>{{ 'CATALOGUE.NO_MEDIA_LINKED' | translate }}</span>
+        <!-- Form2.frm WindowsMediaPlayer1: the document's video (DIGIT type 04; else audio 02),
+             in/out (Command26/25) write the time marks, m_step + Command7/6 step back/forward,
+             Command10/9 speed x1/x2, a click pauses/plays (WindowsMediaPlayer1_Click). -->
+        <div class="analysis-panel-box player-box">
+          @if (mediaRows().length > 1) {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ 'CATALOGUE.MEDIA_FILE' | translate }}</mat-label>
+              <mat-select panelClass="doc-form-panel" [value]="mediaRow()" (selectionChange)="loadMedia($event.value)">
+                @for (r of mediaRows(); track r.serial) {
+                  <mat-option [value]="r">{{ r.digitNo }} — {{ r.type1Description || r.type1 }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+          @if (mediaUrl()) {
+            <video #player class="analysis-player" [src]="mediaUrl()" controls preload="metadata"
+                   (loadedmetadata)="onMediaReady(player)" (click)="togglePlay(player); $event.preventDefault()"></video>
+            <div class="player-controls">
+              <button type="button" mat-stroked-button (click)="markIn(player)" [matTooltip]="'CATALOGUE.MARK_IN_HINT' | translate">in</button>
+              <button type="button" mat-stroked-button (click)="markOut(player)" [matTooltip]="'CATALOGUE.MARK_OUT_HINT' | translate">out</button>
+              <button type="button" mat-icon-button (click)="stepBy(player, -1)"><mat-icon>fast_rewind</mat-icon></button>
+              <input class="step-input" type="number" min="0" dir="ltr" [value]="playerStep()"
+                     (change)="playerStep.set(+$any($event.target).value || 0)"
+                     (keydown)="onStepKey($event, player)" [title]="'CATALOGUE.STEP_HINT' | translate">
+              <button type="button" mat-icon-button (click)="stepBy(player, 1)"><mat-icon>fast_forward</mat-icon></button>
+              <button type="button" mat-stroked-button (click)="player.playbackRate = 1">x1</button>
+              <button type="button" mat-stroked-button (click)="player.playbackRate = 2">x2</button>
+              <span class="player-time" dir="ltr">{{ playerTime() }}</span>
+            </div>
+          } @else {
+            <div class="media-placeholder">
+              <mat-icon>videocam_off</mat-icon>
+              <span>{{ (mediaMessage() || 'CATALOGUE.NO_MEDIA_LINKED') | translate }}</span>
+            </div>
+          }
         </div>
 
         <div class="relation-stepper">
           <button type="button" mat-stroked-button (click)="prevRelative()">{{ 'DOC_FORM.PREVIOUS' | translate }}</button>
           <div class="relation-no-box">
             <span class="relation-no-label">{{ 'CATALOGUE.RELATIVE_NO' | translate }}</span>
-            <span class="relation-no-value">{{ activeRelativeNo() }}</span>
+            <input class="relation-no-value relation-no-input" maxlength="2" dir="ltr"
+                   [value]="activeRelativeNo()"
+                   (keydown.enter)="$event.preventDefault(); setRelativeNo($any($event.target).value)">
           </div>
           <button type="button" mat-stroked-button (click)="nextRelative()">{{ 'DOC_FORM.NEXT' | translate }}</button>
         </div>
@@ -184,15 +255,17 @@
             <form [formGroup]="fileForRelationForm" class="add-row">
               <mat-form-field appearance="outline" class="add-field">
                 <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
-                <input matInput [formControl]="fileForRelationForm.controls.filePicker" [matAutocomplete]="ffrAuto">
+                <input matInput [formControl]="fileForRelationForm.controls.filePicker" [matAutocomplete]="ffrAuto" #ffrAutoTrig="matAutocompleteTrigger" (focus)="onFormFocus(fileForRelationFilteredForms)" (keydown.f2)="$event.preventDefault(); showPositions(ffrAutoTrig, fileForRelationForm.controls.filePicker.value, fileForRelationFilteredForms())">
                 <mat-icon matSuffix>arrow_drop_down</mat-icon>
                 <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
                 <mat-autocomplete #ffrAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
-                  @for (opt of fileForRelationFilteredForms(); track opt.formNo) {
+                  @for (opt of fileForRelationFilteredForms(); track opt.formType + opt.formNo) {
                     <mat-option [value]="opt">{{ opt.name }}</mat-option>
                   }
                 </mat-autocomplete>
               </mat-form-field>
+              <!-- same as F2 (DBList12 KeyDown vbKeyF2 → proc_pos): positions of the current name -->
+              <button type="button" mat-icon-button [matTooltip]="'CATALOGUE.POSITIONS' | translate" (click)="showPositions(ffrAutoTrig, fileForRelationForm.controls.filePicker.value, fileForRelationFilteredForms())"><mat-icon>badge</mat-icon></button>
               <button type="button" mat-icon-button color="primary" (click)="onAddFile(true, false)" [disabled]="fileForRelationForm.invalid"><mat-icon>check</mat-icon></button>
               <button type="button" mat-icon-button (click)="isAddingFileForRelation.set(false)"><mat-icon>close</mat-icon></button>
             </form>
@@ -220,15 +293,17 @@
             <form [formGroup]="fileAboutRelationForm" class="add-row">
               <mat-form-field appearance="outline" class="add-field">
                 <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
-                <input matInput [formControl]="fileAboutRelationForm.controls.filePicker" [matAutocomplete]="farAuto">
+                <input matInput [formControl]="fileAboutRelationForm.controls.filePicker" [matAutocomplete]="farAuto" #farAutoTrig="matAutocompleteTrigger" (focus)="onFormFocus(fileAboutRelationFilteredForms)" (keydown.f2)="$event.preventDefault(); showPositions(farAutoTrig, fileAboutRelationForm.controls.filePicker.value, fileAboutRelationFilteredForms())">
                 <mat-icon matSuffix>arrow_drop_down</mat-icon>
                 <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
                 <mat-autocomplete #farAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
-                  @for (opt of fileAboutRelationFilteredForms(); track opt.formNo) {
+                  @for (opt of fileAboutRelationFilteredForms(); track opt.formType + opt.formNo) {
                     <mat-option [value]="opt">{{ opt.name }}</mat-option>
                   }
                 </mat-autocomplete>
               </mat-form-field>
+              <!-- same as F2 (DBList12 KeyDown vbKeyF2 → proc_pos): positions of the current name -->
+              <button type="button" mat-icon-button [matTooltip]="'CATALOGUE.POSITIONS' | translate" (click)="showPositions(farAutoTrig, fileAboutRelationForm.controls.filePicker.value, fileAboutRelationFilteredForms())"><mat-icon>badge</mat-icon></button>
               <button type="button" mat-icon-button color="primary" (click)="onAddFile(true, true)" [disabled]="fileAboutRelationForm.invalid"><mat-icon>check</mat-icon></button>
               <button type="button" mat-icon-button (click)="isAddingFileAboutRelation.set(false)"><mat-icon>close</mat-icon></button>
             </form>
@@ -264,7 +339,7 @@
                 <button type="button" mat-icon-button (click)="isAddingTime.set(false)"><mat-icon>close</mat-icon></button>
               </form>
             } @else {
-              <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingTime.set(true)">
+              <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="openTimeEditor()">
                 <mat-icon>add</mat-icon>
               </button>
             }
@@ -288,7 +363,7 @@
                 <button type="button" mat-icon-button (click)="isAddingDateSubject.set(false)"><mat-icon>close</mat-icon></button>
               </form>
             } @else {
-              <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="isAddingDateSubject.set(true)">
+              <button type="button" mat-stroked-button class="add-btn" [disabled]="!selectedSubject()" (click)="openDateEditor()">
                 <mat-icon>add</mat-icon>
               </button>
             }
@@ -305,8 +380,12 @@
           <div class="list-box-header">{{ 'CATALOGUE.SUBJECTS' | translate }} — 10</div>
           <div class="list-box-body">
             @for (s of subjects(); track s.id) {
-              <div class="list-row selectable" [class.selected]="selectedSubject()?.id === s.id" (click)="selectSubject(s)">
-                <span>{{ s.descriptorNo }} — {{ macnzDescription(s.descriptorNo) }}</span>
+              <div class="list-row selectable" tabindex="0" [class.selected]="selectedSubject()?.id === s.id" (click)="selectSubject(s)"
+                   (keydown.enter)="selectSubject(s)" (keydown.space)="$event.preventDefault(); startReplaceSubject(s)"
+                   (keydown.m)="startReplaceSubject(s)" (keydown.delete)="onDeleteSubject(s.id)">
+                <span>{{ s.serialNo }} · {{ s.descriptorNo }} — {{ macnzDescription(s.descriptorNo) }}</span>
+                <button type="button" mat-icon-button color="primary" [matTooltip]="'CATALOGUE.REPLACE_SUBJECT' | translate"
+                        (click)="$event.stopPropagation(); startReplaceSubject(s)"><mat-icon>swap_horiz</mat-icon></button>
                 <button type="button" mat-icon-button color="warn" (click)="$event.stopPropagation(); onDeleteSubject(s.id)"><mat-icon>delete</mat-icon></button>
               </div>
             } @empty {
@@ -314,6 +393,9 @@
             }
           </div>
           @if (isAddingSubject()) {
+            @if (replacingSubject(); as rs) {
+              <p class="hint">{{ 'CATALOGUE.REPLACE_SUBJECT' | translate }}: {{ rs.serialNo }} · {{ rs.descriptorNo }} — {{ macnzDescription(rs.descriptorNo) }}</p>
+            }
             <form [formGroup]="subjectForm" class="add-row">
               <mat-form-field appearance="outline" class="add-field">
                 <mat-label>{{ 'CATALOGUE.PICK_SUBJECT' | translate }}</mat-label>
@@ -326,10 +408,10 @@
                 </mat-autocomplete>
               </mat-form-field>
               <button type="button" mat-icon-button color="primary" (click)="onAddSubject()" [disabled]="subjectForm.invalid"><mat-icon>check</mat-icon></button>
-              <button type="button" mat-icon-button (click)="isAddingSubject.set(false)"><mat-icon>close</mat-icon></button>
+              <button type="button" mat-icon-button (click)="cancelSubjectPicker()"><mat-icon>close</mat-icon></button>
             </form>
           } @else {
-            <button type="button" mat-stroked-button class="add-btn" (click)="isAddingSubject.set(true)">
+            <button type="button" mat-stroked-button class="add-btn" (click)="startAddSubject()">
               <mat-icon>add</mat-icon> {{ 'CATALOGUE.ADD_SUBJECT' | translate }}
             </button>
           }
@@ -352,15 +434,17 @@
             <form [formGroup]="geoForm" class="add-row">
               <mat-form-field appearance="outline" class="add-field">
                 <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
-                <input matInput [formControl]="geoForm.controls.geoPicker" [matAutocomplete]="geoAuto">
+                <input matInput [formControl]="geoForm.controls.geoPicker" [matAutocomplete]="geoAuto" #geoAutoTrig="matAutocompleteTrigger" (focus)="onFormFocus(geoFilteredForms)" (keydown.f2)="$event.preventDefault(); showPositions(geoAutoTrig, geoForm.controls.geoPicker.value, geoFilteredForms())">
                 <mat-icon matSuffix>arrow_drop_down</mat-icon>
                 <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
                 <mat-autocomplete #geoAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
-                  @for (opt of geoFilteredForms(); track opt.formNo) {
+                  @for (opt of geoFilteredForms(); track opt.formType + opt.formNo) {
                     <mat-option [value]="opt">{{ opt.name }}</mat-option>
                   }
                 </mat-autocomplete>
               </mat-form-field>
+              <!-- same as F2 (DBList12 KeyDown vbKeyF2 → proc_pos): positions of the current name -->
+              <button type="button" mat-icon-button [matTooltip]="'CATALOGUE.POSITIONS' | translate" (click)="showPositions(geoAutoTrig, geoForm.controls.geoPicker.value, geoFilteredForms())"><mat-icon>badge</mat-icon></button>
               <button type="button" mat-icon-button color="primary" (click)="onAddGeo()" [disabled]="geoForm.invalid"><mat-icon>check</mat-icon></button>
               <button type="button" mat-icon-button (click)="isAddingGeo.set(false)"><mat-icon>close</mat-icon></button>
             </form>
@@ -458,15 +542,17 @@
             <form [formGroup]="fileForOverallForm" class="add-row">
               <mat-form-field appearance="outline" class="add-field">
                 <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
-                <input matInput [formControl]="fileForOverallForm.controls.filePicker" [matAutocomplete]="ffoAuto">
+                <input matInput [formControl]="fileForOverallForm.controls.filePicker" [matAutocomplete]="ffoAuto" #ffoAutoTrig="matAutocompleteTrigger" (focus)="onFormFocus(fileForOverallFilteredForms)" (keydown.f2)="$event.preventDefault(); showPositions(ffoAutoTrig, fileForOverallForm.controls.filePicker.value, fileForOverallFilteredForms())">
                 <mat-icon matSuffix>arrow_drop_down</mat-icon>
                 <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
                 <mat-autocomplete #ffoAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
-                  @for (opt of fileForOverallFilteredForms(); track opt.formNo) {
+                  @for (opt of fileForOverallFilteredForms(); track opt.formType + opt.formNo) {
                     <mat-option [value]="opt">{{ opt.name }}</mat-option>
                   }
                 </mat-autocomplete>
               </mat-form-field>
+              <!-- same as F2 (DBList12 KeyDown vbKeyF2 → proc_pos): positions of the current name -->
+              <button type="button" mat-icon-button [matTooltip]="'CATALOGUE.POSITIONS' | translate" (click)="showPositions(ffoAutoTrig, fileForOverallForm.controls.filePicker.value, fileForOverallFilteredForms())"><mat-icon>badge</mat-icon></button>
               <button type="button" mat-icon-button color="primary" (click)="onAddFile(false, false)" [disabled]="fileForOverallForm.invalid"><mat-icon>check</mat-icon></button>
               <button type="button" mat-icon-button (click)="isAddingFileForOverall.set(false)"><mat-icon>close</mat-icon></button>
             </form>
@@ -494,15 +580,17 @@
             <form [formGroup]="fileAboutOverallForm" class="add-row">
               <mat-form-field appearance="outline" class="add-field">
                 <mat-label>{{ 'CATALOGUE.PICK_FORM' | translate }}</mat-label>
-                <input matInput [formControl]="fileAboutOverallForm.controls.filePicker" [matAutocomplete]="faoAuto">
+                <input matInput [formControl]="fileAboutOverallForm.controls.filePicker" [matAutocomplete]="faoAuto" #faoAutoTrig="matAutocompleteTrigger" (focus)="onFormFocus(fileAboutOverallFilteredForms)" (keydown.f2)="$event.preventDefault(); showPositions(faoAutoTrig, fileAboutOverallForm.controls.filePicker.value, fileAboutOverallFilteredForms())">
                 <mat-icon matSuffix>arrow_drop_down</mat-icon>
                 <mat-hint>{{ 'CATALOGUE.TYPE_TO_SEARCH' | translate }}</mat-hint>
                 <mat-autocomplete #faoAuto="matAutocomplete" class="doc-form-panel" [displayWith]="displayForm">
-                  @for (opt of fileAboutOverallFilteredForms(); track opt.formNo) {
+                  @for (opt of fileAboutOverallFilteredForms(); track opt.formType + opt.formNo) {
                     <mat-option [value]="opt">{{ opt.name }}</mat-option>
                   }
                 </mat-autocomplete>
               </mat-form-field>
+              <!-- same as F2 (DBList12 KeyDown vbKeyF2 → proc_pos): positions of the current name -->
+              <button type="button" mat-icon-button [matTooltip]="'CATALOGUE.POSITIONS' | translate" (click)="showPositions(faoAutoTrig, fileAboutOverallForm.controls.filePicker.value, fileAboutOverallFilteredForms())"><mat-icon>badge</mat-icon></button>
               <button type="button" mat-icon-button color="primary" (click)="onAddFile(false, true)" [disabled]="fileAboutOverallForm.invalid"><mat-icon>check</mat-icon></button>
               <button type="button" mat-icon-button (click)="isAddingFileAboutOverall.set(false)"><mat-icon>close</mat-icon></button>
             </form>

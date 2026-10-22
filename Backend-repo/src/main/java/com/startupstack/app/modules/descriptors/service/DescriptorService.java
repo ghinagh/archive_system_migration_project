@@ -82,13 +82,13 @@ public class DescriptorService {
     /**
      * Legacy Form6's Column01 ("نوع المسؤولية البيانية") shows a resolved CODING
      * description (DataField "typ_aut"), distinct from the raw 2-char RES_APP_TY
-     * code (hidden Column03) — same "29"+code compound key DBList2 edits.
+     * code (hidden Column03) — view_res3 joins '04' + RES_APP_TY = VIEW_CODING5.SUB_CODE.
      */
     private String resolveResourceTypeDescription(String resourceType) {
         if (resourceType == null || resourceType.isBlank()) {
             return null;
         }
-        return codingRepository.findFirstBySubCode("29" + resourceType)
+        return codingRepository.findFirstBySubCode("04" + resourceType)
                 .map(c -> c.getSubDesc())
                 .orElse(null);
     }
@@ -107,7 +107,7 @@ public class DescriptorService {
     private void validateNotLocked(String appNo) {
         catalogueRepository.findById(appNo).ifPresent(c -> {
             if (c.getTrans() != null && c.getTrans() == 1) {
-                throw new BusinessException("Catalogue record is locked: " + appNo);
+                throw new BusinessException(com.startupstack.app.modules.catalogue.service.CatalogueLockGuard.LOCKED_MESSAGE);
             }
         });
     }
@@ -121,9 +121,34 @@ public class DescriptorService {
     @Transactional
     public SubjectAnalysisResponse addSubject(String appNo, SubjectAnalysisRequest request) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         SubjectAnalysisEntity entity = mapper.toSubjectEntity(request);
         entity.setAppNo(appNo);
         return mapper.toSubjectResponse(subjectRepository.save(entity));
+    }
+
+    /**
+     * Form2.frm DBList1 Space / "M" then a pick in DBList11 (an_typ = 2): upd_analis replaces the
+     * descriptor code of the selected row and keeps its serial, so its relations stay attached.
+     */
+    @Transactional
+    public SubjectAnalysisResponse replaceSubjectDescriptor(String appNo, Integer id, String descriptorNo) {
+        validateCatalogue(appNo);
+        validateNotLocked(appNo);
+        SubjectAnalysisEntity entity = subjectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Subject analysis not found: " + id));
+        if (!appNo.equals(entity.getAppNo())) {
+            throw new ResourceNotFoundException("Subject analysis " + id + " does not belong to catalogue " + appNo);
+        }
+        if (isBlank(descriptorNo)) {
+            throw new BusinessException("descriptorNo is required");
+        }
+        entity.setDescriptorNo(descriptorNo.trim());
+        return mapper.toSubjectResponse(subjectRepository.save(entity));
+    }
+
+    private static boolean isBlank(String v) {
+        return v == null || v.isBlank();
     }
 
     /**
@@ -134,6 +159,7 @@ public class DescriptorService {
     @Transactional
     public void deleteSubject(String appNo, Integer id) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         SubjectAnalysisEntity entity = subjectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject analysis not found: " + id));
         if (!appNo.equals(entity.getAppNo())) {
@@ -157,6 +183,7 @@ public class DescriptorService {
     @Transactional
     public GeoResponse addGeoDescriptor(String appNo, GeoRequest request) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         GeoEntity entity = mapper.toGeoEntity(request);
         entity.setAppNo(appNo);
         return mapper.toGeoResponse(geoRepository.save(entity));
@@ -165,6 +192,7 @@ public class DescriptorService {
     @Transactional
     public void deleteGeoDescriptor(String appNo, Integer id) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         GeoEntity entity = geoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Geo descriptor not found: " + id));
         if (!appNo.equals(entity.getAppNo())) {
@@ -182,14 +210,17 @@ public class DescriptorService {
     @Transactional
     public FileAddResponse addFile(String appNo, FileAddRequest request) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         FileAddEntity entity = mapper.toFileEntity(request);
         entity.setAppNo(appNo);
+        if (isBlank(entity.getRelativeNo())) entity.setRelativeNo("01");   // overall (fad_fad_t1 1): v_rel_no = "01"
         return mapper.toFileResponse(fileAddRepository.save(entity));
     }
 
     @Transactional
     public void deleteFile(String appNo, UUID id) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         FileAddEntity entity = fileAddRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("File relation not found: " + id));
         if (!appNo.equals(entity.getAppNo())) {
@@ -221,14 +252,17 @@ public class DescriptorService {
     @Transactional
     public NarowerResponse addNarrowerTerm(String appNo, NarowerRequest request) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         NarowerEntity entity = mapper.toNarowerEntity(request);
         entity.setAppNo(appNo);
+        if (isBlank(entity.getRelativeNo())) entity.setRelativeNo("01");   // overall (type 1): v_rel_no = "01"
         return mapper.toNarowerResponse(narowerRepository.save(entity));
     }
 
     @Transactional
     public void deleteNarrowerTerm(String appNo, Integer id) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         NarowerEntity entity = narowerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Narrower term not found: " + id));
         if (!appNo.equals(entity.getAppNo())) {
@@ -246,14 +280,17 @@ public class DescriptorService {
     @Transactional
     public RelativeResponse addRelatedTerm(String appNo, RelativeRequest request) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         RelativeEntity entity = mapper.toRelativeEntity(request);
         entity.setAppNo(appNo);
+        if (isBlank(entity.getRelativeNo())) entity.setRelativeNo("01");   // overall (type 1): v_rel_no = "01"
         return mapper.toRelativeResponse(relativeRepository.save(entity));
     }
 
     @Transactional
     public void deleteRelatedTerm(String appNo, Integer id) {
         validateCatalogue(appNo);
+        validateNotLocked(appNo);
         RelativeEntity entity = relativeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Related term not found: " + id));
         if (!appNo.equals(entity.getAppNo())) {

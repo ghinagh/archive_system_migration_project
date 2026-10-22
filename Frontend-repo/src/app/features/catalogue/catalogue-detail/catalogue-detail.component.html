@@ -105,7 +105,7 @@
     </mat-expansion-panel>
 
     <!-- التحليل — full replacement for Form2.frm, mirroring its actual layout -->
-    <app-analysis-panel [appNo]="item()!.appNo" [activeTitle]="item()!.activeTitleAr"></app-analysis-panel>
+    <app-analysis-panel [appNo]="item()!.appNo" [activeTitle]="item()!.activeTitleAr" [result]="item()!.result"></app-analysis-panel>
 
     <!-- Extended Info (main2) -->
     <mat-expansion-panel class="section-panel" (opened)="loadExtendedInfo()">

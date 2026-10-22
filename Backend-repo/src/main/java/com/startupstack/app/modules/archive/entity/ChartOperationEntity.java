@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.archive.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -35,6 +37,7 @@ public class ChartOperationEntity {
     private String chartNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "OPR_NO1", referencedColumnName = "CHA_NO")
     private ChartEntity chart;
 

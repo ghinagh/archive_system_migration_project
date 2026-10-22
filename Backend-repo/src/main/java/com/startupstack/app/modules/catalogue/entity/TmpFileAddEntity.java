@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.catalogue.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.users.entity.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,6 +32,7 @@ public class TmpFileAddEntity {
     private Double tmpSer;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "tmp_fad_no", referencedColumnName = "MN_APP_NO",
             insertable = false, updatable = false)
     private CatalogueEntity catalogue;
@@ -50,6 +53,7 @@ public class TmpFileAddEntity {
     private String tmpUserNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "tmp_user_no", referencedColumnName = "user_no",
             insertable = false, updatable = false)
     private UserEntity user;

@@ -59,8 +59,8 @@
       </thead>
       <tbody>
         @for (r of rows(); track $index; let i = $index) {
-          <tr [class.current]="current() === i" [class.row-selected]="rowSelected() && current() === i">
-            <td class="selector" (click)="selectRow(i)">{{ current() === i ? '▶' : '' }}</td>
+          <tr [attr.data-row]="i" [class.current]="current() === i" [class.row-selected]="rowSelected() && current() === i">
+            <td class="selector" (click)="selectRow(i)" [title]="'FORM_THESAURUS.FILES.DELETE_HINT' | translate">{{ current() === i ? '▶' : '' }}</td>
             @for (c of columns; track c.key) {
               <td [class.cell-current]="current() === i && currentCol() === c.key"
                   (click)="setCurrent(i, c.key)" (dblclick)="openDocument()">
@@ -94,11 +94,14 @@
     </table>
   </div>
 
+  <!-- the record selector + Delete key, as in the legacy MSDataGrid (no delete button there) -->
+  <p class="delete-hint">{{ 'FORM_THESAURUS.FILES.DELETE_HINT' | translate }}</p>
+
   <!-- Adodc f_tmp navigation bar -->
   <div class="navbar" dir="ltr">
     <button type="button" (click)="move('first')" aria-label="first">|◀</button>
     <button type="button" (click)="move('prev')" aria-label="previous">◀</button>
-    <span class="nav-caption">f_tmp</span>
+    <span class="nav-caption">f_tmp — {{ rows().length ? (current() ?? 0) + 1 : 0 }} / {{ rows().length }}</span>
     <button type="button" (click)="move('next')" aria-label="next">▶</button>
     <button type="button" (click)="move('last')" aria-label="last">▶|</button>
   </div>

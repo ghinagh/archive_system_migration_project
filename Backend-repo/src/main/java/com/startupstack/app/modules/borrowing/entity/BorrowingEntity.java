@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.borrowing.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.catalogue.entity.CatalogueEntity;
 import com.startupstack.app.modules.persons.entity.PersonEntity;
 import jakarta.persistence.Column;
@@ -41,6 +43,7 @@ public class BorrowingEntity {
     private String personNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "IAR_PRS", referencedColumnName = "PRS_NO")
     private PersonEntity person;
 
@@ -69,6 +72,7 @@ public class BorrowingEntity {
     private String bookNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "iar_book", referencedColumnName = "MN_APP_NO")
     private CatalogueEntity catalogue;
 

@@ -46,4 +46,18 @@ public interface TmpFileAddRepository extends JpaRepository<TmpFileAddEntity, Tm
             + "VALUES (:ser, CAST(:userNo AS char(3)), :fadNo, :date, 0)", nativeQuery = true)
     void insertOp(@Param("ser") double ser, @Param("userNo") String userNo, @Param("fadNo") String fadNo,
                   @Param("date") LocalDateTime date);
+
+    /**
+     * tmp_fileadd has no key in the legacy schema, so (tmp_fad_no, tmp_ser) can repeat; the
+     * entity's composite id is not unique. إنجاز marks every matching row.
+     */
+    @Modifying
+    @Query(value = "UPDATE tmp_fileadd SET tmp_final = 1 WHERE tmp_fad_no = :no AND tmp_ser = :ser", nativeQuery = true)
+    int finalizeRows(@Param("no") String no, @Param("ser") Double ser);
+
+    /** The grid's AllowDelete removes the selected record — one physical row, even among duplicates. */
+    @Modifying
+    @Query(value = "DELETE FROM tmp_fileadd WHERE ctid = (SELECT ctid FROM tmp_fileadd "
+            + "WHERE tmp_fad_no = :no AND tmp_ser = :ser LIMIT 1)", nativeQuery = true)
+    int deleteOneRow(@Param("no") String no, @Param("ser") Double ser);
 }

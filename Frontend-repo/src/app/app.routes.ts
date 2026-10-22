@@ -100,6 +100,10 @@ export const routes: Routes = [
         loadChildren: () => import('./features/requests/requests.module').then(m => m.RequestsModule)
       },
       {
+        path: 'retrieval-build',
+        loadChildren: () => import('./features/retrieval-build/retrieval-build.module').then(m => m.RetrievalBuildModule)
+      },
+      {
         path: 'maintenance',
         loadChildren: () => import('./features/maintenance/maintenance.module').then(m => m.MaintenanceModule)
       },

@@ -125,13 +125,7 @@ public class CatalogueController {
         return ResponseEntity.ok(ApiResponse.success(catalogueService.getLockedDocuments(pageable)));
     }
 
-    @Permission(PermissionConstants.PERM_UPDATE)
-    @PatchMapping("/{appNo}/unlock")
-    public ResponseEntity<ApiResponse<CatalogueResponse>> unlock(@PathVariable String appNo) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        CatalogueResponse response = catalogueService.unlockRecord(appNo, auth.getName());
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
+    // PATCH /{appNo}/unlock moved to DocumentLockController (legacy key 891045, not an admin check).
 
     // --- Date subjects ---
 

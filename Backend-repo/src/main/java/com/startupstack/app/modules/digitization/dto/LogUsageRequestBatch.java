@@ -25,7 +25,7 @@ public class LogUsageRequestBatch {
     @Valid
     private List<LogUsageRequestItem> items;
 
-    @NotBlank
+    // legacy upd_result/insr_result take m_res_prs.Text as typed — empty is allowed
     @Size(max = 50)
     private String person;
 

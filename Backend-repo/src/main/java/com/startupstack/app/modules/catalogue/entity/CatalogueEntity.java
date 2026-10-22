@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.catalogue.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.sites.entity.SiteEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +35,7 @@ public class CatalogueEntity {
     private String dataEntry;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "MN_DATA_EN", referencedColumnName = "sit_no", insertable = false, updatable = false)
     private SiteEntity site;
 

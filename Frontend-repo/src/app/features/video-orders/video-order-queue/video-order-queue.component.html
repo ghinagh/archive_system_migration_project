@@ -53,13 +53,15 @@
       <div class="vq-row">
         <label class="vq-field">
           <span>{{ 'VIDEO_QUEUE.DATE_FROM' | translate }}</span>
-          <input type="date" class="vq-input vq-date" [value]="dateFrom()" [disabled]="isLocked('dateFrom')"
-                 (input)="dateFrom.set($any($event.target).value)" (keydown.enter)="onDateEnter('dateFrom')">
+          <input class="vq-input vq-date" placeholder="__/__/____" maxlength="10" inputmode="numeric"
+                 [value]="isoToDmy(dateFrom())" [disabled]="isLocked('dateFrom')"
+                 (input)="onDateMask($event, 'dateFrom')" (keydown.enter)="onDateEnter('dateFrom')">
         </label>
         <label class="vq-field">
           <span>{{ 'VIDEO_QUEUE.DATE_TO' | translate }}</span>
-          <input #dateToInput type="date" class="vq-input vq-date" [value]="dateTo()" [disabled]="isLocked('dateTo')"
-                 (input)="dateTo.set($any($event.target).value)" (keydown.enter)="onDateEnter('dateTo')">
+          <input #dateToInput class="vq-input vq-date" placeholder="__/__/____" maxlength="10" inputmode="numeric"
+                 [value]="isoToDmy(dateTo())" [disabled]="isLocked('dateTo')"
+                 (input)="onDateMask($event, 'dateTo')" (keydown.enter)="onDateEnter('dateTo')">
         </label>
       </div>
       <div class="vq-row">

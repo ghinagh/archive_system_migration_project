@@ -22,7 +22,8 @@ export class PasswordGateDialogComponent {
 
   onSubmit(): void {
     if (this.form.invalid) return;
-    this.dialogRef.close(true);
+    // Form6.frm compares LTrim(m_user_password) with "891045" — the server does that check
+    this.dialogRef.close(this.form.getRawValue().password ?? '');
   }
 
   onCancel(): void {

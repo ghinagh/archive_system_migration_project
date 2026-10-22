@@ -76,22 +76,21 @@ public class TmpFileAddService {
 
     @Transactional
     public TmpFileAddResponse finalize(String fadNo, Double ser) {
-        TmpFileAddId id = buildId(fadNo, ser);
-        TmpFileAddEntity entity = tmpFileAddRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "TmpFileAdd not found: fadNo=" + fadNo + ", ser=" + ser));
+        if (tmpFileAddRepository.finalizeRows(fadNo, ser) == 0) {
+            throw new ResourceNotFoundException("TmpFileAdd not found: fadNo=" + fadNo + ", ser=" + ser);
+        }
+        TmpFileAddEntity entity = tmpFileAddRepository.findByTmpFadNo(fadNo).stream()
+                .filter(e -> ser.equals(e.getTmpSer())).findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("TmpFileAdd not found: fadNo=" + fadNo + ", ser=" + ser));
         entity.setTmpFinal(1);
-        return toResponse(tmpFileAddRepository.save(entity));
+        return toResponse(entity);
     }
 
     @Transactional
     public void delete(String fadNo, Double ser) {
-        TmpFileAddId id = buildId(fadNo, ser);
-        if (!tmpFileAddRepository.existsById(id)) {
-            throw new ResourceNotFoundException(
-                    "TmpFileAdd not found: fadNo=" + fadNo + ", ser=" + ser);
+        if (tmpFileAddRepository.deleteOneRow(fadNo, ser) == 0) {
+            throw new ResourceNotFoundException("TmpFileAdd not found: fadNo=" + fadNo + ", ser=" + ser);
         }
-        tmpFileAddRepository.deleteById(id);
     }
 
     private TmpFileAddId buildId(String fadNo, Double ser) {

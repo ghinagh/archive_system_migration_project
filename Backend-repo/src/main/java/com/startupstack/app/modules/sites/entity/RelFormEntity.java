@@ -1,5 +1,7 @@
 package com.startupstack.app.modules.sites.entity;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,10 +31,12 @@ public class RelFormEntity {
     private String rlfForm2;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "RLF_FORM1", referencedColumnName = "SUB_NO", insertable = false, updatable = false)
     private FormEntity form1;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
     @JoinColumn(name = "RLF_FORM2", referencedColumnName = "SUB_NO", insertable = false, updatable = false)
     private FormEntity form2;
 

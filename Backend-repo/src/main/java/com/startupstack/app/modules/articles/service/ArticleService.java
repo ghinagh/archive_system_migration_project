@@ -10,6 +10,7 @@ import com.startupstack.app.modules.catalogue.entity.CatalogueEntity;
 import com.startupstack.app.modules.catalogue.repository.CatalogueRepository;
 import com.startupstack.app.modules.periodicals.entity.PeriodicalEntity;
 import com.startupstack.app.modules.periodicals.repository.PeriodicalRepository;
+import com.startupstack.app.shared.exception.BusinessException;
 import com.startupstack.app.shared.exception.ResourceNotFoundException;
 import com.startupstack.app.shared.util.SecurityUtils;
 import jakarta.persistence.EntityManager;
@@ -21,6 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ArticleService {
+
+    /** Form6.frm m_mn_app_no_KeyPress (:4413) — the number already belongs to another form. */
+    static final String DUPLICATE_NUMBER_MESSAGE = "هذا الرقم تابع لاستمارة اخرى!!!!!";
+    /** bok.bas is_trans (:97) — the record is locked (mn_trans = 1). */
+    static final String LOCKED_MESSAGE = com.startupstack.app.modules.catalogue.service.CatalogueLockGuard.LOCKED_MESSAGE;
 
     private final ArticleRepository articleRepository;
     private final CatalogueRepository catalogueRepository;
@@ -79,6 +85,12 @@ public class ArticleService {
 
     @Transactional
     public ArticleResponse create(ArticleRequest request) {
+        // Both entities carry an assigned id, so save() on an existing number is a JPA merge that
+        // overwrites the whole ARTICLE and main rows (unsent columns → NULL, mn_trans → NULL).
+        // Refuse before anything is written, with Form6.frm's own duplicate message (:4413).
+        if (articleRepository.existsById(request.getAppNo()) || catalogueRepository.existsById(request.getAppNo())) {
+            throw new BusinessException(DUPLICATE_NUMBER_MESSAGE);
+        }
         // "main" carries a FK to ARTICLE (MN_APP_NO -> ART_APP_NO), so the ARTICLE row must be
         // inserted first or the subsequent insert into "main" trips the FK constraint.
         ArticleEntity article = articleMapper.toEntity(request);
@@ -188,12 +200,19 @@ public class ArticleService {
         CatalogueEntity catalogue = catalogueRepository.findById(appNo)
                 .orElseThrow(() -> new ResourceNotFoundException("Catalogue record not found: " + appNo));
 
+        // Form6.frm Command1_Click / Command16_Click run upd_main only when is_trans(box_mn_trans)
+        // passes (bok.bas:93-102): a locked record (mn_trans = 1) is refused, nothing is written.
+        if (catalogue.getTrans() != null && catalogue.getTrans() == 1) {
+            throw new BusinessException(LOCKED_MESSAGE);
+        }
+
         // upd_main
         catalogue.setActiveTitleAr(request.getActiveTitleAr());
         catalogue.setAdditionalTitle(request.getAdditionalCatalogueTitle());
         catalogue.setDataEntry(request.getDataEntry());
         catalogue.setAppDoc(request.getAppDoc());
-        catalogue.setEntryDate(request.getEntryDate());
+        // Legacy passes Format(m_ent_dte, "yyyy/mm/dd") (Form6.frm:2825): the date only.
+        catalogue.setEntryDate(request.getEntryDate() == null ? null : request.getEntryDate().toLocalDate().atStartOfDay());
         catalogue.setResult(request.getResult());
         catalogue.setDocumentNature(request.getDocumentNature());
         catalogueRepository.save(catalogue);

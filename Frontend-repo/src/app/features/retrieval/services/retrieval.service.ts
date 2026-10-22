@@ -17,6 +17,18 @@ export class RetrievalService {
    */
   pendingSearch = signal<{ scope: RetrievalScope; request: RetrievalSearchRequest } | null>(null);
 
+  /** frm_result F4 (serh_text @doc,@rel,@ser): the text of one descriptor/relation. */
+  getDocumentText(appNo: string, serNo: string, relNo: string): Observable<ApiResponse<{ text: string }>> {
+    return this.http.get<ApiResponse<{ text: string }>>(
+      `${this.api}/api/catalogue/${encodeURIComponent(appNo)}/analysis-text`, { params: { serNo, relNo } });
+  }
+
+  /** frm_result F5 (serh_text5 @doc): the whole text of the document. */
+  getAllDocumentText(appNo: string): Observable<ApiResponse<{ text: string }>> {
+    return this.http.get<ApiResponse<{ text: string }>>(
+      `${this.api}/api/catalogue/${encodeURIComponent(appNo)}/analysis-text/all`);
+  }
+
   getFields(scope: RetrievalScope): Observable<ApiResponse<RetrievalFieldOption[]>> {
     return this.http.get<ApiResponse<RetrievalFieldOption[]>>(`${this.api}/api/retrieval/fields`, { params: { scope } });
   }

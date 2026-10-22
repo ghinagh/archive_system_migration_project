@@ -53,6 +53,10 @@ public class AuthorCodingService {
     public AuthorCodingRow insert(AuthorCodingInsertRequest request) {
         Double number = parseNumber(request.number());
         String name = nameParam(request.name());
+        if (number != null && repository.countByNumber(number) > 0) {
+            throw new BusinessException("لا يمكن التسجيل: الرقم " + formatNumber(number)
+                    + " مستخدم سابقا لمؤلف او دار نشر اخرى");
+        }
         try {
             repository.insert(name, number);
         } catch (DataIntegrityViolationException e) {

@@ -32,6 +32,76 @@
   table {
     width: 100%;
   }
+
+  &:focus {
+    outline: none;
+  }
+
+  // DataGrid1 cursor — set by clicking a row, read by F2/F6/F9.
+  tr.focused-row {
+    background: var(--mat-sys-secondary-container, #e8f0fe);
+  }
+
+  tr[mat-row] {
+    cursor: pointer;
+  }
+}
+
+.results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  .grid-hint {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: .85rem;
+  }
+}
+
+.copy-card {
+  padding: 1rem 1.2rem;
+  background: var(--mat-sys-primary-container, #e8f0fe);
+}
+
+.copy-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+
+  mat-form-field {
+    min-width: 160px;
+  }
+
+  .wide {
+    flex: 1 1 260px;
+  }
+}
+
+.text-card {
+  padding: 1rem 1.2rem;
+
+  .text-body {
+    white-space: pre-wrap;
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    padding: 8px;
+    min-height: 80px;
+
+    .hit {
+      color: #d32f2f;
+      font-weight: 600;
+    }
+  }
+}
+
+.copy-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
 }
 
 .no-data {

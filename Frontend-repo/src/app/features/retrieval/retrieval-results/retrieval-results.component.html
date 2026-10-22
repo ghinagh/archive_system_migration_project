@@ -11,6 +11,74 @@
     }
   </div>
 
+  @if (isBank && hasQuery()) {
+    <!-- frm_result buttons: عدد المقالات / طباعة الملف / خــروج -->
+    <div class="results-actions">
+      <button mat-stroked-button type="button" (click)="countArticles()">{{ 'SEARCH_SCREEN.COUNT_ARTICLES' | translate }}</button>
+      <button mat-stroked-button type="button" (click)="openReports()">{{ 'SEARCH_SCREEN.PRINT_FILE' | translate }}</button>
+      <button mat-stroked-button type="button" (click)="backToBuilder()">{{ 'SEARCH_SCREEN.EXIT' | translate }}</button>
+      <span class="grid-hint">{{ 'SEARCH_SCREEN.GRID_HINT' | translate }} , F6</span>
+    </div>
+  }
+
+  @if (copyPanelOpen()) {
+    <!-- Frame2 (F3): folder, مع تسجيل الطلب, المستفيد / الجهة المستفيدة / الجهة الموافقة / الموضوع,
+         نسخ الاختيار / نسخ الجدول / الغاء الامر -->
+    <mat-card class="copy-card" [formGroup]="copyForm">
+      <div class="copy-row">
+        <button mat-stroked-button type="button" (click)="chooseCopyFolder()">
+          <mat-icon>folder_open</mat-icon> {{ 'SEARCH_SCREEN.CHOOSE_FOLDER' | translate }}
+        </button>
+        <span class="folder-name">{{ copyFolderName() || ('SEARCH_SCREEN.FOLDER_DOWNLOADS' | translate) }}</span>
+        <mat-checkbox [checked]="isRec()" (change)="isRec.set($event.checked)">{{ 'SEARCH_SCREEN.WITH_REQUEST' | translate }}</mat-checkbox>
+      </div>
+      <div class="copy-row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'SEARCH_SCREEN.BENEFICIARY' | translate }}</mat-label>
+          <input matInput formControlName="person">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'SEARCH_SCREEN.BENEFICIARY_ENTITY' | translate }}</mat-label>
+          <mat-select formControlName="cote" panelClass="doc-form-panel">
+            <mat-option value="">—</mat-option>
+            @for (o of coteOptions(); track o.code) { <mat-option [value]="o.code.substring(2, 4)">{{ o.description }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'SEARCH_SCREEN.APPROVING_BODY' | translate }}</mat-label>
+          <mat-select formControlName="permit" panelClass="doc-form-panel">
+            <mat-option value="">—</mat-option>
+            @for (o of permitOptions(); track o.code) { <mat-option [value]="o.code.substring(2, 4)">{{ o.description }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>{{ 'SEARCH_SCREEN.SUBJECT_FIELD' | translate }}</mat-label>
+          <input matInput formControlName="subject">
+        </mat-form-field>
+      </div>
+      <div class="copy-actions">
+        <button mat-raised-button color="primary" type="button" [disabled]="copying()" (click)="copySelection()">{{ 'SEARCH_SCREEN.COPY_SELECTION' | translate }}</button>
+        <button mat-raised-button type="button" [disabled]="copying()" (click)="copyTable()">{{ 'SEARCH_SCREEN.COPY_TABLE' | translate }}</button>
+        <button mat-button type="button" (click)="cancelCopy()">{{ 'SEARCH_SCREEN.CANCEL_COMMAND' | translate }}</button>
+      </div>
+    </mat-card>
+  }
+
+  @if (textPanelOpen()) {
+    <!-- Frame1 (F4 / F5): m_rchtext, m_word + Command5 "البحث عن كلمة" (red highlight) -->
+    <mat-card class="text-card">
+      <div class="copy-row">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'RETRIEVAL.WORD' | translate }}</mat-label>
+          <input matInput [(ngModel)]="wordInput" (keyup.enter)="highlight()">
+        </mat-form-field>
+        <button mat-stroked-button type="button" (click)="highlight()">{{ 'RETRIEVAL.FIND_WORD' | translate }}</button>
+        <button mat-button type="button" (click)="closeTextPanel()">{{ 'SEARCH_SCREEN.CANCEL_COMMAND' | translate }}</button>
+      </div>
+      <div class="text-body" tabindex="0" (keydown.escape)="closeTextPanel()">@for (s of textSegments(); track $index) {<span [class.hit]="s.hit">{{ s.text }}</span>}</div>
+    </mat-card>
+  }
+
   @if (!hasQuery()) {
     <p class="no-data">{{ 'RETRIEVAL.NO_PENDING_QUERY' | translate }}</p>
   } @else {
@@ -19,7 +87,7 @@
       <app-loading-spinner></app-loading-spinner>
     }
 
-    <div class="table-scroll">
+    <div class="table-scroll" tabindex="0" (keydown)="onGridKeydown($event)">
       <table mat-table [dataSource]="rows()">
         @for (col of columns(); track col.fieldKey) {
           <ng-container [matColumnDef]="col.fieldKey">
@@ -27,17 +95,31 @@
             <td mat-cell *matCellDef="let row">{{ cellValue(row, col.fieldKey) }}</td>
           </ng-container>
         }
+        <ng-container matColumnDef="digitNo">
+          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.GRID_DIGIT_NO' | translate }}</th>
+          <td mat-cell *matCellDef="let row">{{ row.digit?.digitNo }}</td>
+        </ng-container>
+        <ng-container matColumnDef="choice">
+          <th mat-header-cell *matHeaderCellDef>{{ 'SEARCH_SCREEN.CHOICE' | translate }}</th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox [checked]="row.digit?.choice === 1" [disabled]="!row.digit?.digitNo"
+              (click)="$event.stopPropagation()" (change)="toggleChoice(row)"></mat-checkbox>
+          </td>
+        </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let row">
-            <button mat-icon-button color="primary" [matTooltip]="'RETRIEVAL.OPEN_RECORD' | translate" (click)="openRecord(row)">
+            <button mat-icon-button color="primary" [matTooltip]="'RETRIEVAL.OPEN_RECORD' | translate" (click)="$event.stopPropagation(); openRecord(row)">
               <mat-icon>open_in_new</mat-icon>
             </button>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns()" (dblclick)="openRecord(row)"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns()"
+          [class.focused-row]="isFocused(row)"
+          (click)="focusRow(row)"
+          (dblclick)="isBank ? openAsset(row) : null"></tr>
       </table>
 
       @if (!isLoading() && rows().length === 0) {
