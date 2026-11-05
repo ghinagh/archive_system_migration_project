@@ -56,20 +56,17 @@ class LookupsServiceTest {
 
     @Test
     void getAllSubjects_returnsAllEntries() {
-        MacnzEntity entity = new MacnzEntity();
-        entity.setSubCode("001");
-        entity.setSubDesc("تاريخ");
-
-        MacnzResponse response = new MacnzResponse();
-        response.setCode("001");
-        response.setDescription("تاريخ");
-
-        when(macnzRepository.findAll()).thenReturn(List.of(entity));
-        when(lookupsMapper.toMacnzResponseList(List.of(entity))).thenReturn(List.of(response));
+        // findAllRows(): every MACNZ row that has a code, in stored order (legacy rows repeat codes)
+        com.startupstack.app.modules.lookups.repository.MacnzRepository.Row row =
+                org.mockito.Mockito.mock(com.startupstack.app.modules.lookups.repository.MacnzRepository.Row.class);
+        when(row.getCode()).thenReturn("001");
+        when(row.getDescription()).thenReturn("تاريخ");
+        when(macnzRepository.findAllRows()).thenReturn(List.of(row));
 
         List<MacnzResponse> result = lookupsService.getAllSubjects();
 
         assertEquals(1, result.size());
+        assertEquals("001", result.get(0).getCode());
         assertEquals("تاريخ", result.get(0).getDescription());
     }
 

@@ -85,7 +85,7 @@
                        (input)="editing.set({ row: 'new', col: c.key, value: $any($event.target).value })"
                        (keydown)="onEditorKeydown($event)" (blur)="commitEdit()">
               } @else {
-                {{ newRow()[c.key] ?? '' }}
+                {{ newRow()[c.key] }}
               }
             </td>
           }

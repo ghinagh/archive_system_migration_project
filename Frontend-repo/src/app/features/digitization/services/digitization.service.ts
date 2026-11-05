@@ -143,9 +143,11 @@ export class DigitizationService {
     return this.http.get<ApiResponse<DemandStats>>(`${this.api}/api/digitization/demands/stats`, { params: p });
   }
 
-  downloadMedia(stockNo: string, ext?: string): Observable<Blob> {
+  /** {@code preview}: the in-app player's browser-playable copy (AVI/MPG converted server-side). */
+  downloadMedia(stockNo: string, ext?: string, preview = false): Observable<Blob> {
     let p = new HttpParams();
     if (ext) p = p.set('ext', ext);
+    if (preview) p = p.set('preview', 'true');
     return this.http.get(`${this.api}/api/media/file/${encodeURIComponent(stockNo)}`, { responseType: 'blob', params: p });
   }
 

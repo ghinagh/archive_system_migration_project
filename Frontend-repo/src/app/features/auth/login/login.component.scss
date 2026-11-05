@@ -3,13 +3,29 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #13232b 0%, #22404c 100%);
 }
 
 .login-card {
   width: 420px;
   padding: 32px;
   border-radius: 12px;
+  background: #fff;
+  color: #1a2b4a;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+
+  --mat-form-field-outlined-outline-color: #d5dbe3;
+  --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+  --mat-form-field-outlined-focus-outline-color: #22404c;
+  --mat-form-field-outlined-focus-label-text-color: #22404c;
+  --mat-form-field-outlined-caret-color: #22404c;
+
+  ::ng-deep .login-button.mat-mdc-raised-button,
+  ::ng-deep .login-button.mat-mdc-unelevated-button,
+  ::ng-deep .login-button.mat-mdc-button {
+    background-color: #22404c;
+    color: #fff;
+  }
 }
 
 mat-card-header {
@@ -23,7 +39,7 @@ mat-card-header {
     font-size: 48px;
     width: 48px;
     height: 48px;
-    color: #3f51b5;
+    color: #d6a85b;
     margin-bottom: 12px;
   }
 
@@ -51,11 +67,11 @@ mat-card-header {
 }
 
 .error-message {
-  color: #f44336;
+  color: #b4533a;
   font-size: 14px;
   margin-bottom: 16px;
   text-align: center;
-  background: #ffebee;
+  background: #fbefee;
   padding: 8px 16px;
   border-radius: 4px;
 }

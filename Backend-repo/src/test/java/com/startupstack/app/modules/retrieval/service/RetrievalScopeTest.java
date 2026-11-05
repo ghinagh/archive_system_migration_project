@@ -38,14 +38,14 @@ class RetrievalScopeTest {
     @Test
     void placeOfIssueBringsPeriodAndTheFormJoin() {
         assertEquals(" FROM TransEntity t LEFT JOIN PeriodicalEntity p ON t.trsNo = p.perNo "
-                        + "LEFT JOIN FormEntity g ON g.formNo = p.geo ",
+                        + "LEFT JOIN FormEntity g ON CONCAT(g.formType, g.formNo) = p.geo ",
                 P.fromClause(List.of("t"), List.of("g")));
     }
 
     @Test
     void placeOfIssueIsPickedByNameButComparedByPeriodCode() {
         RetrievalScope.CodedCondition coded = P.codedCondition("issue_place");
-        assertEquals("g.formNo", coded.codeColumn());
+        assertEquals("CONCAT(g.formType, g.formNo)", coded.codeColumn());
         assertEquals("p.geo", coded.conditionColumn());
         assertEquals("p", coded.conditionAlias());
         assertNull(P.codedCondition("periodical_name"));

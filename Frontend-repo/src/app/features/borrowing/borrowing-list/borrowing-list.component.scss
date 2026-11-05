@@ -20,7 +20,7 @@
 }
 
 .full-width { width: 100%; }
-.no-data { text-align: center; padding: 32px; color: #999; }
+.no-data { text-align: center; padding: 32px; color: #8a97a8; }
 
 .status-badge {
   display: inline-block;
@@ -31,16 +31,16 @@
 }
 
 .badge-active {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #e3efeb;
+  color: #2f6b5e;
 }
 
 .badge-returned {
-  background: #eeeeee;
-  color: #616161;
+  background: #e9edf2;
+  color: #5b6b80;
 }
 
 .badge-overdue {
-  background: #ffebee;
-  color: #c62828;
+  background: #fbefee;
+  color: #b4533a;
 }

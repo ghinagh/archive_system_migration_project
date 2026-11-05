@@ -214,7 +214,7 @@
         <!-- Column02: desc_cote (CODING '32'+res_cote) -->
         <ng-container matColumnDef="coteDescription">
           <th mat-header-cell *matHeaderCellDef>{{ 'USAGE_REQUESTS.GRID_BENEFIT_ENTITY' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.coteDescription || row.cote }}</td>
+          <td mat-cell *matCellDef="let row">{{ row.coteDescription }}</td>
         </ng-container>
 
         <!-- Column03: res_no_ist -->
@@ -226,7 +226,7 @@
         <!-- Column04: desc_permit (CODING '33'+res_permit) -->
         <ng-container matColumnDef="permitDescription">
           <th mat-header-cell *matHeaderCellDef>{{ 'USAGE_REQUESTS.PERMIT_NO' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.permitDescription || row.permit }}</td>
+          <td mat-cell *matCellDef="let row">{{ row.permitDescription }}</td>
         </ng-container>
 
         <!-- Column06: res_ser (Column05, a hidden duplicate res_no, is not rendered) -->
@@ -274,7 +274,7 @@
         <!-- Column13: desc_typ1 (CODING '24'+res_typ1) -->
         <ng-container matColumnDef="type1Description">
           <th mat-header-cell *matHeaderCellDef>{{ 'USAGE_REQUESTS.DIGITIZATION_TYPE' | translate }}</th>
-          <td mat-cell *matCellDef="let row">{{ row.type1Description || row.type1 }}</td>
+          <td mat-cell *matCellDef="let row">{{ row.type1Description }}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

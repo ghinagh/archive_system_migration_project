@@ -13,7 +13,7 @@ public interface ArticleMapper {
 
     @Mapping(target = "catalogueTitle", expression = "java(entity.getCatalogue() != null ? entity.getCatalogue().getActiveTitleAr() : null)")
     @Mapping(target = "additionalTitle", expression = "java(entity.getCatalogue() != null ? entity.getCatalogue().getAdditionalTitle() : null)")
-    @Mapping(target = "periodicalName", expression = "java(entity.getPeriodical() != null ? entity.getPeriodical().getName() : null)")
+    @Mapping(target = "periodicalName", ignore = true) // filled by ArticleService.withNames
     @Mapping(target = "dataEntry", expression = "java(entity.getCatalogue() != null ? entity.getCatalogue().getDataEntry() : null)")
     @Mapping(target = "appDoc", expression = "java(entity.getCatalogue() != null ? entity.getCatalogue().getAppDoc() : null)")
     @Mapping(target = "entryDate", expression = "java(entity.getCatalogue() != null ? entity.getCatalogue().getEntryDate() : null)")
@@ -43,13 +43,11 @@ public interface ArticleMapper {
     }
 
     @Mapping(target = "catalogue", ignore = true)
-    @Mapping(target = "periodical", ignore = true)
     @Mapping(target = "updated", ignore = true)
     ArticleEntity toEntity(ArticleRequest request);
 
     @Mapping(target = "appNo", ignore = true)
     @Mapping(target = "catalogue", ignore = true)
-    @Mapping(target = "periodical", ignore = true)
     @Mapping(target = "updated", ignore = true)
     void updateEntity(ArticleRequest request, @MappingTarget ArticleEntity entity);
 }

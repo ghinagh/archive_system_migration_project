@@ -8,7 +8,6 @@ import com.startupstack.app.modules.articles.repository.ArticleRepository;
 import com.startupstack.app.modules.articles.specification.ArticleSpecification;
 import com.startupstack.app.modules.catalogue.entity.CatalogueEntity;
 import com.startupstack.app.modules.catalogue.repository.CatalogueRepository;
-import com.startupstack.app.modules.periodicals.entity.PeriodicalEntity;
 import com.startupstack.app.modules.periodicals.repository.PeriodicalRepository;
 import com.startupstack.app.shared.exception.BusinessException;
 import com.startupstack.app.shared.exception.ResourceNotFoundException;
@@ -53,8 +52,12 @@ public class ArticleService {
      */
     private ArticleResponse withNames(ArticleEntity entity) {
         ArticleResponse response = articleMapper.toResponse(entity);
+        if (entity.getPeriodicalNo() != null) {
+            periodicalRepository.findFirstByNumber(entity.getPeriodicalNo())
+                    .ifPresent(p -> response.setPeriodicalName(p.getName()));
+        }
         if (entity.getPeriodical1() != null) {
-            periodicalRepository.findById(entity.getPeriodical1())
+            periodicalRepository.findFirstByNumber(entity.getPeriodical1())
                     .ifPresent(p -> response.setPeriodical1Name(p.getName()));
         }
         return response;
@@ -73,7 +76,7 @@ public class ArticleService {
                         .and(ArticleSpecification.titleContains(title))
                         .and(ArticleSpecification.hasYear(year))
                         .and(ArticleSpecification.hasLang(lang));
-        return articleRepository.findAll(spec, pageable).map(articleMapper::toResponse);
+        return articleRepository.findAll(spec, pageable).map(this::withNames);
     }
 
     @Transactional(readOnly = true)
@@ -97,10 +100,10 @@ public class ArticleService {
         article.setAppNo(request.getAppNo());
 
         if (request.getPeriodicalNo() != null) {
-            PeriodicalEntity periodical = periodicalRepository.findById(request.getPeriodicalNo())
+            periodicalRepository.findFirstByNumber(request.getPeriodicalNo())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Periodical not found: " + request.getPeriodicalNo()));
-            article.setPeriodical(periodical);
+            article.setPeriodicalNo(request.getPeriodicalNo());
         }
 
         articleRepository.save(article);
@@ -172,10 +175,10 @@ public class ArticleService {
         articleMapper.updateEntity(request, article);
 
         if (request.getPeriodicalNo() != null) {
-            PeriodicalEntity periodical = periodicalRepository.findById(request.getPeriodicalNo())
+            periodicalRepository.findFirstByNumber(request.getPeriodicalNo())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Periodical not found: " + request.getPeriodicalNo()));
-            article.setPeriodical(periodical);
+            article.setPeriodicalNo(request.getPeriodicalNo());
         }
 
         articleRepository.save(article);
@@ -218,10 +221,12 @@ public class ArticleService {
         catalogueRepository.save(catalogue);
 
         // upd_article2
-        article.setPeriodical(request.getPeriodicalNo() == null ? null
-                : periodicalRepository.findById(request.getPeriodicalNo())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Periodical not found: " + request.getPeriodicalNo())));
+        if (request.getPeriodicalNo() != null) {
+            periodicalRepository.findFirstByNumber(request.getPeriodicalNo())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Periodical not found: " + request.getPeriodicalNo()));
+        }
+        article.setPeriodicalNo(request.getPeriodicalNo());
         article.setPeriodical1(request.getPeriodical1());
         article.setSubjectType(request.getSubjectType());
         article.setDate(request.getDate());

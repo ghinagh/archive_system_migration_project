@@ -31,7 +31,7 @@ export class SubjectSearchComponent implements OnInit {
         if (!term || term.length < 2) return of([]);
         const lower = term.toLowerCase();
         const filtered = this.allSubjects().filter(s =>
-          s.description.toLowerCase().includes(lower) || s.code.toLowerCase().includes(lower)
+          (s.description ?? '').toLowerCase().includes(lower) || (s.code ?? '').toLowerCase().includes(lower)
         );
         return of(filtered.slice(0, 20));
       })

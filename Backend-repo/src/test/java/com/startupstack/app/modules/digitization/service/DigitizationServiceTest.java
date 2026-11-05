@@ -67,7 +67,8 @@ class DigitizationServiceTest {
 
         digitizationService.createRecord(request);
 
-        verify(catalogueRepository).findById("DOC0001");
+        // once for the parent check, once for the locked-document check (is_trans)
+        verify(catalogueRepository, atLeastOnce()).findById("DOC0001");
         verify(digitRepository).save(any());
     }
 
@@ -113,7 +114,7 @@ class DigitizationServiceTest {
 
     @Test
     void deleteRecord_nonExistent_throwsResourceNotFound() {
-        when(digitRepository.existsById(any(DigitId.class))).thenReturn(false);
+        when(digitRepository.findById(any(DigitId.class))).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> digitizationService.deleteRecord("NONE", 1));

@@ -774,7 +774,7 @@ export class ArchiveSearchCockpitComponent implements OnInit {
     // Preview always streams the LOW-res proxy with the record's own extension — legacy
     // datagrid1_DblClick:4897 calls low_stock_path(), never high_stock_path().
     this.isLoadingVideo.set(true);
-    this.archiveSearchService.downloadMedia(result.machineStock, 'LOW', result.documentType).subscribe({
+    this.archiveSearchService.downloadMedia(result.machineStock, 'LOW', result.documentType, true).subscribe({
       next: blob => {
         this.videoBlobUrl.set(URL.createObjectURL(blob));
         this.isLoadingVideo.set(false);

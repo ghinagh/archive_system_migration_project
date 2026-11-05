@@ -13,8 +13,8 @@
   margin: 0;
   padding: 8px 28px;
   border-radius: 10px;
-  background: #eceff3;
-  color: #1f2937;
+  background: #e4edf0;
+  color: #1a2b4a;
   font-size: 20px;
   font-weight: 700;
   text-align: center;
@@ -43,8 +43,8 @@
   align-self: center;
   padding: 4px 18px;
   border-radius: 6px;
-  background: #eceff3;
-  color: #374151;
+  background: #e4edf0;
+  color: #22404c;
   font-size: 14px;
   font-weight: 600;
 }
@@ -54,7 +54,7 @@
   align-self: center;
   height: 2px;
   margin-top: 30px;
-  background: #9aa3af;
+  background: #a9b6c8;
 }
 
 .code-display {
@@ -62,10 +62,10 @@
   width: 150px;
   height: 34px;
   padding: 0 10px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 8px;
-  background: #e2e5ea;
-  color: #374151;
+  background: #f1f4f8;
+  color: #22404c;
   text-align: center;
   font-size: 15px;
 }
@@ -78,7 +78,7 @@
   box-sizing: border-box;
   position: relative;
   padding: 22px 16px 14px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 10px;
   background: #fff;
   display: flex;
@@ -100,8 +100,8 @@
   transform: translateX(-50%);
   padding: 1px 14px;
   border-radius: 6px;
-  background: #eceff3;
-  color: #374151;
+  background: #e4edf0;
+  color: #22404c;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
@@ -121,7 +121,7 @@
     flex: 0 0 150px;
     padding: 7px 8px;
     border-radius: 6px;
-    background: #2f5fbf;
+    background: #22404c;
     color: #fff;
     font-size: 13px;
     text-align: center;
@@ -130,13 +130,13 @@
   input {
     height: 34px;
     padding: 0 10px;
-    border: 1px solid #c7ccd3;
+    border: 1px solid #d5dbe3;
     border-radius: 8px;
     font-size: 15px;
     text-align: right;
 
-    &:focus { outline: none; border-color: #3b6fd8; box-shadow: 0 0 0 2px rgba(59, 111, 216, 0.18); }
-    &:disabled { background: #eef0f3; color: #6b7280; }
+    &:focus { outline: none; border-color: #22404c; box-shadow: 0 0 0 2px rgba(34, 64, 76, 0.18); }
+    &:disabled { background: #f3f5f8; color: #6b7a90; }
   }
 
   .code-input { width: 140px; }
@@ -149,9 +149,9 @@
   position: relative;
   margin-top: 8px;
   padding: 22px 14px 14px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 12px;
-  background: #fafbfc;
+  background: #fff;
 }
 
 .commands-row {
@@ -166,7 +166,7 @@
     border-radius: 8px;
     font-weight: 500;
     background-color: #e8eaed;
-    color: #1f2937;
+    color: #1a2b4a;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.08);
 
     &:hover { background-color: #dde0e3; }
@@ -182,7 +182,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(17, 24, 39, 0.35);
+  background: rgba(16, 24, 40, 0.35);
 }
 
 .modal {
@@ -200,13 +200,13 @@
 .modal-text {
   margin: 0;
   font-size: 15px;
-  color: #111827;
+  color: #1a2b4a;
 }
 
 .modal-input {
   height: 36px;
   padding: 0 10px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 8px;
   font-size: 15px;
 }
@@ -227,3 +227,28 @@
   .level { max-width: none; }
   .connector { display: none; }
 }
+
+// Theme: same treatment as المكنز الشكلي (colors/shadows only).
+.screen-title { background: #fff; color: #1a2b4a; box-shadow: inset 0 -3px 0 #22404c, 0 1px 3px rgba(16, 24, 40, 0.08); }
+.processing:not(.frameless), .commands { border-color: #e1e6ed; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06); }
+.processing-caption, .commands-caption { background: #fff; color: #22404c; box-shadow: 0 0 0 1px #e1e6ed; }
+.code-display, .selected-number input { color: #1a2b4a; font-weight: 600; }
+.field-row label { font-weight: 500; }
+.field-row input {
+  background: #fff;
+  color: #1a2b4a;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  &:hover:not(:disabled):not(:focus) { border-color: #a9b6c8; }
+  &:focus { box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); }
+  &:disabled { border-color: #e1e6ed; }
+}
+.commands-row button.mat-mdc-raised-button {
+  background-color: #fff;
+  color: #22404c;
+  box-shadow: 0 0 0 1px #a9bec6, 0 1px 2px rgba(16, 24, 40, 0.06);
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+  &:hover { background-color: #22404c; color: #fff; box-shadow: 0 0 0 1px #22404c, 0 2px 6px rgba(34, 64, 76, 0.25); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 1px #22404c, 0 0 0 4px rgba(34, 64, 76, 0.2); }
+}
+.modal-input:focus { outline: none; border-color: #22404c; box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); }
+.connector { background: #a9bec6; }

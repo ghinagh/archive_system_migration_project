@@ -75,7 +75,7 @@ public class MediaService {
                     int from = parseRangeValue(range.getRjpNoFrom());
                     int to   = parseRangeValue(range.getRjpNoTo());
                     if (num > from && num < to) {
-                        return range.getRjpPath().trim() + "/" + trimmed + suffix;
+                        return onDisk(range.getRjpPath().trim() + "/" + trimmed + suffix);
                     }
                 }
             } else {
@@ -84,14 +84,14 @@ public class MediaService {
                         continue;
                     }
                     if (num > range.getFrom() && num < range.getTo()) {
-                        return range.getPath() + "/" + trimmed + suffix;
+                        return onDisk(range.getPath() + "/" + trimmed + suffix);
                     }
                 }
             }
         } catch (NumberFormatException ignored) {
             // non-numeric stock numbers fall through to the base path
         }
-        return properties.getBasePath() + "/" + trimmed + suffix;
+        return onDisk(properties.getBasePath() + "/" + trimmed + suffix);
     }
 
     /** Normalises a bare or dotted extension to a dotted suffix, or "" when nothing is configured. */
@@ -163,10 +163,10 @@ public class MediaService {
             throw new BusinessException("Not a non-video asset class: " + type1);
         }
         String trimmed = digitNo == null ? "" : digitNo.trim();
-        return stripTrailingSlash(properties.getPicturePath())
+        return onDisk(stripTrailingSlash(properties.getPicturePath())
                 + "/" + folder
                 + fanOut(trimmed)
-                + "/" + trimmed + resolveExtension(extension);
+                + "/" + trimmed + resolveExtension(extension));
     }
 
     /** Legacy's two-level fan-out: the first two characters, then the next two. */
@@ -264,6 +264,80 @@ public class MediaService {
             Files.deleteIfExists(Paths.get(path));
         } catch (IOException ignored) {
             // best-effort — an orphaned file with no DB row is safe; the reverse is not
+        }
+    }
+
+    /**
+     * Legacy ran on Windows, where {@code 000003.avi} opens {@code 000003.AVI}: when the exact
+     * name is missing, the same name in another letter case is used instead. Returns the input
+     * unchanged when nothing matches, so "not found" still behaves as before.
+     */
+    String onDisk(String candidate) {
+        Path path = Paths.get(candidate);
+        if (Files.exists(path)) {
+            return candidate;
+        }
+        Path dir = path.getParent();
+        if (dir == null || !Files.isDirectory(dir)) {
+            return candidate;
+        }
+        String name = path.getFileName().toString();
+        try (var files = Files.list(dir)) {
+            return files.filter(f -> f.getFileName().toString().equalsIgnoreCase(name))
+                    .findFirst().map(Path::toString).orElse(candidate);
+        } catch (IOException e) {
+            return candidate;
+        }
+    }
+
+    /** Extensions a browser's video/audio element plays as-is; anything else gets an MP4 preview. */
+    private static final java.util.Set<String> BROWSER_PLAYABLE =
+            java.util.Set.of("mp4", "m4v", "webm", "ogv", "ogg", "mp3", "wav", "m4a", "aac");
+
+    /**
+     * The file the in-app player should receive. Legacy previewed AVI/MPG in the Windows media
+     * control; browsers cannot decode those containers, so a non-playable file is converted
+     * once with ffmpeg into an H.264/AAC MP4 under {@code <archive-path>/preview} and reused.
+     * Same timeline, so in/out marks keep their meaning; downloads and cuts still use the original.
+     *
+     * @return the playable resource, or {@code null} when the source file does not exist
+     */
+    public Resource loadPreviewResource(String stockNo, StockTier tier, String extension) {
+        Resource source = loadAsResource(stockNo, tier, extension);
+        if (source == null) {
+            return null;
+        }
+        try {
+            Path src = source.getFile().toPath();
+            String name = src.getFileName().toString();
+            int dot = name.lastIndexOf('.');
+            String ext = dot < 0 ? "" : name.substring(dot + 1).toLowerCase();
+            if (BROWSER_PLAYABLE.contains(ext)) {
+                return source;
+            }
+            Path dir = Paths.get(properties.getArchivePath(), "preview");
+            Files.createDirectories(dir);
+            Path out = dir.resolve(name + "." + Files.getLastModifiedTime(src).toMillis() + ".mp4");
+            synchronized (this) {
+                if (!Files.exists(out)) {
+                    Path tmp = dir.resolve(out.getFileName() + ".part.mp4");
+                    Process proc = new ProcessBuilder("ffmpeg", "-y", "-loglevel", "error", "-i", src.toString(),
+                            "-c:v", "libx264", "-preset", "veryfast", "-crf", "28", "-vf", "scale=-2:'min(480,ih)'",
+                            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", tmp.toString())
+                            .redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.DISCARD).start();
+                    if (proc.waitFor() != 0 || !Files.exists(tmp)) {
+                        Files.deleteIfExists(tmp);
+                        throw new BusinessException("Could not prepare a playable preview for " + name);
+                    }
+                    Files.move(tmp, out, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+            return new FileSystemResource(out);
+        } catch (IOException e) {
+            throw new BusinessException("Could not prepare a playable preview: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException("Preview preparation was interrupted");
         }
     }
 

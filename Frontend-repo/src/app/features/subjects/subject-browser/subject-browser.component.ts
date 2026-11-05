@@ -151,7 +151,7 @@ export class SubjectBrowserComponent implements OnInit {
   private filterTree(nodes: SubjectTreeNode[], term: string): SubjectTreeNode[] {
     const result: SubjectTreeNode[] = [];
     for (const node of nodes) {
-      const matches = node.description.toLowerCase().includes(term) || node.code.toLowerCase().includes(term);
+      const matches = (node.description ?? '').toLowerCase().includes(term) || (node.code ?? '').toLowerCase().includes(term);
       const filteredChildren = this.filterTree(node.children, term);
       if (matches || filteredChildren.length > 0) result.push({ ...node, children: filteredChildren });
     }

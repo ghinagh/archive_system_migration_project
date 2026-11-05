@@ -101,7 +101,7 @@ public class PeriodicalService {
     @Transactional(readOnly = true)
     public PeriodicalResponse findNext(Double perNo) {
         Double target = perNo + 1;
-        PeriodicalEntity entity = periodicalRepository.findById(target)
+        PeriodicalEntity entity = periodicalRepository.findFirstByNumber(target)
                 .orElseThrow(() -> new ResourceNotFoundException("No next periodical after: " + perNo));
         return periodicalMapper.toResponse(entity);
     }
@@ -122,14 +122,14 @@ public class PeriodicalService {
         if (target < 1) {
             throw new ResourceNotFoundException("No previous periodical before: " + perNo);
         }
-        PeriodicalEntity entity = periodicalRepository.findById(target)
+        PeriodicalEntity entity = periodicalRepository.findFirstByNumber(target)
                 .orElseThrow(() -> new ResourceNotFoundException("No previous periodical before: " + perNo));
         return periodicalMapper.toResponse(entity);
     }
 
     @Transactional(readOnly = true)
     public PeriodicalResponse findById(Double perNo) {
-        PeriodicalEntity entity = periodicalRepository.findById(perNo)
+        PeriodicalEntity entity = periodicalRepository.findFirstByNumber(perNo)
                 .orElseThrow(() -> new ResourceNotFoundException("Periodical not found: " + perNo));
         return periodicalMapper.toResponse(entity);
     }
@@ -153,7 +153,7 @@ public class PeriodicalService {
 
     @Transactional
     public PeriodicalResponse update(Double perNo, PeriodicalRequest request) {
-        PeriodicalEntity entity = periodicalRepository.findById(perNo)
+        PeriodicalEntity entity = periodicalRepository.findFirstByNumber(perNo)
                 .orElseThrow(() -> new ResourceNotFoundException("Periodical not found: " + perNo));
         periodicalMapper.updateEntity(request, entity);
         applyLegacyHardcodedZeroFields(entity);

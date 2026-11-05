@@ -3,13 +3,11 @@ package com.startupstack.app.modules.articles.entity;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import com.startupstack.app.modules.catalogue.entity.CatalogueEntity;
-import com.startupstack.app.modules.periodicals.entity.PeriodicalEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -44,13 +42,9 @@ public class ArticleEntity {
     @Column(name = "ART_DTE")
     private LocalDateTime date;
 
-    @Column(name = "ART_PER_NO", insertable = false, updatable = false)
+    /** PERIOD.PER_PER_NO. A plain number, not an association: legacy PERIOD repeats numbers. */
+    @Column(name = "ART_PER_NO")
     private Double periodicalNo;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotFound(action = NotFoundAction.IGNORE) // legacy has no FK: a deleted target reads as null
-    @JoinColumn(name = "ART_PER_NO", referencedColumnName = "PER_PER_NO")
-    private PeriodicalEntity periodical;
 
     @Column(name = "ART_SUB_TY")
     private String subjectType;

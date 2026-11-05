@@ -141,7 +141,9 @@ public class DigitizationService {
 
     @Transactional(readOnly = true)
     public Page<DigitResponse> findAllRecords(String docNo, String type, Pageable pageable) {
-        String userEnt = SecurityUtils.isAdmin() ? null : SecurityUtils.getCurrentUserEnt();
+        // A document's own files (Form6.frm rel_digit_proc: "where dig_no = @m_dig_no") are never
+        // filtered by user; the data-entry scoping applies only to the unscoped list.
+        String userEnt = SecurityUtils.isAdmin() || docNo != null ? null : SecurityUtils.getCurrentUserEnt();
         Specification<DigitEntity> spec = DigitizationSpecification.digitBelongsToUserEntity(userEnt)
                 .and(DigitizationSpecification.digitHasDocNo(docNo))
                 .and(DigitizationSpecification.digitHasType(type));
@@ -938,19 +940,18 @@ public class DigitizationService {
     }
 
     /**
-     * "معالجة طلبات معينة" Frame2 الغاء الطلب (Command6) — legacy del_result keys on res_no
-     * and deletes every row sharing it. Legacy gated this to a single hardcoded user code
-     * ("244"); modern equivalent is a real admin-role check (same pattern as deleteResult()).
+     * "معالجة طلبات معينة" Frame2 الغاء الطلب (Command6) — f_result.frm:1248-1259:
+     * {@code If box_user_no = "244" Then execute del_result}. Only user_no 244 may cancel (no
+     * admin exception); del_result deletes every row sharing res_no, and an unknown number simply
+     * deletes nothing — no error.
      */
     @Transactional
     public void deleteResultByResultNo(String resultNo) {
-        if (!SecurityUtils.isAdmin()) {
-            throw new BusinessException("Only an administrator can cancel a usage request");
+        String username = SecurityUtils.getCurrentUsername();
+        UserEntity user = username == null ? null : userRepository.findByUserName(username).orElse(null);
+        if (user == null || user.getUserNo() == null || !"244".equals(user.getUserNo().trim())) {
+            throw new BusinessException("Only user 244 can cancel a usage request");
         }
-        List<ResultEntity> rows = resultRepository.findByResultNo(resultNo);
-        if (rows.isEmpty()) {
-            throw new ResourceNotFoundException("Result not found: " + resultNo);
-        }
-        resultRepository.deleteAll(rows);
+        resultRepository.deleteAll(resultRepository.findByResultNo(resultNo));
     }
 }

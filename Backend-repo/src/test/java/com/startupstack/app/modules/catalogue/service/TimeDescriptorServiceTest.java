@@ -24,6 +24,8 @@ class TimeDescriptorServiceTest {
 
     @Mock
     private TimeDescriptorRepository timeDescriptorRepository;
+    @Mock
+    private CatalogueLockGuard lockGuard;
     @InjectMocks
     private TimeDescriptorService timeDescriptorService;
 
@@ -44,7 +46,7 @@ class TimeDescriptorServiceTest {
     @Test
     void add_newComposite_savesEntity() {
         TimeDescriptorRequest request = new TimeDescriptorRequest("01", "02", "DESC", 1.0, 0.0, 0.0, 1.0, 30.0, 0.0);
-        when(timeDescriptorRepository.existsById(any(TimeDescriptorId.class))).thenReturn(false);
+        when(timeDescriptorRepository.findById(any(TimeDescriptorId.class))).thenReturn(Optional.empty());
         when(timeDescriptorRepository.save(any(TimeDescriptorEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         TimeDescriptorResponse result = timeDescriptorService.add("MN000001", request);
@@ -55,19 +57,21 @@ class TimeDescriptorServiceTest {
     }
 
     @Test
-    void add_existingComposite_returnsExistingWithoutSaving() {
+    void add_existingComposite_updatesAndSaves() {
+        // Form2.frm: an existing row is updated (upd_time), not skipped
         TimeDescriptorRequest request = new TimeDescriptorRequest("01", "02", "DESC", 1.0, 0.0, 0.0, 1.0, 30.0, 0.0);
         TimeDescriptorEntity existing = new TimeDescriptorEntity();
         existing.setTmAppNo("MN000001");
         existing.setTmSerNo("01");
         existing.setTmRltvNo("02");
-        when(timeDescriptorRepository.existsById(any(TimeDescriptorId.class))).thenReturn(true);
         when(timeDescriptorRepository.findById(any(TimeDescriptorId.class))).thenReturn(Optional.of(existing));
+        when(timeDescriptorRepository.save(any(TimeDescriptorEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         TimeDescriptorResponse result = timeDescriptorService.add("MN000001", request);
 
         assertEquals("MN000001", result.getAppNo());
-        verify(timeDescriptorRepository, never()).save(any());
+        assertEquals(1.0, result.getStartHour());
+        verify(timeDescriptorRepository).save(existing);
     }
 
     @Test

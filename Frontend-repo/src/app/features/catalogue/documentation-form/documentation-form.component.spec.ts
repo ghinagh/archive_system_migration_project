@@ -25,7 +25,7 @@ import { DocumentationFormResponse } from '../models/documentation-form.model';
  */
 describe('DocumentationFormComponent — تسجيل legacy parity', () => {
   const LEGACY_NO_RECORD = 'رقم الاستمارة فارغ يجب ان تضغط على سجل جديد';
-  const LEGACY_LOCKED = 'لا تستطيع التعديل او الالغاء ....لان الوثيقة مقفلة.';
+  const LEGACY_LOCKED = 'لاتستطيع التعدل او الالغاء ....لان الوثيقة مقفلة.';   // is_trans MsgBox, verbatim
 
   let fixture: ComponentFixture<DocumentationFormComponent>;
   let component: DocumentationFormComponent;

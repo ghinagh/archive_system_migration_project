@@ -12,8 +12,9 @@
   margin: 0;
   padding: 8px 28px;
   border-radius: 10px;
-  background: #eceff3;
-  color: #1f2937;
+  background: #fff;
+  color: #1a2b4a;
+  box-shadow: inset 0 -3px 0 #22404c, 0 1px 3px rgba(16, 24, 40, 0.08);
   font-size: 20px;
   font-weight: 700;
 }
@@ -39,8 +40,8 @@
   align-self: center;
   padding: 4px 16px;
   border-radius: 6px;
-  background: #eceff3;
-  color: #374151;
+  background: #e4edf0;
+  color: #22404c;
   font-size: 14px;
   font-weight: 600;
 }
@@ -50,10 +51,11 @@
   width: 150px;
   height: 32px;
   padding: 0 10px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 8px;
-  background: #e2e5ea;
-  color: #374151;
+  background: #f1f4f8;
+  color: #1a2b4a;
+  font-weight: 600;
   text-align: center;
   font-size: 14px;
 }
@@ -91,26 +93,30 @@
   .rel-input {
     width: 54px;
     height: 32px;
-    border: 1px solid #c7ccd3;
+    border: 1px solid #d5dbe3;
     border-radius: 8px;
+    color: #1a2b4a;
     text-align: center;
     font-size: 15px;
+
+    &:focus { outline: none; border-color: #22404c; box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); }
   }
 
-  button { min-width: 64px; }
+  button { min-width: 64px; color: #22404c; border-color: #a9bec6; }
 }
 
 .processing, .picker, .dates {
   position: relative;
   padding: 20px 14px 12px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #e1e6ed;
   border-radius: 10px;
   background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   display: flex;
   flex-direction: column;
   gap: 10px;
 
-  &.frameless { border-color: transparent; background: transparent; padding-top: 0; }
+  &.frameless { border-color: transparent; background: transparent; box-shadow: none; padding-top: 0; }
 }
 
 .picker, .dates { padding-top: 12px; }
@@ -122,8 +128,9 @@
   transform: translateX(-50%);
   padding: 1px 14px;
   border-radius: 6px;
-  background: #eceff3;
-  color: #374151;
+  background: #fff;
+  box-shadow: 0 0 0 1px #e1e6ed;
+  color: #22404c;
   font-size: 13px;
   font-weight: 600;
 }
@@ -139,21 +146,26 @@
     flex: 0 0 110px;
     padding: 6px 8px;
     border-radius: 6px;
-    background: #2f5fbf;
+    background: #22404c;
     color: #fff;
     font-size: 13px;
+    font-weight: 500;
     text-align: center;
   }
 
   input {
     height: 32px;
     padding: 0 10px;
-    border: 1px solid #c7ccd3;
+    border: 1px solid #d5dbe3;
     border-radius: 8px;
+    background: #fff;
+    color: #1a2b4a;
     font-size: 14px;
+    transition: border-color 0.15s, box-shadow 0.15s;
 
-    &:focus { outline: none; border-color: #3b6fd8; box-shadow: 0 0 0 2px rgba(59, 111, 216, 0.18); }
-    &:disabled { background: #eef0f3; color: #6b7280; }
+    &:hover:not(:disabled):not(:focus) { border-color: #a9b6c8; }
+    &:focus { outline: none; border-color: #22404c; box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); }
+    &:disabled { background: #f3f5f8; color: #6b7a90; border-color: #e1e6ed; }
   }
 
   .code-input { width: 140px; }
@@ -163,9 +175,10 @@
 
 .commands {
   padding: 14px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #e1e6ed;
   border-radius: 12px;
-  background: #fafbfc;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
 }
 
 .commands-row {
@@ -179,11 +192,13 @@
     height: 40px;
     border-radius: 8px;
     font-weight: 500;
-    background-color: #e8eaed;
-    color: #1f2937;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.08);
+    background-color: #fff;
+    color: #22404c;
+    box-shadow: 0 0 0 1px #a9bec6, 0 1px 2px rgba(16, 24, 40, 0.06);
+    transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
 
-    &:hover { background-color: #dde0e3; }
+    &:hover { background-color: #22404c; color: #fff; box-shadow: 0 0 0 1px #22404c, 0 2px 6px rgba(34, 64, 76, 0.25); }
+    &:focus-visible { outline: none; box-shadow: 0 0 0 1px #22404c, 0 0 0 4px rgba(34, 64, 76, 0.2); }
   }
 }
 
@@ -195,7 +210,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(17, 24, 39, 0.35);
+  background: rgba(16, 24, 40, 0.4);
 }
 
 .modal {
@@ -210,8 +225,11 @@
   gap: 14px;
 }
 
-.modal-text { margin: 0; font-size: 15px; color: #111827; }
-.modal-input { height: 36px; padding: 0 10px; border: 1px solid #c7ccd3; border-radius: 8px; font-size: 15px; }
+.modal-text { margin: 0; font-size: 15px; color: #1a2b4a; }
+.modal-input {
+  height: 36px; padding: 0 10px; border: 1px solid #d5dbe3; border-radius: 8px; font-size: 15px;
+  &:focus { outline: none; border-color: #22404c; box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); }
+}
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 @media (max-width: 1100px) {

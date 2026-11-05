@@ -24,6 +24,8 @@ class DateSubjectServiceTest {
 
     @Mock
     private DateSubjectRepository dateSubjectRepository;
+    @Mock
+    private CatalogueLockGuard lockGuard;
     @InjectMocks
     private DateSubjectService dateSubjectService;
 
@@ -44,7 +46,7 @@ class DateSubjectServiceTest {
     @Test
     void addDateSubject_newComposite_savesEntity() {
         DateSubjectRequest request = new DateSubjectRequest("01", "02", "DESC", null, null);
-        when(dateSubjectRepository.existsById(any(DateSubjectId.class))).thenReturn(false);
+        when(dateSubjectRepository.findById(any(DateSubjectId.class))).thenReturn(Optional.empty());
         when(dateSubjectRepository.save(any(DateSubjectEntity.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -55,19 +57,21 @@ class DateSubjectServiceTest {
     }
 
     @Test
-    void addDateSubject_existingComposite_returnsExistingWithoutSaving() {
+    void addDateSubject_existingComposite_updatesAndSaves() {
+        // Form2.frm: an existing row is updated (upd_dte_subject), not skipped
         DateSubjectRequest request = new DateSubjectRequest("01", "02", "DESC", null, null);
         DateSubjectEntity existing = new DateSubjectEntity();
         existing.setDteAppNo("MN000001");
         existing.setDteSerNo("01");
         existing.setDteRelNo("02");
-        when(dateSubjectRepository.existsById(any(DateSubjectId.class))).thenReturn(true);
         when(dateSubjectRepository.findById(any(DateSubjectId.class))).thenReturn(Optional.of(existing));
+        when(dateSubjectRepository.save(any(DateSubjectEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         DateSubjectResponse result = dateSubjectService.addDateSubject("MN000001", request);
 
         assertEquals("MN000001", result.appNo());
-        verify(dateSubjectRepository, never()).save(any());
+        assertEquals("DESC", existing.getDteDescNo());
+        verify(dateSubjectRepository).save(existing);
     }
 
     @Test

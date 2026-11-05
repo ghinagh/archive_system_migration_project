@@ -384,7 +384,10 @@ export class UnifiedSearchComponent implements OnInit, OnDestroy {
       switchMap(term => {
         const q = typeof term === 'string' ? term.trim() : '';
         if (q.length < 2) { options.set([]); return of(null); }
-        return this.autocomplete.searchForms(q).pipe(catchError(() => of(null)), map(r => ({ rows: r?.data?.content ?? [], term: q.toLowerCase() })));
+        // serh_allform / serh_wrdform run in the database: ask the server for the same match, otherwise the
+        // 20-row "contains" page is filtered to prefix matches here and can come back empty (real data).
+        return this.autocomplete.searchForms(q, this.searchMode() === 'STARTS_WITH' ? 'prefix' : 'contains')
+          .pipe(catchError(() => of(null)), map(r => ({ rows: r?.data?.content ?? [], term: q.toLowerCase() })));
       })
     ).subscribe(payload => {
       if (!payload) { options.set([]); return; }

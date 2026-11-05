@@ -46,6 +46,7 @@ class MediaServiceTest {
         range.setRjpNoFrom("1");
         range.setRjpNoTo("100");
         range.setRjpPath(tempDir.resolve("vol1").toString());
+        range.setRjpTyp(StockTier.LOW.rjpTyp());   // legacy low_stock_path only looks at rjp_typ 2 ranges
         when(ranjpathRepository.findAll()).thenReturn(List.of(range));
 
         String path = mediaService.resolveStockPath("50");

@@ -239,7 +239,7 @@ export class DocumentationFormComponent implements OnInit, AfterViewInit, OnDest
       val: unknown, options: PeriodicalOption[], target: { set(v: number | null): void }): void {
     if (typeof val !== 'string') return; // an option object — onSourceSelected/onTranslationSourceSelected bind it
     const text = val.trim();
-    const hit = text ? options.find(o => o.name.trim() === text) : undefined;
+    const hit = text ? options.find(o => (o.name ?? '').trim() === text) : undefined;
     target.set(hit ? hit.perNo : null);
   }
 

@@ -111,6 +111,8 @@ export class AnalysisPanelComponent implements OnChanges {
   // alone. There's no bulk lookup endpoint, so codes are resolved one at a time
   // via getFormByCode() and cached here as they're encountered.
   private formNames = signal<Record<string, string>>({});
+  /** Name codes the server could not resolve (legacy INNER JOIN view_form drops those rows). */
+  private missingFormCodes = signal<Set<string>>(new Set());
   private resolvingFormCodes = new Set<string>();
 
   selectedSubject = signal<SubjectDescriptor | null>(null);
@@ -151,21 +153,43 @@ export class AnalysisPanelComponent implements OnChanges {
   fileForRelationFilteredForms = signal<FormOption[]>([]);
   fileAboutRelationFilteredForms = signal<FormOption[]>([]);
 
-  private matchesSelected(descriptorNo: string, serialNo: string): boolean {
+  /**
+   * form2.frm reloads every relation list with ANALIS.Resultset![an_ser_no] only (GEO_PROC,
+   * NAROWER_PROC, RELATIVE_PROC, file_add_PROC … take @desc nvarchar(2) = the serial), never the
+   * descriptor code — real legacy rows often carry a different code than their descriptor.
+   */
+  private matchesSelected(serialNo: string | null): boolean {
     const sel = this.selectedSubject();
-    return !!sel && sel.descriptorNo === descriptorNo && sel.serialNo === serialNo;
+    return !!sel && (sel.serialNo ?? '').trim() === (serialNo ?? '').trim();
   }
 
-  overallNarrower = computed(() => this.narrowerTerms().filter(n => n.narrowerType !== '2' && this.matchesSelected(n.descriptorNo, n.serialNo)));
-  overallRelated = computed(() => this.relatedTerms().filter(r => r.relativeType !== '2' && this.matchesSelected(r.descriptorNo, r.serialNo)));
-  overallGeo = computed(() => this.geoDescriptors().filter(g => this.matchesSelected(g.descriptorNo, g.serialNo)));
-  overallFileFor = computed(() => this.fileRelations().filter(f => f.fileType1 !== '2' && f.fileType2 !== '2' && this.matchesSelected(f.descriptorNo, f.serialNo)));
-  overallFileAbout = computed(() => this.fileRelations().filter(f => f.fileType1 !== '2' && f.fileType2 === '2' && this.matchesSelected(f.descriptorNo, f.serialNo)));
+  /** Legacy procs INNER JOIN macnz (SUB_CODE): a code the thesaurus doesn't have is not listed. */
+  private hasMacnz(code: string | null): boolean {
+    if (!code?.trim()) return false;
+    return this.macnzOptions().length === 0 || this.macnzOptions().some(o => o?.code === code.trim());
+  }
 
-  relationNarrower = computed(() => this.narrowerTerms().filter(n => n.narrowerType === '2' && n.relativeNo === this.activeRelativeNo() && this.matchesSelected(n.descriptorNo, n.serialNo)));
-  relationRelated = computed(() => this.relatedTerms().filter(r => r.relativeType === '2' && r.relativeNo === this.activeRelativeNo() && this.matchesSelected(r.descriptorNo, r.serialNo)));
-  relationFileFor = computed(() => this.fileRelations().filter(f => f.fileType1 === '2' && f.fileType2 !== '2' && f.relativeNo === this.activeRelativeNo() && this.matchesSelected(f.descriptorNo, f.serialNo)));
-  relationFileAbout = computed(() => this.fileRelations().filter(f => f.fileType1 === '2' && f.fileType2 === '2' && f.relativeNo === this.activeRelativeNo() && this.matchesSelected(f.descriptorNo, f.serialNo)));
+  /** Legacy procs INNER JOIN view_form (sub_cod): an empty or unknown name code is not listed. */
+  private hasForm(code: string | null): boolean {
+    return !!code?.trim() && !this.missingFormCodes().has(code);
+  }
+
+  private eq(value: string | null | undefined, expected: string): boolean {
+    return (value ?? '').trim() === expected;
+  }
+
+  // NAROWER_PROC / RELATIVE_PROC typ '1', GEO_PROC, file_add_PROC (typ '1', rel '01', typ1 '1'|'2')
+  overallNarrower = computed(() => this.narrowerTerms().filter(n => this.eq(n.narrowerType, '1') && this.matchesSelected(n.serialNo) && this.hasMacnz(n.narrowerNo)));
+  overallRelated = computed(() => this.relatedTerms().filter(r => this.eq(r.relativeType, '1') && this.matchesSelected(r.serialNo) && this.hasMacnz(r.relationNo)));
+  overallGeo = computed(() => this.geoDescriptors().filter(g => this.matchesSelected(g.serialNo) && this.hasForm(g.geoNo)));
+  overallFileFor = computed(() => this.fileRelations().filter(f => this.eq(f.fileType1, '1') && this.eq(f.relativeNo, '01') && this.eq(f.fileType2, '1') && this.matchesSelected(f.serialNo) && this.hasForm(f.fileNo)));
+  overallFileAbout = computed(() => this.fileRelations().filter(f => this.eq(f.fileType1, '1') && this.eq(f.relativeNo, '01') && this.eq(f.fileType2, '2') && this.matchesSelected(f.serialNo) && this.hasForm(f.fileNo)));
+
+  // NAROWER1_PROC / relative1_PROC typ '2', file_add_PROC (typ '2', rel = Text3, typ1 '1'|'2')
+  relationNarrower = computed(() => this.narrowerTerms().filter(n => this.eq(n.narrowerType, '2') && this.eq(n.relativeNo, this.activeRelativeNo()) && this.matchesSelected(n.serialNo) && this.hasMacnz(n.narrowerNo)));
+  relationRelated = computed(() => this.relatedTerms().filter(r => this.eq(r.relativeType, '2') && this.eq(r.relativeNo, this.activeRelativeNo()) && this.matchesSelected(r.serialNo) && this.hasMacnz(r.relationNo)));
+  relationFileFor = computed(() => this.fileRelations().filter(f => this.eq(f.fileType1, '2') && this.eq(f.relativeNo, this.activeRelativeNo()) && this.eq(f.fileType2, '1') && this.matchesSelected(f.serialNo) && this.hasForm(f.fileNo)));
+  relationFileAbout = computed(() => this.fileRelations().filter(f => this.eq(f.fileType1, '2') && this.eq(f.relativeNo, this.activeRelativeNo()) && this.eq(f.fileType2, '2') && this.matchesSelected(f.serialNo) && this.hasForm(f.fileNo)));
 
   activeTimeMark = computed(() => {
     const sel = this.selectedSubject();
@@ -288,7 +312,11 @@ export class AnalysisPanelComponent implements OnChanges {
     ).subscribe(r => target.set(r.data.content));
   }
 
-  private matchesSearch(code: string, description: string, q: string): boolean {
+  private matchesSearch(code: string | null, description: string | null, q: string): boolean {
+    // Legacy MACNZ has terms with a NULL SUB_DESC: they never match (SQL LIKE on NULL), and must not
+    // throw here — a throw ends the valueChanges subscription and the picker stops filtering for good.
+    description = description ?? '';
+    code = code ?? '';
     return this.searchMode() === 'prefix'
       ? description.toLowerCase().startsWith(q) || code.toLowerCase().startsWith(q)
       : description.toLowerCase().includes(q) || code.toLowerCase().includes(q);
@@ -306,7 +334,7 @@ export class AnalysisPanelComponent implements OnChanges {
 
   macnzDescription(code: string | null): string {
     if (!code) return '';
-    return this.macnzOptions().find(o => o.code === code)?.description ?? '';
+    return this.macnzOptions().find(o => o?.code === code)?.description ?? '';
   }
 
   /** Falls back to the raw code while the name is still being fetched. */
@@ -335,7 +363,7 @@ export class AnalysisPanelComponent implements OnChanges {
         : this.autoSvc.getFormByCode(code.trim());
       lookup$.subscribe({
         next: r => this.formNames.update(m => ({ ...m, [code]: r.data.name })),
-        error: () => {},
+        error: () => this.missingFormCodes.update(set => new Set(set).add(code)),
         complete: () => this.resolvingFormCodes.delete(code)
       });
     }
@@ -389,7 +417,7 @@ export class AnalysisPanelComponent implements OnChanges {
     const type1 = row.type1.trim();
     // 04 → the tape proxy through ranjpath (rjp_typ 2, m_STCOK_path_new); 02 → the audio asset (waves)
     const blob$ = type1 === '04'
-      ? this.digitization.downloadMedia(row.digitNo.trim(), (row.type ?? '').trim() || undefined)
+      ? this.digitization.downloadMedia(row.digitNo.trim(), (row.type ?? '').trim() || undefined, true)
       : this.archiveSearch.downloadAsset(row.digitNo.trim(), type1, row.type);
     blob$.subscribe({
       next: blob => {

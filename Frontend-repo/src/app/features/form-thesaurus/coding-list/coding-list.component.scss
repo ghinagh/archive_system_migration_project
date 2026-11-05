@@ -2,15 +2,17 @@
 
 .list-shell {
   position: relative;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #e1e6ed;
   border-radius: 10px;
-  background: #f4f5f7;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   overflow: hidden;
 
-  &:focus-within { border-color: #3b6fd8; box-shadow: 0 0 0 2px rgba(59, 111, 216, 0.18); }
+  &:focus-within { border-color: #22404c; box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); }
 
   &.disabled {
     opacity: 0.62;
+    background: #f5f7fa;
     .list-item { cursor: default; &:hover { background: transparent; } }
   }
 }
@@ -25,14 +27,14 @@
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #111827;
+  color: #1a2b4a;
   font-size: 14px;
   user-select: none;
 
-  &:hover { background: #e6e9ee; }
-  &.selected { background: #2f5fbf; color: #fff; }
+  &:hover { background: #edf3f5; }
+  &.selected { background: #22404c; color: #fff; font-weight: 500; }
 }
 
-.disabled .list-item.selected { background: #8a9bbd; }
+.disabled .list-item.selected { background: #8fa6b0; }
 
 .list-progress { position: absolute; inset-inline: 0; top: 0; }

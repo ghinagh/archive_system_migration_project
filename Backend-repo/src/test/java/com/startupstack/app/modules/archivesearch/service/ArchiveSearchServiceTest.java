@@ -14,12 +14,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+/** The legacy USER_INTERFACE1 query: native SELECT DISTINCT over view_result, paginated in memory. */
 @ExtendWith(MockitoExtension.class)
 class ArchiveSearchServiceTest {
 
@@ -30,78 +32,92 @@ class ArchiveSearchServiceTest {
     @InjectMocks
     private ArchiveSearchService service;
 
-    private Object[] sampleRow() {
+    /** One row in the SELECT's column order (res_res_no … dig_typ_high, mn_result). */
+    private Object[] sampleRow(String appNo) {
         return new Object[] {
-                "0000001", "عنوان تجريبي", "عنوان اضافي", LocalDateTime.now(), "12", "دورية تجريبية",
-                "DIG001", "T", "01", "وصف النوع", 1, "H01", 1234.0,
-                0, 1, 30, 0, 1, 45, "مؤلف"
+                1, appNo, "عنوان تجريبي", "عنوان اضافي", "فيديو", LocalDateTime.of(2013, 1, 1, 0, 0), "12", "النهار",
+                "000005", "avi", "04", 0,
+                30, 0, 1, 45, 0, 1, "مؤلف", null, "مستخلص"
         };
+    }
+
+    private String runAndCaptureSql(ArchiveSearchRequest request, List<Object> rows, int page) {
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getResultList()).thenReturn(rows);
+        service.search(request, PageRequest.of(page, 10));
+        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+        verify(entityManager).createNativeQuery(sql.capture());
+        return sql.getValue();
     }
 
     @Test
     void search_withNoFilters_omitsWhereClause() {
-        when(entityManager.createQuery(anyString())).thenReturn(query);
-        when(query.getResultList()).thenReturn(List.of());
+        String sql = runAndCaptureSql(new ArchiveSearchRequest(), List.of(), 0);
 
-        service.search(new ArchiveSearchRequest(), PageRequest.of(0, 10));
-
-        ArgumentCaptor<String> jpql = ArgumentCaptor.forClass(String.class);
-        verify(entityManager).createQuery(jpql.capture());
-        assertFalse(jpql.getValue().contains("WHERE"), "no filters set should produce no WHERE clause");
+        assertTrue(sql.contains("FROM view_result v"));
+        // the only WHERE is inside the dig_typ_high column subquery, never after FROM view_result
+        assertFalse(sql.contains("FROM view_result v WHERE"), "no filters set should produce no WHERE clause");
     }
 
     @Test
-    void search_withWordFilter_addsLikeClauseOnTitleFields() {
-        ArchiveSearchRequest req = new ArchiveSearchRequest();
-        req.setWord("harvest");
-        when(entityManager.createQuery(anyString())).thenReturn(query);
-        when(query.getResultList()).thenReturn(List.of());
+    void search_withWordFilter_addsLikeClauseOnTitleAndAbstract() {
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setWord("عباس");
 
-        service.search(req, PageRequest.of(0, 10));
+        String sql = runAndCaptureSql(request, List.of(), 0);
 
-        ArgumentCaptor<String> jpql = ArgumentCaptor.forClass(String.class);
-        verify(entityManager).createQuery(jpql.capture());
-        assertTrue(jpql.getValue().contains("c.activeTitleAr LIKE :word0"));
-        verify(query).setParameter("word0", "%harvest%");
+        assertTrue(sql.contains("v.mn_result"));
+        assertTrue(sql.contains("v.mn_act_ttl"));
+        assertTrue(sql.contains("LIKE :word0"));
+        verify(query).setParameter("word0", "%عباس%");
     }
 
     @Test
-    void search_withDescriptorNo_usesExistsSubqueryAcrossAnalisAndRelative() {
-        ArchiveSearchRequest req = new ArchiveSearchRequest();
-        req.setDescriptorNo("D100");
-        when(entityManager.createQuery(anyString())).thenReturn(query);
-        when(query.getResultList()).thenReturn(List.of());
+    void search_withDescriptorNo_joinsAnalisAndRelative() {
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setDescriptorNo("020000000");
 
-        service.search(req, PageRequest.of(0, 10));
+        String sql = runAndCaptureSql(request, List.of(), 0);
 
-        ArgumentCaptor<String> jpql = ArgumentCaptor.forClass(String.class);
-        verify(entityManager).createQuery(jpql.capture());
-        assertTrue(jpql.getValue().contains("SubjectAnalysisEntity"));
-        assertTrue(jpql.getValue().contains("RelativeEntity"));
-        verify(query).setParameter("descriptorNo", "D100");
+        assertTrue(sql.contains("LEFT JOIN \"ANALIS\" an"));
+        assertTrue(sql.contains("LEFT JOIN \"RELATIVE\" rel"));
+        assertTrue(sql.contains("an.\"AN_DESC_NO\" = :descriptorNo OR rel.\"REL_REL_NO\" = :descriptorNo"));
     }
 
     @Test
     void search_mapsRowsIntoResponseAndPaginatesInMemory() {
-        when(entityManager.createQuery(anyString())).thenReturn(query);
-        when(query.getResultList()).thenReturn(List.of(sampleRow(), sampleRow(), sampleRow()));
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setWord("x");
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getResultList()).thenReturn(List.<Object>of((Object) sampleRow("ق000050")));
 
-        Page<ArchiveSearchResultResponse> page = service.search(new ArchiveSearchRequest(), PageRequest.of(0, 2));
+        Page<ArchiveSearchResultResponse> page = service.search(request, PageRequest.of(0, 10));
 
-        assertEquals(3, page.getTotalElements());
-        assertEquals(2, page.getContent().size());
-        assertEquals("0000001", page.getContent().get(0).getAppNo());
-        assertEquals("1234", page.getContent().get(0).getMachineStock());
+        assertEquals(1, page.getTotalElements());
+        ArchiveSearchResultResponse r = page.getContent().get(0);
+        assertEquals("ق000050", r.getAppNo());
+        assertEquals("عنوان تجريبي", r.getActiveTitleAr());
+        assertEquals("000005", r.getDigitNo());
+        assertEquals("000005", r.getMachineStock());
+        assertEquals(30, r.getDurationSeconds());
+        assertEquals("مؤلف", r.getResponsiblePersonName());
     }
 
     @Test
     void search_secondPage_returnsRemainder() {
-        when(entityManager.createQuery(anyString())).thenReturn(query);
-        when(query.getResultList()).thenReturn(List.of(sampleRow(), sampleRow(), sampleRow()));
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setWord("x");
+        List<Object> rows = new ArrayList<>();
+        for (int i = 0; i < 13; i++) {
+            rows.add(sampleRow(String.format("ق%06d", i)));
+        }
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getResultList()).thenReturn(rows);
 
-        Page<ArchiveSearchResultResponse> page = service.search(new ArchiveSearchRequest(), PageRequest.of(1, 2));
+        Page<ArchiveSearchResultResponse> page = service.search(request, PageRequest.of(1, 10));
 
-        assertEquals(3, page.getTotalElements());
-        assertEquals(1, page.getContent().size());
+        assertEquals(13, page.getTotalElements());
+        assertEquals(3, page.getContent().size());
+        assertEquals("ق000010", page.getContent().get(0).getAppNo());
     }
 }

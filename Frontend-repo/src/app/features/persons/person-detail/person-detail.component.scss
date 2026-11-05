@@ -23,7 +23,7 @@ mat-tab-group {
   th.mat-header-cell {
     font-size: 12px;
     font-weight: 600;
-    color: #555;
+    color: #5b6b80;
   }
 }
 
@@ -34,13 +34,13 @@ mat-tab-group {
   font-size: 12px;
   font-weight: 500;
 
-  &.active   { background: #e8f5e9; color: #2e7d32; }
-  &.inactive { background: #fce4ec; color: #c62828; }
+  &.active   { background: #e3efeb; color: #2f6b5e; }
+  &.inactive { background: #fbefee; color: #b4533a; }
 }
 
 .no-data {
   text-align: center;
-  color: #888;
+  color: #8a97a8;
   padding: 16px 0;
   font-size: 14px;
 }
@@ -54,8 +54,8 @@ mat-tab-group {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    label { font-size: 12px; color: #666; font-weight: 500; text-transform: uppercase; }
-    span { font-size: 15px; color: #333; }
+    label { font-size: 12px; color: #5b6b80; font-weight: 500; text-transform: uppercase; }
+    span { font-size: 15px; color: #1a2b4a; }
     &.full-width { grid-column: 1 / -1; }
   }
 }

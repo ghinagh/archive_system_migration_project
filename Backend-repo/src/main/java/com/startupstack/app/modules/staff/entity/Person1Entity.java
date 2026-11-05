@@ -26,16 +26,16 @@ import java.time.LocalDateTime;
 public class Person1Entity {
 
     @Id
-    @Column(name = "prs_no", columnDefinition = "nvarchar(5)")
+    @Column(name = "PRS_NO", columnDefinition = "nvarchar(5)")
     private String prsNo;
 
-    @Column(name = "prs_name", columnDefinition = "nvarchar(25)")
+    @Column(name = "PRS_NAME", columnDefinition = "nvarchar(25)")
     private String prsName;
 
-    @Column(name = "prs_inst")
+    @Column(name = "PRS_INST")
     private String prsInst;
 
-    @Column(name = "prs_adrs")
+    @Column(name = "PRS_ADRS")
     private String prsAdrs;
 
     @Column(name = "prs_inst_tel")

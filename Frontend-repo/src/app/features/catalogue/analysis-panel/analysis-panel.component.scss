@@ -3,16 +3,16 @@
 // replacement for Form2.frm's التحليل button — visually matches the rest of the app's
 // legacy-mirroring screens instead of looking like a generic Material list.
 :host {
-  --bg: #16232f;
-  --panel: #1e3243;
-  --panel-2: #24394b;
-  --line: #4f7691;
-  --line-soft: #33506655;
-  --ink: #e9f1f6;
-  --ink-dim: #9db3c2;
-  --accent: #e0b455;
-  --accent-dim: #e0b45533;
-  --danger: #d98a6b;
+  --bg: #f5f7fa;
+  --panel: #fff;
+  --panel-2: #f5f7fa;
+  --line: #d5dbe3;
+  --line-soft: #e9edf2;
+  --ink: #1a2b4a;
+  --ink-dim: #5b6b80;
+  --accent: #22404c;
+  --accent-dim: rgba(34, 64, 76, 0.12);
+  --danger: #b4533a;
 
   display: block;
 }
@@ -32,8 +32,6 @@
   align-items: start;
   padding: 16px;
   background:
-    linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 28px,
-    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/28px 100%,
     var(--bg);
   border-radius: 6px;
   color: var(--ink);

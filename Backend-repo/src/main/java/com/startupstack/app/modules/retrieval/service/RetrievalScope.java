@@ -66,16 +66,14 @@ public enum RetrievalScope {
             //   rel_form inner join subject on rel_form.rlf_form1 = subject.sub_form ...
             //   where ... and subject.sub_mcnz = '...'
             //   from form where form.sub_dte = ...
-            // Legacy keyed these joins on view_form1.sub_cod (SUB_TYP + SUB_NO). The migrated
-            // schema replaced that composite with a unique form.SUB_NO and enforces it with FKs
-            // (REL_FORM.RLF_FORM1/RLF_FORM2 -> form.SUB_NO, SUBJECT.SUB_FORM -> form.SUB_NO,
-            // REL_FORM.RLF_FORM1 -> POSITION.POS_NO), so SUB_NO is the join key here — the same
-            // key RelFormEntity / SubjectLinkEntity already map.
+            // Legacy keys these joins on view_form1.sub_cod = SUB_TYP + SUB_NO: REL_FORM.RLF_FORM1/2,
+            // SUBJECT.SUB_FORM and POSITION.POS_NO all hold the 10-character type+number (real
+            // data: '0100100002', '0400100000'), so joining on SUB_NO alone never matched.
             " FROM FormEntity f " +
-            "LEFT JOIN RelFormEntity rf ON rf.rlfForm1 = f.formNo " +
-            "LEFT JOIN FormEntity rf2 ON rf2.formNo = rf.rlfForm2 " +
-            "LEFT JOIN PositionEntity pos ON pos.posNo = f.formNo " +
-            "LEFT JOIN SubjectLinkEntity sj ON sj.subForm = f.formNo " +
+            "LEFT JOIN RelFormEntity rf ON rf.rlfForm1 = CONCAT(f.formType, f.formNo) " +
+            "LEFT JOIN FormEntity rf2 ON CONCAT(rf2.formType, rf2.formNo) = rf.rlfForm2 " +
+            "LEFT JOIN PositionEntity pos ON pos.posNo = CONCAT(f.formType, f.formNo) " +
+            "LEFT JOIN SubjectLinkEntity sj ON sj.subForm = CONCAT(f.formType, f.formNo) " +
             "LEFT JOIN MacnzEntity sub ON sub.subCode = sj.subMcnz "),
 
     PERIODICALS("PERIODICALS_RETRIEVAL", "p", "p.perNo",
@@ -98,7 +96,7 @@ public enum RetrievalScope {
             // request exactly like legacy cmd_result_Click — see fromClause below.
             " FROM PeriodicalEntity p " +
             "LEFT JOIN TransEntity t ON t.trsNo = p.perNo " +
-            "LEFT JOIN FormEntity g ON g.formNo = p.geo ") {
+            "LEFT JOIN FormEntity g ON CONCAT(g.formType, g.formNo) = p.geo ") {
 
         /**
          * Legacy sort_from.frm builds the FROM from arr_table: add_question appends each
@@ -124,9 +122,11 @@ public enum RetrievalScope {
                 from.append("LEFT JOIN ").append(entity(order.get(1))).append("ON t.trsNo = p.perNo ");
             }
             // Legacy joins FORM only for a displayed per_geo; a per_geo condition compares the
-            // PERIOD code (see codedCondition), so it brings in PERIOD, not FORM.
+            // PERIOD code (see codedCondition), so it brings in PERIOD, not FORM. The join key is
+            // the captured tmp_result2's "period.[per_geo] = form.[sub_typ] + form.[sub_no]";
+            // SUB_NO alone matches several form types and duplicated rows.
             if (outputAliases.contains("g")) {
-                from.append("LEFT JOIN FormEntity g ON g.formNo = p.geo ");
+                from.append("LEFT JOIN FormEntity g ON CONCAT(g.formType, g.formNo) = p.geo ");
             }
             return from.toString();
         }
@@ -137,12 +137,13 @@ public enum RetrievalScope {
          * tmp_result2). As a condition, sort_from.frm fills the c_getcond DataCombo with names
          * (ListField = out_namcod; F8/F9 serh_allform / serh_wrdform set BoundColumn = "sub_cod")
          * and add_question compares the stored code: OUT_scond & c_operation & "'" &
-         * c_getcond.BoundText & "'" — i.e. period.[per_geo] = '<code>'. The migrated code is the
-         * unique form.SUB_NO, the value PERIOD1.frm's M_PER_GEO writes (BoundColumn = "SUB_NO").
+         * c_getcond.BoundText & "'" — i.e. period.[per_geo] = '<code>'. The code is sub_cod =
+         * sub_typ + sub_no (sort_from.frm:2219/2269), the same 10-character key the display join
+         * uses. PERIOD1.frm's M_PER_GEO writes SUB_NO alone; such rows match neither, as in legacy.
          */
         @Override
         public CodedCondition codedCondition(String fieldKey) {
-            return "issue_place".equals(fieldKey) ? new CodedCondition("g.formNo", "p.geo") : null;
+            return "issue_place".equals(fieldKey) ? new CodedCondition("CONCAT(g.formType, g.formNo)", "p.geo") : null;
         }
 
         /** Legacy frm_result rows are "select distinct <displayed columns>" — no hidden key. */

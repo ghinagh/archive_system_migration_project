@@ -382,9 +382,9 @@ export class VideoOrderQueueComponent implements OnInit, OnDestroy {
     this.mTm = this.mTime;
     // Legacy Dir(M_NAM) check with dmd_path's extension; a master extension (.avi / .mxf) has no
     // browser-playable low copy, so the .mp4 proxy of the same stock is tried next.
-    this.digitizationService.downloadMedia(fileStock, ext).pipe(
+    this.digitizationService.downloadMedia(fileStock, ext, true).pipe(
       catchError(err => ext && ext.toLowerCase() !== 'mp4'
-        ? this.digitizationService.downloadMedia(record.stock, 'mp4')
+        ? this.digitizationService.downloadMedia(record.stock, 'mp4', true)
         : throwError(() => err))
     ).subscribe({
       next: blob => {

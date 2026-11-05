@@ -1,18 +1,19 @@
-// Blueprint theme lifted from the Form6 wireframe artifact (dark "engineering schematic" look).
+// Light theme matching the الترميز screens (white panels, slate accent); same tokens the old
+// dark "blueprint" theme used, so every rule below picks it up unchanged.
 // These custom properties are set on :host but, being plain CSS custom properties, they also
 // cascade into nested components rendered in this template (e.g. app-digital-files-grid) via
 // normal DOM inheritance — no need to redeclare them there.
 :host {
-  --bg: #16232f;
-  --panel: #1e3243;
-  --panel-2: #24394b;
-  --line: #4f7691;
-  --line-soft: #33506655;
-  --ink: #e9f1f6;
-  --ink-dim: #9db3c2;
-  --accent: #e0b455;
-  --accent-dim: #e0b45533;
-  --danger: #d98a6b;
+  --bg: #f5f7fa;
+  --panel: #fff;
+  --panel-2: #f5f7fa;
+  --line: #d5dbe3;
+  --line-soft: #e9edf2;
+  --ink: #1a2b4a;
+  --ink-dim: #5b6b80;
+  --accent: #22404c;
+  --accent-dim: rgba(34, 64, 76, 0.2);
+  --danger: #b4533a;
 
   display: block;
 }
@@ -20,10 +21,7 @@
 .doc-form-page {
   padding: 16px;
   min-height: calc(100vh - 32px);
-  background:
-    linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0/100% 28px,
-    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px) 0 0/28px 100%,
-    var(--bg);
+  background: var(--bg);
   color: var(--ink);
   font-family: "Segoe UI", "Tahoma", sans-serif;
   border-radius: 6px;
@@ -43,7 +41,8 @@
   position: sticky;
   top: 16px;
   background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px solid #e1e6ed;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   border-radius: 6px;
   padding: 10px 8px;
 
@@ -76,7 +75,8 @@
 
 .doc-panel {
   background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px solid #e1e6ed;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   border-radius: 6px;
   padding: 15px;
 }
@@ -231,12 +231,16 @@
     }
 
     .mat-icon {
-      color: var(--ink);
+      color: var(--accent);
       flex-shrink: 0;
     }
 
     &:hover {
       border-color: var(--accent);
+      background-color: var(--accent);
+      color: #fff;
+
+      .mat-icon { color: #fff; }
     }
   }
 
@@ -262,6 +266,14 @@
     --mdc-outlined-text-field-input-text-color: var(--ink);
     --mat-select-enabled-trigger-text-color: var(--ink);
     --mat-select-placeholder-text-color: var(--ink-dim);
+    --mat-form-field-outlined-outline-color: #d5dbe3;
+    --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+    --mat-form-field-outlined-focus-outline-color: #22404c;
+    --mat-form-field-outlined-label-text-color: #5b6b80;
+    --mat-form-field-outlined-hover-label-text-color: #22404c;
+    --mat-form-field-outlined-focus-label-text-color: #22404c;
+    --mat-form-field-outlined-input-text-color: #1a2b4a;
+    --mat-form-field-outlined-caret-color: #22404c;
   }
 
   // The hint/error subscript row reserves 16px by default via this ::before spacer
@@ -271,7 +283,7 @@
   }
 
   .doc-panel .mat-mdc-text-field-wrapper {
-    background-color: var(--panel-2);
+    background-color: var(--panel);
     border-radius: 4px;
   }
 
@@ -326,10 +338,9 @@
 
   .doc-panel .mat-mdc-header-cell,
   app-digital-files-grid .mat-mdc-header-cell {
-    color: var(--ink-dim);
-    font-family: "Consolas", "Courier New", monospace;
-    font-size: 11px;
-    letter-spacing: .02em;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
     border-bottom: 1px solid var(--line);
   }
 
@@ -350,7 +361,7 @@
     background: transparent;
 
     &:hover {
-      background: var(--panel-2);
+      background: #edf3f5;
     }
   }
 

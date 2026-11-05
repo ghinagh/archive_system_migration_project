@@ -19,7 +19,9 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -470,9 +472,17 @@ public class RetrievalService {
         }
     }
 
+    /** The user types a plain date (legacy x_getcond text box); a full date-time is accepted too. */
     private LocalDateTime parseDate(String raw) {
+        String value = raw == null ? "" : raw.trim();
         try {
-            return LocalDateTime.parse(raw);
+            if (value.contains("T")) {
+                return LocalDateTime.parse(value);
+            }
+            if (value.contains("/")) {
+                return LocalDate.parse(value, DateTimeFormatter.ofPattern("d/M/yyyy")).atStartOfDay();
+            }
+            return LocalDate.parse(value).atStartOfDay();
         } catch (DateTimeParseException e) {
             throw new BusinessException("Invalid date value (expected ISO-8601): " + raw);
         }

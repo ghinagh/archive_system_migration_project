@@ -131,8 +131,8 @@ class TmpFileAddServiceTest {
         TmpFileAddEntity entity = new TmpFileAddEntity();
         entity.setTmpFadNo("MN000001");
         entity.setTmpSer(1.0);
-        when(tmpFileAddRepository.findById(any(TmpFileAddId.class))).thenReturn(Optional.of(entity));
-        when(tmpFileAddRepository.save(entity)).thenReturn(entity);
+        when(tmpFileAddRepository.finalizeRows("MN000001", 1.0)).thenReturn(1);
+        when(tmpFileAddRepository.findByTmpFadNo("MN000001")).thenReturn(java.util.List.of(entity));
 
         TmpFileAddResponse result = tmpFileAddService.finalize("MN000001", 1.0);
 
@@ -141,26 +141,25 @@ class TmpFileAddServiceTest {
 
     @Test
     void finalize_nonExistent_throwsResourceNotFound() {
-        when(tmpFileAddRepository.findById(any(TmpFileAddId.class))).thenReturn(Optional.empty());
+        when(tmpFileAddRepository.finalizeRows("MISSING", 1.0)).thenReturn(0);
 
         assertThrows(ResourceNotFoundException.class, () -> tmpFileAddService.finalize("MISSING", 1.0));
     }
 
     @Test
     void delete_existing_deletes() {
-        when(tmpFileAddRepository.existsById(any(TmpFileAddId.class))).thenReturn(true);
+        when(tmpFileAddRepository.deleteOneRow("MN000001", 1.0)).thenReturn(1);
 
         tmpFileAddService.delete("MN000001", 1.0);
 
-        verify(tmpFileAddRepository).deleteById(any(TmpFileAddId.class));
+        verify(tmpFileAddRepository).deleteOneRow("MN000001", 1.0);
     }
 
     @Test
     void delete_nonExistent_throwsResourceNotFound() {
-        when(tmpFileAddRepository.existsById(any(TmpFileAddId.class))).thenReturn(false);
+        when(tmpFileAddRepository.deleteOneRow("MISSING", 1.0)).thenReturn(0);
 
         assertThrows(ResourceNotFoundException.class, () -> tmpFileAddService.delete("MISSING", 1.0));
-        verify(tmpFileAddRepository, never()).deleteById(any());
     }
 
     @org.junit.jupiter.api.Test

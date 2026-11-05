@@ -23,7 +23,7 @@ public final class ArticleSpecification {
 
     public static Specification<ArticleEntity> hasPeriodical(Double periodicalNo) {
         return (root, query, cb) ->
-                periodicalNo == null ? null : cb.equal(root.get("periodical").get("perNo"), periodicalNo);
+                periodicalNo == null ? null : cb.equal(root.get("periodicalNo"), periodicalNo);
     }
 
     public static Specification<ArticleEntity> hasYear(Double year) {

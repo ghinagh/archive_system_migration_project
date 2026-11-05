@@ -141,7 +141,14 @@ public class LookupsService {
 
     @Cacheable(value = "lookups-subjects")
     public List<MacnzResponse> getAllSubjects() {
-        return lookupsMapper.toMacnzResponseList(macnzRepository.findAll());
+        return macnzRepository.findAllRows().stream().map(r -> {
+            MacnzResponse response = new MacnzResponse();
+            response.setCode(r.getCode());
+            response.setLevel(r.getLevel());
+            response.setDescription(r.getDescription());
+            response.setLogic(r.getLogic());
+            return response;
+        }).toList();
     }
 
     @CacheEvict(value = "lookups-subjects", allEntries = true)

@@ -2,12 +2,12 @@
 
 .list-shell {
   position: relative;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 10px;
-  background: #f4f5f7;
+  background: #fff;
   overflow: hidden;
 
-  &:focus-within { border-color: #3b6fd8; box-shadow: 0 0 0 2px rgba(59, 111, 216, 0.18); }
+  &:focus-within { border-color: #22404c; box-shadow: 0 0 0 2px rgba(34, 64, 76, 0.18); }
 
   &.disabled {
     opacity: 0.62;
@@ -30,18 +30,18 @@
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #111827;
+  color: #1a2b4a;
   user-select: none;
 
-  &:hover { background: #e6e9ee; }
+  &:hover { background: #edf3f5; }
 
   &.selected {
-    background: #2f5fbf;
+    background: #22404c;
     color: #fff;
   }
 }
 
-.disabled .list-item.selected { background: #8a9bbd; }
+.disabled .list-item.selected { background: #8fa6b0; }
 
 .list-progress {
   position: absolute;
@@ -52,3 +52,7 @@
 @media (max-width: 600px) {
   .list-viewport { height: 260px; }
 }
+
+// Theme: same treatment as المكنز الشكلي.
+.list-shell { border-color: #e1e6ed; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06); &:focus-within { box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); } &.disabled { background: #f5f7fa; } }
+.list-item.selected { font-weight: 500; }

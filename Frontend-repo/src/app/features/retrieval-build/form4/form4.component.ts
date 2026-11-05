@@ -27,10 +27,10 @@ type Table = 'pout' | 'bnkout';
                      [allowAddNew]="false" [allowDelete]="false" [loading]="loading()"></app-legacy-grid>
   </div>`,
   styles: [`
-    .f4 { padding: 8px; background: #d4d0c8; min-height: calc(100vh - 120px); display: flex; flex-direction: column; gap: 4px; }
-    .f4-bar { display: flex; justify-content: space-between; align-items: center; background: #0a246a; color: #fff; padding: 2px 6px; }
+    .f4 { padding: 8px; background: #f5f7fa; min-height: calc(100vh - 120px); display: flex; flex-direction: column; gap: 4px; }
+    .f4-bar { display: flex; justify-content: space-between; align-items: center; background: #22404c; color: #fff; padding: 2px 6px; border-radius: 6px; }
     .f4-title { font-weight: 600; }
-    .f4-close { background: #d4d0c8; border: 1px outset #fff; cursor: pointer; width: 22px; }
+    .f4-close { background: #f5f7fa; border: 1px solid #d5dbe3; border-radius: 4px; cursor: pointer; width: 22px; }
     .f4-label { font-weight: 600; }
     app-legacy-grid { display: block; max-height: 40vh; overflow: auto; }
   `]

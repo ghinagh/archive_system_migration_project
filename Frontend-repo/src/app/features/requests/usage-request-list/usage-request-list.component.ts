@@ -246,13 +246,14 @@ export class UsageRequestListComponent implements OnInit {
     if (!resultNo) {
       return;
     }
+    // f_result.frm Command6_Click: user 244 → del_result, refresh, close Frame2 — no message;
+    // any other user → nothing happens (no message, panel stays open).
     this.digitizationService.deleteResultByResultNo(resultNo).subscribe({
       next: () => {
-        this.snackBar.open(this.translate.instant('APP.SUCCESS'), '', { duration: 3000 });
         this.showManagePanel.set(false);
         this.load();
       },
-      error: () => this.snackBar.open(this.translate.instant('USAGE_REQUESTS.CANCEL_DENIED'), '', { duration: 4000 })
+      error: () => {}
     });
   }
 

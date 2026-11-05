@@ -145,7 +145,7 @@ export class DigitalFilesGridComponent implements OnChanges {
     const type1 = row.type1?.trim();
     if (row.digitNo && type1 === '04') {
       // legacy opens the tape (ranjpath rjp_typ 2) in its player window — here the browser's player
-      this.digitizationService.downloadMedia(row.digitNo.trim(), row.type?.trim() || undefined).subscribe({
+      this.digitizationService.downloadMedia(row.digitNo.trim(), row.type?.trim() || undefined, true).subscribe({
         next: blob => window.open(URL.createObjectURL(blob), '_blank'),
         error: () => this.snackBar.open(this.translate.instant('DOC_FORM.FILE_NOT_FOUND'), '', { duration: 4000 })
       });

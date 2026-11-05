@@ -28,10 +28,13 @@ export class ArchiveSearchService {
       { params: this.tierParams(tier, ext) });
   }
 
-  downloadMedia(stockNo: string, tier: StockTier = 'LOW', ext?: string | null): Observable<Blob> {
+  /** {@code preview}: the in-app player's browser-playable copy (AVI/MPG converted server-side). */
+  downloadMedia(stockNo: string, tier: StockTier = 'LOW', ext?: string | null, preview = false): Observable<Blob> {
+    let params = this.tierParams(tier, ext);
+    if (preview) params = params.set('preview', 'true');
     return this.http.get(
       `${this.api}/api/media/file/${encodeURIComponent(stockNo)}`,
-      { params: this.tierParams(tier, ext), responseType: 'blob' });
+      { params, responseType: 'blob' });
   }
 
   /**

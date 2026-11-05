@@ -8,15 +8,39 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 24px;
-    h1 { margin: 0; font-size: 20px; }
+    h1 { margin: 0; font-size: 20px; color: #1a2b4a; }
   }
 
-  .form-section { margin-bottom: 20px; }
+  .form-section {
+    margin-bottom: 20px;
+    border: 1px solid #e1e6ed;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+    ::ng-deep .mat-mdc-card-title { color: #22404c; font-weight: 600; }
+  }
+
+  // Outline fields: slate focus/hover like the الترميز screens.
+  ::ng-deep .mat-mdc-form-field {
+    --mdc-outlined-text-field-outline-color: #d5dbe3;
+    --mdc-outlined-text-field-hover-outline-color: #a9b6c8;
+    --mdc-outlined-text-field-focus-outline-color: #22404c;
+    --mdc-outlined-text-field-focus-label-text-color: #22404c;
+    --mdc-outlined-text-field-caret-color: #22404c;
+    --mat-form-field-outlined-outline-color: #d5dbe3;
+    --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+    --mat-form-field-outlined-focus-outline-color: #22404c;
+    --mat-form-field-outlined-label-text-color: #5b6b80;
+    --mat-form-field-outlined-hover-label-text-color: #22404c;
+    --mat-form-field-outlined-focus-label-text-color: #22404c;
+    --mat-form-field-outlined-input-text-color: #1a2b4a;
+    --mat-form-field-outlined-caret-color: #22404c;
+  }
 
   // Matches legacy PERIOD1.frm Shape4 BackColor=&H00FFC0C0& (subscription section).
   .subscription-section {
-    background-color: #ffc0c0;
-    ::ng-deep .mat-mdc-card-title { color: #7a0000; }
+    background-color: #fbefee;
+    border-color: #f0d4d0;
+    ::ng-deep .mat-mdc-card-title { color: #8a2b1f; }
   }
 
   .form-row {
@@ -45,20 +69,21 @@
       border-radius: 8px;
       font-weight: 500;
       letter-spacing: 0.2px;
-      background-color: #e8eaed;
-      color: #1f2937;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.08);
-      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+      background-color: #fff;
+      color: #22404c;
+      box-shadow: 0 0 0 1px #a9bec6, 0 1px 2px rgba(16, 24, 40, 0.06);
+      transition: box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 
       &:hover:not(:disabled) {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
-        background-color: #dde0e3;
+        background-color: #22404c;
+        color: #fff;
+        box-shadow: 0 0 0 1px #22404c, 0 2px 6px rgba(34, 64, 76, 0.25);
       }
 
+      &:focus-visible { outline: none; box-shadow: 0 0 0 1px #22404c, 0 0 0 4px rgba(34, 64, 76, 0.2); }
+
       &:active:not(:disabled) {
-        transform: translateY(0);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+        box-shadow: 0 0 0 1px #22404c;
       }
 
       &:disabled {
@@ -72,5 +97,6 @@
 // Command10/Command8 inline popups (legacy Frame2 / Text4 inline search widgets).
 .inline-search-popup {
   margin-bottom: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid #e1e6ed;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
 }

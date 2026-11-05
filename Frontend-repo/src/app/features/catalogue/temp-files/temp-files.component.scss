@@ -7,7 +7,7 @@
 
   .no-data {
     font-style: italic;
-    color: rgba(0, 0, 0, 0.54);
+    color: #5b6b80;
     padding: 8px 0;
     margin: 0;
   }
@@ -20,13 +20,13 @@
     font-weight: 500;
 
     &.pending {
-      background: #fff3e0;
-      color: #e65100;
+      background: #f7efe0;
+      color: #8a6420;
     }
 
     &.finalized {
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: #e3efeb;
+      color: #2f6b5e;
     }
   }
 }

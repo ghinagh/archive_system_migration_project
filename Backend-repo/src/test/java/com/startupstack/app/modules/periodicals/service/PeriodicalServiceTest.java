@@ -44,7 +44,7 @@ class PeriodicalServiceTest {
 
     @Test
     void findById_existingPeriodical_returnsResponse() {
-        when(periodicalRepository.findById(1.0)).thenReturn(Optional.of(testEntity));
+        when(periodicalRepository.findFirstByNumber(1.0)).thenReturn(Optional.of(testEntity));
         when(periodicalMapper.toResponse(testEntity)).thenReturn(testResponse);
 
         PeriodicalResponse result = periodicalService.findById(1.0);
@@ -54,7 +54,7 @@ class PeriodicalServiceTest {
 
     @Test
     void findById_nonExistent_throwsResourceNotFound() {
-        when(periodicalRepository.findById(999.0)).thenReturn(Optional.empty());
+        when(periodicalRepository.findFirstByNumber(999.0)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> periodicalService.findById(999.0));
     }

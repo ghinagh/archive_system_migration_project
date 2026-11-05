@@ -1,5 +1,6 @@
 package com.startupstack.app.modules.articles.service;
 
+import com.startupstack.app.modules.catalogue.service.CatalogueLockGuard;
 import com.startupstack.app.modules.articles.dto.ArticleRequest;
 import com.startupstack.app.modules.articles.dto.ArticleResponse;
 import com.startupstack.app.modules.articles.entity.ArticleEntity;
@@ -102,7 +103,7 @@ class ArticleServiceDocumentationParityTest {
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> articleService.updateDocumentationForm("ق000004", r));
 
-        assertEquals("لا تستطيع التعديل او الالغاء ....لان الوثيقة مقفلة.", ex.getMessage());
+        assertEquals(CatalogueLockGuard.LOCKED_MESSAGE, ex.getMessage());
         verify(articleRepository, never()).save(any());
         verify(catalogueRepository, never()).save(any());
     }

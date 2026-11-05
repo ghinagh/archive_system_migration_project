@@ -4,11 +4,11 @@
   overflow: auto;
   max-height: 300px;
   min-height: 140px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 10px;
   outline: none;
 
-  &:focus { border-color: #3b6fd8; box-shadow: 0 0 0 2px rgba(59, 111, 216, 0.15); }
+  &:focus { border-color: #22404c; box-shadow: 0 0 0 2px rgba(34, 64, 76, 0.15); }
   &.loading { opacity: 0.6; }
 
   table { border-collapse: collapse; width: max-content; min-width: 100%; font-size: 13px; }
@@ -17,9 +17,9 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    background: #eceff3;
+    background: #e4edf0;
     padding: 6px 10px;
-    border-bottom: 1px solid #c7ccd3;
+    border-bottom: 1px solid #d5dbe3;
     white-space: nowrap;
     text-align: right;
     font-weight: 600;
@@ -37,13 +37,16 @@
     cursor: default;
   }
 
-  td.selector, th.selector { min-width: 22px; width: 22px; text-align: center; background: #f4f5f7; cursor: pointer; }
-  td.locked { color: #4b5563; }
+  td.selector, th.selector { min-width: 22px; width: 22px; text-align: center; background: #fff; cursor: pointer; }
+  td.locked { color: #475569; }
   .v { white-space: pre; }
-  tr.current td:not(.selector) { background: rgba(47, 95, 191, 0.10); }
-  tr.row-selected td { background: #2f5fbf !important; color: #fff; }
-  td.cell-current { outline: 2px solid #3b6fd8; outline-offset: -2px; }
-  tr.new-row td { color: #6b7280; }
+  tr.current td:not(.selector) { background: rgba(34, 64, 76, 0.10); }
+  tr.row-selected td { background: #22404c !important; color: #fff; }
+  td.cell-current { outline: 2px solid #22404c; outline-offset: -2px; }
+  tr.new-row td { color: #6b7a90; }
 
-  .cell-editor { width: 100%; min-width: 120px; height: 24px; border: 1px solid #3b6fd8; border-radius: 4px; padding: 0 6px; }
+  .cell-editor { width: 100%; min-width: 120px; height: 24px; border: 1px solid #22404c; border-radius: 4px; padding: 0 6px; }
 }
+
+// Theme: same treatment as المكنز الشكلي.
+.grid { background: #fff; border-color: #e1e6ed; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06); color: #1a2b4a; th { color: #22404c; } tbody tr:hover td:not(.selector) { background: #edf3f5; } &:focus { box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); } }

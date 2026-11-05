@@ -380,7 +380,11 @@ export class RetrievalResultsComponent implements OnInit {
         this.focusedKey.set(null);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      // A failed query must not read as "0 results": show the server's message instead.
+      error: e => {
+        this.isLoading.set(false);
+        this.snackBar.open(e?.error?.message || this.translate.instant('APP.ERROR'), '', { duration: 4000 });
+      }
     });
   }
 }

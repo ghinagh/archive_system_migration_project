@@ -1,9 +1,9 @@
-// new_vdpreview.frm palette: form / grid BackColor &H0086C8EC, buttons &H002972B4,
-// text boxes &H00D8F9FE (VB colours are BGR).
-$vq-bg: #ecc886;
-$vq-btn: #b47229;
-$vq-input: #fef9d8;
-$vq-border: #5a4a3a;
+// Light palette matching the الترميز screens (was the new_vdpreview.frm tan/brown palette:
+// form / grid &H0086C8EC, buttons &H002972B4, text boxes &H00D8F9FE).
+$vq-bg: #f5f7fa;
+$vq-btn: #fff;
+$vq-input: #fff;
+$vq-border: #e1e6ed;
 
 :host {
   display: block;
@@ -15,7 +15,7 @@ $vq-border: #5a4a3a;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #1a1a1a;
+  color: #1a2b4a;
   font-family: Tahoma, 'MS Sans Serif', Arial, sans-serif;
   font-size: 13px;
   min-height: 100%;
@@ -75,7 +75,7 @@ $vq-border: #5a4a3a;
   align-items: center;
   gap: 4px;
   padding: 4px 6px;
-  background: linear-gradient(#dfe9f5, #b9cde6);
+  background: #e4edf0;
 }
 
 .vq-jog-btn {
@@ -85,8 +85,10 @@ $vq-border: #5a4a3a;
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid #7a8aa0;
-  background: #eef3fa;
+  border: 1px solid #a9bec6;
+  border-radius: 4px;
+  background: #fff;
+  color: #22404c;
   cursor: pointer;
 
   mat-icon {
@@ -100,7 +102,8 @@ $vq-border: #5a4a3a;
   width: 28px;
   height: 24px;
   text-align: center;
-  border: 1px solid #7a8aa0;
+  border: 1px solid #d5dbe3;
+  border-radius: 4px;
   background: #fff;
 }
 
@@ -108,8 +111,10 @@ $vq-border: #5a4a3a;
   height: 26px;
   min-width: 34px;
   padding: 0 8px;
-  border: 1px solid #7a8aa0;
-  background: #eef3fa;
+  border: 1px solid #a9bec6;
+  border-radius: 4px;
+  background: #fff;
+  color: #22404c;
   cursor: pointer;
   font: inherit;
 }
@@ -117,6 +122,9 @@ $vq-border: #5a4a3a;
 // ---- Clip panel (the section from the first legacy screenshot) ----
 .vq-panel {
   border: 1px solid $vq-border;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -182,25 +190,33 @@ $vq-border: #5a4a3a;
   height: 30px;
   padding: 0 10px;
   background: $vq-btn;
-  color: #1a1a1a;
-  border: 2px outset #d9a066;
+  color: #22404c;
+  border: 2px solid #a9bec6;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: #22404c;
+    border-color: #22404c;
+    color: #fff;
+  }
   font: inherit;
   white-space: nowrap;
 
   &:active {
-    border-style: inset;
+    border-color: #1a3340;
   }
 
   &:disabled {
-    color: #6d5a43;
+    color: #8fa6b0;
     cursor: default;
     opacity: 0.75;
   }
 
   &:focus-visible {
-    outline: 1px dotted #000;
-    outline-offset: -4px;
+    outline: 2px solid rgba(34, 64, 76, 0.35);
+    outline-offset: 1px;
   }
 }
 
@@ -226,21 +242,25 @@ $vq-border: #5a4a3a;
 
 .vq-input {
   height: 24px;
-  border: 2px inset #c9b98a;
+  border: 2px solid #d5dbe3;
+  border-radius: 4px;
   background: $vq-input;
   padding: 0 4px;
   font: inherit;
   color: inherit;
 
   &:disabled {
-    background: #efe6c0;
-    color: #555;
+    background: #f3f5f8;
+    color: #6b7a90;
   }
 }
 
 // ---- Search panel ----
 .vq-search {
   border: 1px solid $vq-border;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
@@ -294,15 +314,16 @@ $vq-border: #5a4a3a;
 // ---- Grid ----
 .vq-grid {
   position: relative;
-  background: $vq-bg;
-  border: 2px inset #c9b98a;
+  background: #fff;
+  border: 2px solid #e1e6ed;
+  border-radius: 8px;
   max-height: 46vh;
   min-height: 160px;
   overflow: auto;
   outline: none;
 
   &:focus {
-    border-color: #8a6a3a;
+    border-color: #22404c;
   }
 
   table {
@@ -314,22 +335,23 @@ $vq-border: #5a4a3a;
   th {
     position: sticky;
     top: 0;
-    background: #e8d9b0;
-    font-weight: 400;
-    border: 1px solid #a89a72;
+    background: #e4edf0;
+    color: #22404c;
+    font-weight: 600;
+    border: 1px solid #d5dbe3;
     padding: 2px 6px;
     text-align: right;
     z-index: 1;
   }
 
   td {
-    border: 1px solid #c7b07a;
+    border: 1px solid #e9edf2;
     padding: 1px 6px;
     text-align: right;
   }
 
   tr.vq-current td {
-    background: #2a62b8;
+    background: #22404c;
     color: #fff;
   }
 
@@ -364,14 +386,15 @@ $vq-border: #5a4a3a;
 // ---- F5 path panel (Frame1) ----
 .vq-frame {
   align-self: center;
-  background: $vq-bg;
-  border: 2px outset #d9a066;
+  background: #fff;
+  border: 2px solid #e1e6ed;
+  border-radius: 10px;
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: min(460px, 100%);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.18);
 }
 
 .vq-path-select {
@@ -421,4 +444,33 @@ $vq-border: #5a4a3a;
   overflow-wrap: normal;
   font-size: 12px;
   padding: 2px 4px;
+}
+
+// Theme: same treatment as the الترميز screens (colors/shadows only).
+:host ::ng-deep {
+  .mat-mdc-form-field {
+    --mat-form-field-outlined-outline-color: #d5dbe3;
+    --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+    --mat-form-field-outlined-focus-outline-color: #22404c;
+    --mat-form-field-outlined-focus-label-text-color: #22404c;
+    --mat-form-field-outlined-caret-color: #22404c;
+  }
+  .mat-mdc-raised-button.mat-primary, .mat-mdc-unelevated-button.mat-primary {
+    background-color: #22404c;
+    color: #fff;
+    &:hover { background-color: #1a3340; }
+  }
+  .mat-mdc-outlined-button:not(:disabled) { --mat-button-outlined-outline-color: #a9bec6; border-color: #a9bec6; color: #22404c; }
+  .mat-mdc-outlined-button:disabled { --mat-button-outlined-disabled-outline-color: #e1e6ed; border-color: #e1e6ed; }
+  .mat-mdc-header-cell { color: #22404c; font-weight: 600; }
+  .mat-mdc-row:hover .mat-mdc-cell { background: #edf3f5; }
+  .mat-mdc-card { border: 1px solid #e1e6ed; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06); }
+  .mat-mdc-checkbox, .mat-mdc-radio-button {
+    --mat-checkbox-selected-icon-color: #22404c;
+    --mat-checkbox-selected-focus-icon-color: #22404c;
+    --mat-checkbox-selected-hover-icon-color: #22404c;
+    --mat-radio-selected-icon-color: #22404c;
+    --mat-radio-selected-focus-icon-color: #22404c;
+    --mat-radio-selected-hover-icon-color: #22404c;
+  }
 }

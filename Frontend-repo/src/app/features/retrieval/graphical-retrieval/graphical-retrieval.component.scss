@@ -16,6 +16,7 @@
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  color: #1a2b4a;
 }
 
 .accumulator {
@@ -36,39 +37,39 @@
 // distinguishable at a glance (close/run-search/add/clear/paren/and/or all look identical
 // otherwise, since mat-stroked-button has no fill by default).
 .btn-close {
-  background-color: #fdecea;
-  color: #c62828;
+  background-color: #fbefee;
+  color: #b4533a;
 }
 
 .btn-run-search {
-  background-color: #1976d2 !important;
+  background-color: #22404c !important;
   color: #fff;
 }
 
 .btn-add-condition {
-  background-color: #2e7d32 !important;
+  background-color: #2f6b5e !important;
   color: #fff;
 }
 
 .btn-clear {
-  background-color: #fdecea;
-  color: #c62828;
+  background-color: #fbefee;
+  color: #b4533a;
 }
 
 .btn-paren-open,
 .btn-paren-close {
-  background-color: #ede7f6;
-  color: #4527a0;
+  background-color: #eef1f5;
+  color: #475569;
 }
 
 .btn-and {
-  background-color: #e3f2fd;
-  color: #0d47a1;
+  background-color: #e4edf0;
+  color: #22404c;
 }
 
 .btn-or {
-  background-color: #fff3e0;
-  color: #e65100;
+  background-color: #f7efe0;
+  color: #8a6420;
 }
 
 // Legacy toolbar row ("الادوات" / "لوائح لحقول العرض" / "تعليم حقول العرض") — see the
@@ -91,7 +92,8 @@
   flex-wrap: wrap;
   gap: 12px;
   background: var(--mat-sys-surface-container-low, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid #e1e6ed;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   border-radius: 8px;
   padding: 12px 16px;
   min-height: 56px;
@@ -124,7 +126,8 @@
 
 .picker-col {
   background: var(--mat-sys-surface-container-low, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid #e1e6ed;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
   border-radius: 8px;
   padding: 12px;
   display: flex;
@@ -142,7 +145,7 @@
 .picker-title {
   margin: 0 0 8px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.7);
+  color: #22404c;
 }
 
 .full-width {
@@ -163,21 +166,22 @@
     cursor: pointer;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.04);
+      background: #edf3f5;
     }
 
     &.selected {
-      background: var(--mat-sys-primary-container, #e3f2fd);
+      background: #22404c;
+      color: #fff;
       font-weight: 600;
     }
 
     &.marked::after {
       content: ' \2713';
-      color: green;
+      color: #2f6b5e;
     }
 
     &.order-marked {
-      background: rgba(25, 118, 210, 0.08);
+      background: rgba(34, 64, 76, 0.08);
     }
   }
 }
@@ -185,7 +189,7 @@
 .order-badge {
   display: inline-block;
   margin-inline-end: 4px;
-  color: #1976d2;
+  color: #22404c;
   font-weight: 700;
 }
 
@@ -200,4 +204,33 @@
   font-size: 0.8rem;
   color: rgba(0, 0, 0, 0.5);
   font-style: italic;
+}
+
+// Theme: same treatment as the الترميز screens (colors/shadows only).
+:host ::ng-deep {
+  .mat-mdc-form-field {
+    --mat-form-field-outlined-outline-color: #d5dbe3;
+    --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+    --mat-form-field-outlined-focus-outline-color: #22404c;
+    --mat-form-field-outlined-focus-label-text-color: #22404c;
+    --mat-form-field-outlined-caret-color: #22404c;
+  }
+  .mat-mdc-raised-button.mat-primary, .mat-mdc-unelevated-button.mat-primary {
+    background-color: #22404c;
+    color: #fff;
+    &:hover { background-color: #1a3340; }
+  }
+  .mat-mdc-outlined-button:not(:disabled) { --mat-button-outlined-outline-color: #a9bec6; border-color: #a9bec6; color: #22404c; }
+  .mat-mdc-outlined-button:disabled { --mat-button-outlined-disabled-outline-color: #e1e6ed; border-color: #e1e6ed; }
+  .mat-mdc-header-cell { color: #22404c; font-weight: 600; }
+  .mat-mdc-row:hover .mat-mdc-cell { background: #edf3f5; }
+  .mat-mdc-card { border: 1px solid #e1e6ed; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06); }
+  .mat-mdc-checkbox, .mat-mdc-radio-button {
+    --mat-checkbox-selected-icon-color: #22404c;
+    --mat-checkbox-selected-focus-icon-color: #22404c;
+    --mat-checkbox-selected-hover-icon-color: #22404c;
+    --mat-radio-selected-icon-color: #22404c;
+    --mat-radio-selected-focus-icon-color: #22404c;
+    --mat-radio-selected-hover-icon-color: #22404c;
+  }
 }

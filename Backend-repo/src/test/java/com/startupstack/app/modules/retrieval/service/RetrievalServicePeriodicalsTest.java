@@ -77,7 +77,7 @@ class RetrievalServicePeriodicalsTest {
 
         ArgumentCaptor<String> jpql = ArgumentCaptor.forClass(String.class);
         verify(entityManager).createQuery(jpql.capture());
-        assertEquals("SELECT DISTINCT g.name FROM PeriodicalEntity p LEFT JOIN FormEntity g ON g.formNo = p.geo "
+        assertEquals("SELECT DISTINCT g.name FROM PeriodicalEntity p LEFT JOIN FormEntity g ON CONCAT(g.formType, g.formNo) = p.geo "
                 + " WHERE p.geo = :v0", jpql.getValue());
     }
 

@@ -15,11 +15,10 @@ export const adminGuard: CanActivateFn = () => {
     return true;
   }
 
-  snackBar.open(
-    translate.instant('USERS.ADMIN_ONLY'),
-    translate.instant('APP.CANCEL'),
-    { duration: 4000, horizontalPosition: 'center', verticalPosition: 'top' }
-  );
+  // get() waits for the translation file, so a page opened by its URL shows Arabic, not the key
+  translate.get(['USERS.ADMIN_ONLY', 'APP.CANCEL']).subscribe(t =>
+    snackBar.open(t['USERS.ADMIN_ONLY'], t['APP.CANCEL'],
+      { duration: 4000, horizontalPosition: 'center', verticalPosition: 'top' }));
   router.navigate(['/catalogue']);
   return false;
 };

@@ -4,33 +4,34 @@
 
 .sidenav {
   width: 260px;
-  background: #fafafa;
+  background: #13232b;
+  border-inline-end-color: #13232b !important;
 
   .sidenav-header {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 16px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 
     .app-logo {
       font-size: 32px;
       width: 32px;
       height: 32px;
-      color: #3f51b5;
+      color: #d6a85b;
     }
 
     .app-title {
       font-size: 14px;
-      font-weight: 500;
-      color: #333;
+      font-weight: 700;
+      color: #f1f4f6;
     }
   }
 }
 
 .active-link {
-  background: rgba(63, 81, 181, 0.08) !important;
-  color: #3f51b5;
+  background: #22404c !important;
+  color: #fff;
 }
 
 .nav-group-header {
@@ -79,21 +80,46 @@
   }
 }
 
-// Top-level items (groups + standalone): brand-indigo icons, bold, no tint.
+// Top-level items (groups + standalone): dark sidebar, light text, gold accent when active.
 .depth-0 {
+  margin: 2px 8px;
+  width: auto;
+  border-radius: 6px;
+
   ::ng-deep .mdc-list-item__primary-text {
-    font-weight: 600;
-    color: #263238;
+    font-weight: 500;
+    color: #dce4e8;
   }
 
   mat-icon[matListItemIcon] {
-    color: #3f51b5;
+    color: #b5c5cc;
   }
+
+  &:hover, &.active-link {
+    background: #22404c !important;
+
+    ::ng-deep .mdc-list-item__primary-text { color: #fff; }
+    mat-icon[matListItemIcon] { color: #fff; }
+  }
+
+  &.active-link { box-shadow: inset -3px 0 0 #d6a85b; }
+  &.nav-disabled:hover { background: transparent !important; }
 }
 
-// Second-level flyout items: teal accent tint.
+:host-context([dir='ltr']) .depth-0.active-link { box-shadow: inset 3px 0 0 #d6a85b; }
+
+// Chevron on group headers (pure CSS, points toward the flyout side).
+.nav-group-header ::ng-deep .mdc-list-item__primary-text::after {
+  content: '›';
+  margin-inline-start: 10px;
+  color: #b5c5cc;
+  font-size: 18px;
+  line-height: 1;
+}
+
+// Second-level flyout items: same dark palette as the sidebar.
 .depth-1 {
-  background: rgba(0, 121, 107, 0.05);
+  background: transparent;
 
   ::ng-deep .mdc-list-item__content {
     display: flex;
@@ -109,26 +135,26 @@
     white-space: nowrap;
     font-size: 13.5px;
     font-weight: 500;
-    color: #37474f;
+    color: #dce4e8;
   }
 
   mat-icon[matListItemIcon] {
-    color: #00796b;
+    color: #d6a85b;
   }
 }
 
-// Third-level flyout items: amber accent tint.
+// Third-level flyout items: same dark palette as the sidebar.
 .depth-2 {
-  background: rgba(230, 81, 0, 0.05);
+  background: transparent;
 
   ::ng-deep .mdc-list-item__primary-text {
     font-size: 13px;
     font-weight: 400;
-    color: #455a64;
+    color: #dce4e8;
   }
 
   mat-icon[matListItemIcon] {
-    color: #e65100;
+    color: #d6a85b;
     font-size: 19px;
     width: 19px;
     height: 19px;
@@ -142,10 +168,21 @@
   max-width: 320px;
   max-height: 80vh;
   overflow-y: auto;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: #13232b;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   padding: 4px 0;
+
+  .depth-1, .depth-2 {
+    &:hover, &.active-link {
+      background: #22404c !important;
+
+      ::ng-deep .mdc-list-item__primary-text { color: #fff; }
+    }
+  }
+
+  .nav-disabled:hover { background: transparent !important; }
 }
 
 .content-area {
@@ -158,6 +195,12 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  background: #fff;
+  color: #1a2b4a;
+  border-bottom: 1px solid #e1e6ed;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+
+  .mat-mdc-icon-button { color: #22404c; }
 
   .toolbar-search {
     margin: 0 12px;
@@ -171,11 +214,14 @@
   .user-name {
     margin: 0 8px;
     font-size: 14px;
+    font-weight: 500;
+    color: #22404c;
   }
 
   .lang-toggle {
     min-width: 48px;
     font-weight: 600;
+    color: #22404c;
   }
 }
 

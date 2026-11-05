@@ -42,6 +42,8 @@ class DescriptorServiceTest {
     @Mock
     private ResRepository resRepository;
     @Mock
+    private com.startupstack.app.modules.catalogue.repository.TimeDescriptorRepository timeDescriptorRepository;
+    @Mock
     private DescriptorMapper mapper;
     @InjectMocks
     private DescriptorService descriptorService;

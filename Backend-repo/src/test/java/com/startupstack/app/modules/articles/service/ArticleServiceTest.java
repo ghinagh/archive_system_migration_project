@@ -54,7 +54,7 @@ class ArticleServiceTest {
 
         when(catalogueRepository.save(any(CatalogueEntity.class))).thenAnswer(i -> i.getArgument(0));
         when(articleMapper.toEntity(request)).thenReturn(articleEntity);
-        when(periodicalRepository.findById(5.0)).thenReturn(Optional.of(periodical));
+        when(periodicalRepository.findFirstByNumber(5.0)).thenReturn(Optional.of(periodical));
         when(articleRepository.save(articleEntity)).thenReturn(articleEntity);
         when(articleMapper.toResponse(articleEntity)).thenReturn(response);
 
@@ -63,7 +63,7 @@ class ArticleServiceTest {
         ArgumentCaptor<CatalogueEntity> captor = ArgumentCaptor.forClass(CatalogueEntity.class);
         verify(catalogueRepository).save(captor.capture());
         assertEquals("A", captor.getValue().getType());
-        verify(periodicalRepository).findById(5.0);
+        verify(periodicalRepository, atLeastOnce()).findFirstByNumber(5.0);
     }
 
     @Test
@@ -72,9 +72,9 @@ class ArticleServiceTest {
         request.setAppNo("ART0002");
         request.setPeriodicalNo(999.0);
 
-        when(catalogueRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(articleMapper.toEntity(request)).thenReturn(new ArticleEntity());
-        when(periodicalRepository.findById(999.0)).thenReturn(Optional.empty());
+        lenient().when(catalogueRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        lenient().when(articleMapper.toEntity(request)).thenReturn(new ArticleEntity());
+        when(periodicalRepository.findFirstByNumber(999.0)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> articleService.create(request));
     }

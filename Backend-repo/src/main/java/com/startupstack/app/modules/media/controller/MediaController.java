@@ -47,8 +47,12 @@ public class MediaController {
     public ResponseEntity<Resource> download(
             @PathVariable String stockNo,
             @RequestParam(required = false, defaultValue = "LOW") StockTier tier,
-            @RequestParam(required = false) String ext) {
-        Resource resource = mediaService.loadAsResource(stockNo, tier, ext);
+            @RequestParam(required = false) String ext,
+            @RequestParam(required = false, defaultValue = "false") boolean preview) {
+        // preview=true: the in-app players — a browser-playable copy (see loadPreviewResource)
+        Resource resource = preview
+                ? mediaService.loadPreviewResource(stockNo, tier, ext)
+                : mediaService.loadAsResource(stockNo, tier, ext);
         if (resource == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -64,7 +68,7 @@ public class MediaController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                        (preview ? "inline" : "attachment") + "; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
 

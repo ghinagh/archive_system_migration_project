@@ -8,19 +8,19 @@
 .caption {
   font-size: 15px;
   font-weight: 700;
-  color: #1f2937;
+  color: #1a2b4a;
 }
 
 .key-input {
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #c7ccd3;
+  border: 1px solid #d5dbe3;
   border-radius: 8px;
   font-size: 18px;
   letter-spacing: 4px;
   text-align: center;
 
-  &:focus { outline: none; border-color: #3b6fd8; box-shadow: 0 0 0 2px rgba(59, 111, 216, 0.18); }
+  &:focus { outline: none; border-color: #22404c; box-shadow: 0 0 0 3px rgba(34, 64, 76, 0.15); }
 }
 
 .actions {
@@ -33,17 +33,18 @@
     height: 40px;
     border-radius: 8px;
     font-weight: 600;
-    background-color: #e8eaed;
-    color: #1f2937;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.08);
+    background-color: #fff;
+    color: #22404c;
+    box-shadow: 0 0 0 1px #a9bec6, 0 1px 2px rgba(16, 24, 40, 0.06);
 
-    &:hover { background-color: #dde0e3; }
+    &:hover { background-color: #edf3f5; }
 
     &[type='submit'] {
-      background-color: #2f5fbf;
+      background-color: #22404c;
       color: #fff;
+      box-shadow: 0 0 0 1px #22404c, 0 1px 2px rgba(16, 24, 40, 0.06);
 
-      &:hover { background-color: #284f9f; }
+      &:hover { background-color: #1a3340; }
     }
   }
 }

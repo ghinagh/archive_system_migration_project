@@ -2,8 +2,8 @@
 
 // No mat.theme() is included, so Material's surface token (--mat-sys-surface-container) is
 // undefined and every overlay panel (select, autocomplete, menu, datepicker) rendered
-// see-through over the fields underneath. Give them an opaque default; the themed
-// .doc-form-panel / .retrieval-tools-panel below still override it with !important.
+// see-through over the fields underneath. Give them an opaque default; select and
+// autocomplete panels are then given the dark sidebar look just below.
 :root {
   --mat-autocomplete-background-color: #ffffff;
   --mat-select-panel-background-color: #ffffff;
@@ -13,8 +13,43 @@
 
 .mat-mdc-autocomplete-panel,
 .mat-mdc-select-panel {
-  border: 1px solid #c7ccd3;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  background: #13232b !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  // Same dark navy look as the sidebar menu.
+  .mat-mdc-option {
+    color: #dce4e8;
+
+    .mdc-list-item__primary-text { color: inherit; }
+
+    &:hover:not(.mdc-list-item--disabled),
+    &.mat-mdc-option-active {
+      background: #22404c;
+      color: #fff;
+    }
+
+    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+      background: #22404c;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    &.mdc-list-item--disabled { color: #6b7f8a; }
+
+    .mat-pseudo-checkbox { color: #b5c5cc; }
+    .mat-pseudo-checkbox-checked { background: #d6a85b; color: #13232b; }
+  }
+
+  .mat-mdc-optgroup-label { color: #b5c5cc; }
+  .mdc-list-divider { border-color: rgba(255, 255, 255, 0.08); }
+}
+
+// Native <select> lists (where the browser allows styling the options).
+select option {
+  background: #13232b;
+  color: #dce4e8;
 }
 
 html, body {
@@ -46,152 +81,111 @@ input[type="week"] {
   font-weight: bold;
 }
 
-// mat-select / mat-autocomplete panels render into the CDK overlay container,
-// appended to <body> as a sibling of the app root — outside any component's
-// view encapsulation and outside the reach of its `:host` custom properties.
-// Themed forms must therefore style their dropdown panels here, scoped by a
-// panelClass so the dark theme doesn't leak onto unrelated dropdowns.
-.doc-form-panel {
-  background: #1e3243 !important; // --panel
-  border: 1px solid #4f7691; // --line
-  border-radius: 4px;
-
-  .mat-mdc-option {
-    color: #e9f1f6; // --ink
-    min-height: 40px;
-
-    .mdc-list-item__primary-text {
-      color: inherit;
-    }
-
-    &:hover:not(.mdc-list-item--disabled),
-    &.mat-mdc-option-active {
-      background: #24394b; // --panel-2
-    }
-
-    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
-      background: #e0b45533; // --accent-dim
-      color: #e0b455; // --accent
-    }
-  }
-
-  .mat-mdc-optgroup-label {
-    color: #9db3c2; // --ink-dim
-  }
-
-  .mdc-list-divider {
-    border-color: #33506655; // --line-soft
-  }
-}
-
-// Graphical-retrieval screen's mat-select dropdowns (operator "الادوات", category
-// "لوائح لحقول العرض"/"التصنيف") — same CDK-overlay-reach issue as .doc-form-panel above:
-// these panels render into the global overlay container appended to <body>, outside this
-// component's view encapsulation, so a scoped component style can never reach them. Without
-// an explicit opaque background here the panel rendered see-through over the picker columns
-// underneath it. Solid dark background + light text, same values as .doc-form-panel for
-// visual consistency across the app's two themed-panel screens.
-.retrieval-tools-panel {
-  background: #1e3243 !important; // --panel
-  border: 1px solid #4f7691; // --line
-  border-radius: 4px;
-
-  .mat-mdc-option {
-    color: #e9f1f6; // --ink
-    min-height: 40px;
-
-    .mdc-list-item__primary-text {
-      color: inherit;
-    }
-
-    &:hover:not(.mdc-list-item--disabled),
-    &.mat-mdc-option-active {
-      background: #24394b; // --panel-2
-    }
-
-    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
-      background: #e0b45533; // --accent-dim
-      color: #e0b455; // --accent
-    }
-  }
-}
-
 // MatDialog surfaces render into the same CDK overlay container as mat-select/
 // mat-autocomplete panels above, for the same reason: outside any component's
 // view encapsulation. panelClass: 'doc-form-dialog' on dialog.open() reaches
 // .cdk-overlay-pane, with the dialog surface nested inside as a descendant.
 .doc-form-dialog {
   .mat-mdc-dialog-surface {
-    background: #1e3243; // --panel
-    color: #e9f1f6; // --ink
+    background: #fff;
+    color: #1a2b4a;
+    border-radius: 12px;
   }
 
-  .mat-mdc-dialog-title {
-    color: #e9f1f6; // --ink
-  }
-
+  .mat-mdc-dialog-title,
   .mat-mdc-dialog-content {
-    color: #e9f1f6; // --ink
+    color: #1a2b4a;
   }
 
   .mat-mdc-dialog-actions {
-    border-top: 1px solid #4f7691; // --line
+    border-top: 1px solid #e1e6ed;
   }
 
-  .mat-mdc-form-field {
-    --mdc-outlined-text-field-outline-color: #4f7691; // --line
-    --mdc-outlined-text-field-hover-outline-color: #e0b455; // --accent
-    --mdc-outlined-text-field-focus-outline-color: #e0b455; // --accent
-    --mdc-outlined-text-field-label-text-color: #9db3c2; // --ink-dim
-    --mdc-outlined-text-field-focus-label-text-color: #e0b455; // --accent
-    --mdc-outlined-text-field-input-text-color: #e9f1f6; // --ink
-    --mat-select-enabled-trigger-text-color: #e9f1f6; // --ink
-    --mat-select-placeholder-text-color: #9db3c2; // --ink-dim
-  }
+  --mat-form-field-outlined-input-text-color: #1a2b4a;
+  --mat-form-field-outlined-label-text-color: #5b6b80;
+  --mat-form-field-outlined-hover-label-text-color: #22404c;
+  --mat-form-field-outlined-focus-label-text-color: #22404c;
+  --mat-form-field-outlined-outline-color: #d5dbe3;
+  --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+  --mat-form-field-outlined-focus-outline-color: #22404c;
+  --mat-form-field-outlined-caret-color: #22404c;
+  --mat-form-field-outlined-disabled-input-text-color: #6b7a90;
+  --mat-form-field-outlined-input-text-placeholder-color: #8a97a8;
+  --mat-select-enabled-trigger-text-color: #1a2b4a;
+  --mat-select-enabled-arrow-color: #5b6b80;
 
-  .mat-mdc-text-field-wrapper {
-    background-color: #24394b; // --panel-2
-    border-radius: 4px;
-  }
-
-  .mdc-floating-label,
-  .mat-mdc-floating-label {
-    color: #9db3c2; // --ink-dim
-  }
-
-  input.mat-mdc-input-element,
-  textarea.mat-mdc-input-element {
-    color: #e9f1f6; // --ink
-    caret-color: #e0b455; // --accent
-  }
-
-  .mat-mdc-select-arrow,
-  .mat-mdc-select-value-text {
-    color: #e9f1f6; // --ink
-  }
-
-  // The --mdc-* names above are pre-v18 tokens that Angular Material 21 no longer reads, so
-  // the dialog's field text stayed grey. Current token names, white text as requested.
-  --mat-form-field-outlined-input-text-color: #ffffff;
-  --mat-form-field-outlined-label-text-color: #d6e2ea;
-  --mat-form-field-outlined-hover-label-text-color: #ffffff;
-  --mat-form-field-outlined-focus-label-text-color: #e0b455; // --accent
-  --mat-form-field-outlined-outline-color: #4f7691; // --line
-  --mat-form-field-outlined-hover-outline-color: #e0b455;
-  --mat-form-field-outlined-focus-outline-color: #e0b455;
-  --mat-form-field-outlined-disabled-input-text-color: #c9d6df;
-  --mat-form-field-outlined-input-text-placeholder-color: #9db3c2;
-  --mat-select-enabled-trigger-text-color: #ffffff;
-  --mat-select-enabled-arrow-color: #ffffff;
-
-  input.mat-mdc-input-element,
-  textarea.mat-mdc-input-element,
-  .mat-mdc-select-value-text,
-  .mat-mdc-dialog-title {
-    color: #ffffff;
+  .mat-mdc-raised-button.mat-primary,
+  .mat-mdc-unelevated-button.mat-primary {
+    background-color: #22404c;
+    color: #fff;
   }
 }
 
-// Dropdown lists opened from inside the dark dialog render in the overlay, outside it, so they
-// inherited its light text on the white default panel. Give the dialog's panels the dark
-// .doc-form-panel look (panelClass / class="doc-form-panel" on the dialog's selects and autocomplete).
+
+// App-wide screen theme (slate palette shared with the الترميز screens): Material tokens for every
+// screen rendered inside the main layout. Screens with their own themed styles override these.
+.main-content {
+  --mat-form-field-outlined-outline-color: #d5dbe3;
+  --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+  --mat-form-field-outlined-focus-outline-color: #22404c;
+  --mat-form-field-outlined-focus-label-text-color: #22404c;
+  --mat-form-field-outlined-caret-color: #22404c;
+  --mat-checkbox-selected-icon-color: #22404c;
+  --mat-checkbox-selected-focus-icon-color: #22404c;
+  --mat-checkbox-selected-hover-icon-color: #22404c;
+  --mat-radio-selected-icon-color: #22404c;
+  --mat-radio-selected-focus-icon-color: #22404c;
+  --mat-radio-selected-hover-icon-color: #22404c;
+  --mat-tab-active-indicator-color: #22404c;
+  --mat-tab-active-focus-indicator-color: #22404c;
+  --mat-tab-active-hover-indicator-color: #22404c;
+  --mat-tab-active-label-text-color: #22404c;
+  --mat-tab-active-focus-label-text-color: #22404c;
+  --mat-tab-active-hover-label-text-color: #22404c;
+  --mat-progress-bar-active-indicator-color: #22404c;
+  --mat-progress-spinner-active-indicator-color: #22404c;
+  --mat-slide-toggle-selected-handle-color: #22404c;
+  --mat-slide-toggle-selected-track-color: #a9bec6;
+
+  .mat-mdc-raised-button.mat-primary,
+  .mat-mdc-unelevated-button.mat-primary {
+    background-color: #22404c;
+    color: #fff;
+
+    &:hover { background-color: #1a3340; }
+  }
+
+  .mat-mdc-button.mat-primary,
+  .mat-mdc-outlined-button.mat-primary,
+  .mat-mdc-icon-button.mat-primary {
+    color: #22404c;
+  }
+
+  .mat-mdc-outlined-button:not(:disabled) {
+    --mat-button-outlined-outline-color: #a9bec6;
+    border-color: #a9bec6;
+  }
+
+  .mat-mdc-outlined-button:disabled {
+    --mat-button-outlined-disabled-outline-color: #e1e6ed;
+    border-color: #e1e6ed;
+  }
+
+  .mat-mdc-card {
+    border: 1px solid #e1e6ed;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  }
+
+  .mat-mdc-header-cell {
+    color: #22404c;
+    font-weight: 600;
+  }
+
+  .mat-mdc-row:hover .mat-mdc-cell {
+    background: #edf3f5;
+  }
+
+  .mat-expansion-panel:not(.mat-expanded) {
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  }
+}

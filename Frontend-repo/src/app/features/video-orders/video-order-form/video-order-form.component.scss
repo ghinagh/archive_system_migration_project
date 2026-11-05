@@ -21,3 +21,32 @@
   justify-content: flex-end;
   padding-top: 8px;
 }
+
+// Theme: same treatment as the الترميز screens (colors/shadows only).
+:host ::ng-deep {
+  .mat-mdc-form-field {
+    --mat-form-field-outlined-outline-color: #d5dbe3;
+    --mat-form-field-outlined-hover-outline-color: #a9b6c8;
+    --mat-form-field-outlined-focus-outline-color: #22404c;
+    --mat-form-field-outlined-focus-label-text-color: #22404c;
+    --mat-form-field-outlined-caret-color: #22404c;
+  }
+  .mat-mdc-raised-button.mat-primary, .mat-mdc-unelevated-button.mat-primary {
+    background-color: #22404c;
+    color: #fff;
+    &:hover { background-color: #1a3340; }
+  }
+  .mat-mdc-outlined-button:not(:disabled) { --mat-button-outlined-outline-color: #a9bec6; border-color: #a9bec6; color: #22404c; }
+  .mat-mdc-outlined-button:disabled { --mat-button-outlined-disabled-outline-color: #e1e6ed; border-color: #e1e6ed; }
+  .mat-mdc-header-cell { color: #22404c; font-weight: 600; }
+  .mat-mdc-row:hover .mat-mdc-cell { background: #edf3f5; }
+  .mat-mdc-card { border: 1px solid #e1e6ed; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06); }
+  .mat-mdc-checkbox, .mat-mdc-radio-button {
+    --mat-checkbox-selected-icon-color: #22404c;
+    --mat-checkbox-selected-focus-icon-color: #22404c;
+    --mat-checkbox-selected-hover-icon-color: #22404c;
+    --mat-radio-selected-icon-color: #22404c;
+    --mat-radio-selected-focus-icon-color: #22404c;
+    --mat-radio-selected-hover-icon-color: #22404c;
+  }
+}
