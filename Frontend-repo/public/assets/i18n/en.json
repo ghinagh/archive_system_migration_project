@@ -25,7 +25,9 @@
     "BACK": "Back",
     "NEW": "New",
     "CLOSE": "Close",
-    "NONE": "None"
+    "NONE": "None",
+    "REMOVE": "Remove",
+    "UNTITLED": "Untitled"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "Items per page:",
@@ -84,7 +86,13 @@
     "LOGIN_BUTTON": "Sign In",
     "LOGIN_ERROR": "Invalid username or password",
     "PUBLIC_SEARCH": "Search without logging in",
-    "FORBIDDEN": "Permission denied"
+    "FORBIDDEN": "Permission denied",
+    "CHANGE_PASSWORD_TITLE": "Change password",
+    "CHANGE_PASSWORD_SUBTITLE": "You must change your password before continuing",
+    "NEW_PASSWORD": "New password",
+    "CONFIRM_PASSWORD": "Confirm password",
+    "PASSWORDS_MUST_MATCH": "Passwords must match",
+    "CHANGE_PASSWORD_SUBMIT": "Change"
   },
   "SEARCH": {
     "PLACEHOLDER": "Search the catalogue...",
@@ -251,7 +259,10 @@
     "DIG_S_FROM": "S - from",
     "DIG_O_TO": "H - to",
     "DIG_M_TO": "M - to",
-    "DIG_S_TO": "S - to"
+    "DIG_S_TO": "S - to",
+    "EXT_HOURS": "Hours",
+    "EXT_MINUTES": "Minutes",
+    "EXT_SECONDS": "Seconds"
   },
   "DOC_FORM": {
     "NEW_RECORD": "New Record",
@@ -434,7 +445,8 @@
     "ADDITIONAL_NO": "Additional No",
     "LINKED_AUTHORS": "Linked Authors",
     "RESOURCE_TYPE": "Resource Type",
-    "AUTHOR_NO": "Author No"
+    "AUTHOR_NO": "Author No",
+    "TITLE_SEARCH": "Search by title"
   },
   "ARTICLES": {
     "TITLE": "Articles Management",
@@ -466,7 +478,8 @@
     "SUBJECT_CODE": "Subject Code",
     "SUBJECT_NAME": "Subject Name",
     "DESC_TYPE": "Type",
-    "DESC_VALUE": "Value"
+    "DESC_VALUE": "Value",
+    "TITLE_SEARCH": "Search by title"
   },
   "PERIODICALS": {
     "TITLE": "Periodicals Management",
@@ -582,7 +595,52 @@
     "INVALID_EMAIL": "Invalid email address",
     "ADD_NEW": "Add New Person",
     "EDIT_TITLE": "Edit Person",
-    "DETAIL_TITLE": "Person Details"
+    "DETAIL_TITLE": "Person Details",
+    "PERSONAL_INFO": "Personal information",
+    "ASSIGNMENTS": {
+      "TITLE": "Assignments",
+      "POSITION_NO": "Position number",
+      "POSITION_NAME": "Position name"
+    },
+    "NO_ASSIGNMENTS": "No assignments",
+    "SITE": "Site",
+    "POST_TYPE": "Post type",
+    "START_DATE": "Start date",
+    "END_DATE": "End date",
+    "STATUS": "Status",
+    "STATUS_ACTIVE": "Active",
+    "STATUS_INACTIVE": "Inactive",
+    "LEVEL": "Level",
+    "WILAYA": "Province",
+    "SECTION_BASIC": "Basic information",
+    "BIRTH_DATE": "Birth date",
+    "REGISTRATION_ID": "Registration number",
+    "VILLAGE": "Village",
+    "RESIDENCE": "Residence",
+    "QUALIFICATION": "Qualification",
+    "DENOMINATION": "Denomination",
+    "POLITICAL_AFFILIATION": "Political affiliation",
+    "PREVIOUS_JOB": "Previous job",
+    "SPECIALTY_DATE": "Specialty date",
+    "SECTION_CONTACT": "Contact",
+    "PO_BOX": "P.O. box",
+    "SOCIAL_MEDIA": "Social media",
+    "SECONDARY_ADDRESS": "Secondary address",
+    "SECTION_INSTITUTION": "Institution",
+    "INSTITUTION_PHONE": "Institution phone",
+    "INSTITUTION_EMAIL": "Institution email",
+    "INSTITUTION_BOX": "Institution P.O. box",
+    "INSTITUTION_DIRECTORATE": "Directorate",
+    "SECTION_ADDITIONAL": "Additional information",
+    "PATRONS_TAB": "Persons",
+    "STAFF_TAB": "Staff",
+    "BOX": "P.O. box",
+    "ADDRESS2": "Address 2",
+    "SPECIALTY_TYPE": "Specialty type",
+    "SPECIALTY_DATE1": "Specialty date 1",
+    "SPECIALTY_DATE2": "Specialty date 2",
+    "STAFF_TITLE": "Staff",
+    "STAFF_ADD_NEW": "New staff member"
   },
   "BORROWING": {
     "TITLE": "Borrowing Management",
@@ -609,7 +667,20 @@
     "STATUS_ACTIVE": "Active",
     "STATUS_RETURNED": "Returned",
     "STATUS_OVERDUE": "Overdue",
-    "RETURN_SUCCESS": "Item returned successfully"
+    "RETURN_SUCCESS": "Item returned successfully",
+    "BOOKS_SECTION": "Borrowed books",
+    "ITEMS": "Borrowed items",
+    "SERIAL": "Serial",
+    "BOOK_APP_NO": "Book number",
+    "NO_BOOKS": "No books",
+    "SEARCH_BOOK": "Search for a book",
+    "OTHERS_SECTION": "Other items",
+    "OTHER_TITLE": "Title",
+    "OTHER_TYPE": "Type",
+    "OTHER_COUNT": "Count",
+    "NO_OTHERS": "No other items",
+    "BOOK_REMOVED": "Book removed",
+    "OTHER_REMOVED": "Item removed"
   },
   "SUBJECTS": {
     "TITLE": "Subject Taxonomy",
@@ -631,7 +702,10 @@
       "CODE": "Code",
       "DESCRIPTION": "Description",
       "EDIT_TITLE": "Edit Coding Entry",
-      "DELETED": "Coding entry deleted"
+      "DELETED": "Coding entry deleted",
+      "LEVEL_HINT": "One digit",
+      "CODE_HINT": "Up to 4 digits",
+      "CANCEL": "Cancel"
     },
     "FORM": {
       "ADD_ROOT": "Add Top-Level Subject",
@@ -680,7 +754,8 @@
     "DELETE_WARNING": "Deleting this chart will also delete {{count}} linked operations. This action cannot be undone.",
     "DELETE_UNDERSTAND": "I understand all linked operations will be deleted",
     "CONFIRM_DELETE": "Confirm Delete",
-    "DELETE_MORE_OPERATIONS": "more"
+    "DELETE_MORE_OPERATIONS": "more",
+    "OPERATION_UPDATED_CHART_SYNCED": "Operation updated and chart synchronised"
   },
   "SITES": {
     "TITLE": "Sites Management",
@@ -721,7 +796,12 @@
     "REL": "Relation Type",
     "EDITING": "Editing",
     "POSTS_HINT": "Position assignments carry site, wilaya, and status details — manage those on the full Posts page.",
-    "PERIOD_TO": "to"
+    "PERIOD_TO": "to",
+    "POSITIONS": "Positions",
+    "ADD_POSITION": "New position",
+    "POSITION_NO": "Position number",
+    "POSITION_NAME": "Position name",
+    "RECORD_DATE": "Record date"
   },
   "DIGITIZATION": {
     "TITLE": "Digitization Management",
@@ -785,7 +865,41 @@
     "SECTION_CONDITIONS": "Conditions",
     "SECTION_SELECTION": "Selection",
     "SECTION_CONFIG": "Output Configuration",
-    "SECTION_CATEGORY": "Category"
+    "SECTION_CATEGORY": "Category",
+    "VIEWER": {
+      "TAB": "Report viewer",
+      "TITLE": "Report viewer",
+      "SELECT_TYPE": "Select report type",
+      "DOWNLOAD_PDF": "Download PDF",
+      "PREVIEW": "Preview"
+    },
+    "EXECUTION": {
+      "TAB": "Run reports",
+      "TITLE": "Run reports",
+      "SELECT_TEMPLATE": "Select template",
+      "CONDITIONS_INFO": "Report conditions",
+      "SUB_COND": "Sub condition",
+      "MAIN_COND": "Main condition",
+      "BASE_QUERY": "Base query",
+      "PARAMETERS": "Parameters",
+      "PARAM_PLACEHOLDER": "Enter a value",
+      "EXECUTE": "Run",
+      "RESULTS": "Results",
+      "ROWS": "rows",
+      "EXPORT_CSV": "Export CSV",
+      "EXPORT_PDF": "Export PDF"
+    },
+    "TEMPLATE": {
+      "FIELD_ORDER_TITLE": "Field order",
+      "FIELD_ORDER_HINT": "Arrange the fields in report order",
+      "FIELD_ORDER_EMPTY": "No fields selected",
+      "ADD_FIELD": "Add field",
+      "ADD_FIELD_BTN": "Add",
+      "COND_FIELD": "Field",
+      "COND_OPERATOR": "Operator",
+      "COND_VALUE": "Value",
+      "ADD_CONDITION": "Add condition"
+    }
   },
   "USERS": {
     "TITLE": "User Management",
@@ -1278,5 +1392,94 @@
     "OK": "OK",
     "ASK_DELETE_FIELDS": "Delete this user's display fields? (y/n)",
     "NO_FORM_TYPES": "No form types in CODING (level-2 38xx codes)"
+  },
+  "VALIDATION": {
+    "REQUIRED": "This field is required",
+    "MIN_LENGTH_6": "At least 6 characters"
+  },
+  "NEWS": {
+    "TITLE": "News",
+    "ADD_NEW": "New item",
+    "TITLE_SEARCH": "Search by title",
+    "DATE_FROM": "From date",
+    "DATE_TO": "To date",
+    "NEWS_NO": "News number",
+    "DOC_TYPE": "Document type",
+    "ARABIC_TITLE": "Title",
+    "SECOND_TITLE": "Second title",
+    "DATE": "Date",
+    "DOCUMENT_DATE": "Document date",
+    "NUMBER": "Number",
+    "PUBLICATION": "Publication",
+    "DESC_TYPE": "Description type",
+    "DESC_DATE": "Description date",
+    "DESC_PERSON": "Described by",
+    "DESC_NUMBER": "Description number",
+    "APPENDIX": "Appendix",
+    "KEYWORDS": "Keywords",
+    "NO_KEYWORDS": "No keywords",
+    "NEW_KEYWORD": "New keyword",
+    "ADD_KEYWORD": "Add keyword",
+    "ADVANCED_FILTER": "Advanced filter",
+    "SORT_BY": "Sort by",
+    "CLEAR_FILTER": "Clear filter",
+    "DELETE_ERROR": "Could not delete the item"
+  },
+  "PICTURES": {
+    "TITLE": "Photographs",
+    "ADD_NEW": "New picture",
+    "DATE_FROM": "From date",
+    "DATE_TO": "To date",
+    "PIC_NO": "Picture number",
+    "NEGATIVE_NO": "Negative number",
+    "POSITION_NO": "Positive number",
+    "DOCUMENT": "Documented by",
+    "DOC_DATE": "Documentation date",
+    "ENTITY": "Data entry",
+    "ENTITY_DATE": "Entry date",
+    "PERSON": "Photographer",
+    "DATE": "Date taken",
+    "TITLE_FIELD": "Title",
+    "COTE": "Source",
+    "GEOGRAPHIC": "Place",
+    "TYPE": "Shooting type",
+    "FORM": "Picture shape",
+    "LENGTH": "Length",
+    "WIDTH": "Width",
+    "QUALITY": "Quality",
+    "SUBJECT": "Content",
+    "REMARKS": "Remarks",
+    "COPIES": "Copies",
+    "LBN": "Album number",
+    "PAGE": "Page",
+    "LINE": "Line",
+    "TYPE1": "Picture type",
+    "BRIND": "Old container type",
+    "CHOICE": "Choice",
+    "MEDIA": "Media",
+    "VIEW_MEDIA": "Open picture",
+    "DOWNLOAD": "Download",
+    "OPEN_TAB": "Open in new tab",
+    "PREVIEW_VIDEO": "Preview video",
+    "MEDIA_NOT_FOUND": "File not found",
+    "VIDEO_PREVIEW": "Video preview",
+    "MEDIA_LOAD_ERROR": "Could not load the file",
+    "SECTION_IDENTIFICATION": "Identification",
+    "SECTION_DOCUMENT": "Documentation",
+    "SECTION_PERSON_DATE": "Photographer and date",
+    "SECTION_DESCRIPTION": "Description",
+    "SECTION_PHYSICAL": "Physical description",
+    "SECTION_SUBJECT_COPY": "Content and copies"
+  },
+  "PUBLIC_SEARCH": {
+    "TITLE": "Search",
+    "PLACEHOLDER": "Type a search term",
+    "SEARCH_BTN": "Search",
+    "NO_RESULTS": "No results"
+  },
+  "SHARED": {
+    "VIDEO_FULLSCREEN": "Full screen",
+    "VIDEO_UNSUPPORTED_FORMAT": "This format is not supported by the browser",
+    "VIDEO_SUPPORTED_FORMATS": "Supported formats: MP4, WebM, OGG"
   }
 }

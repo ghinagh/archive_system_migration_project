@@ -25,7 +25,9 @@
     "BACK": "رجوع",
     "NEW": "جديد",
     "CLOSE": "إغلاق",
-    "NONE": "بدون"
+    "NONE": "بدون",
+    "REMOVE": "ازالة",
+    "UNTITLED": "بدون عنوان"
   },
   "PAGINATOR": {
     "ITEMS_PER_PAGE": "عناصر في الصفحة:",
@@ -84,7 +86,13 @@
     "LOGIN_BUTTON": "دخول",
     "LOGIN_ERROR": "اسم المستخدم أو كلمة المرور غير صحيحة",
     "PUBLIC_SEARCH": "البحث دون تسجيل الدخول",
-    "FORBIDDEN": "غير مصرح لك بالوصول"
+    "FORBIDDEN": "غير مصرح لك بالوصول",
+    "CHANGE_PASSWORD_TITLE": "تغيير كلمة المرور",
+    "CHANGE_PASSWORD_SUBTITLE": "يجب تغيير كلمة المرور قبل المتابعة",
+    "NEW_PASSWORD": "كلمة المرور الجديدة",
+    "CONFIRM_PASSWORD": "تأكيد كلمة المرور",
+    "PASSWORDS_MUST_MATCH": "كلمتا المرور غير متطابقتين",
+    "CHANGE_PASSWORD_SUBMIT": "تغيير"
   },
   "SEARCH": {
     "PLACEHOLDER": "ابحث في الفهرس...",
@@ -251,7 +259,10 @@
     "DIG_S_FROM": "ث - من",
     "DIG_O_TO": "س - الى",
     "DIG_M_TO": "د - الى",
-    "DIG_S_TO": "ث - الى"
+    "DIG_S_TO": "ث - الى",
+    "EXT_HOURS": "ساعات",
+    "EXT_MINUTES": "دقائق",
+    "EXT_SECONDS": "ثواني"
   },
   "DOC_FORM": {
     "NEW_RECORD": "سجل جديد",
@@ -434,7 +445,8 @@
     "ADDITIONAL_NO": "الرقم الإضافي",
     "LINKED_AUTHORS": "المؤلفون المرتبطون",
     "RESOURCE_TYPE": "نوع المصدر",
-    "AUTHOR_NO": "رقم المؤلف"
+    "AUTHOR_NO": "رقم المؤلف",
+    "TITLE_SEARCH": "بحث بالعنوان"
   },
   "ARTICLES": {
     "TITLE": "إدارة المقالات",
@@ -466,7 +478,8 @@
     "SUBJECT_CODE": "رمز الموضوع",
     "SUBJECT_NAME": "اسم الموضوع",
     "DESC_TYPE": "النوع",
-    "DESC_VALUE": "القيمة"
+    "DESC_VALUE": "القيمة",
+    "TITLE_SEARCH": "بحث بالعنوان"
   },
   "PERIODICALS": {
     "TITLE": "إدارة الدوريات",
@@ -582,7 +595,52 @@
     "INVALID_EMAIL": "بريد إلكتروني غير صالح",
     "ADD_NEW": "إضافة شخص جديد",
     "EDIT_TITLE": "تعديل بيانات الشخص",
-    "DETAIL_TITLE": "تفاصيل الشخص"
+    "DETAIL_TITLE": "تفاصيل الشخص",
+    "PERSONAL_INFO": "المعلومات الشخصية",
+    "ASSIGNMENTS": {
+      "TITLE": "المناصب",
+      "POSITION_NO": "رقم المنصب",
+      "POSITION_NAME": "اسم المنصب"
+    },
+    "NO_ASSIGNMENTS": "لا توجد مناصب",
+    "SITE": "الموقع",
+    "POST_TYPE": "نوع المنصب",
+    "START_DATE": "تاريخ البداية",
+    "END_DATE": "تاريخ النهاية",
+    "STATUS": "الحالة",
+    "STATUS_ACTIVE": "فعال",
+    "STATUS_INACTIVE": "غير فعال",
+    "LEVEL": "المستوى",
+    "WILAYA": "المحافظة",
+    "SECTION_BASIC": "المعلومات الاساسية",
+    "BIRTH_DATE": "تاريخ الولادة",
+    "REGISTRATION_ID": "رقم القيد",
+    "VILLAGE": "القرية",
+    "RESIDENCE": "مكان الاقامة",
+    "QUALIFICATION": "المؤهل العلمي",
+    "DENOMINATION": "المذهب",
+    "POLITICAL_AFFILIATION": "الانتماء السياسي",
+    "PREVIOUS_JOB": "العمل السابق",
+    "SPECIALTY_DATE": "تاريخ الاختصاص",
+    "SECTION_CONTACT": "معلومات الاتصال",
+    "PO_BOX": "صندوق البريد",
+    "SOCIAL_MEDIA": "وسائل التواصل",
+    "SECONDARY_ADDRESS": "العنوان الثاني",
+    "SECTION_INSTITUTION": "المؤسسة",
+    "INSTITUTION_PHONE": "هاتف المؤسسة",
+    "INSTITUTION_EMAIL": "بريد المؤسسة",
+    "INSTITUTION_BOX": "صندوق بريد المؤسسة",
+    "INSTITUTION_DIRECTORATE": "المديرية",
+    "SECTION_ADDITIONAL": "معلومات اضافية",
+    "PATRONS_TAB": "الاشخاص",
+    "STAFF_TAB": "الموظفون",
+    "BOX": "صندوق البريد",
+    "ADDRESS2": "العنوان الثاني",
+    "SPECIALTY_TYPE": "نوع الاختصاص",
+    "SPECIALTY_DATE1": "تاريخ الاختصاص 1",
+    "SPECIALTY_DATE2": "تاريخ الاختصاص 2",
+    "STAFF_TITLE": "الموظفون",
+    "STAFF_ADD_NEW": "موظف جديد"
   },
   "BORROWING": {
     "TITLE": "إدارة الإعارة",
@@ -609,7 +667,20 @@
     "STATUS_ACTIVE": "نشطة",
     "STATUS_RETURNED": "مرجعة",
     "STATUS_OVERDUE": "متأخرة",
-    "RETURN_SUCCESS": "تم إرجاع المادة بنجاح"
+    "RETURN_SUCCESS": "تم إرجاع المادة بنجاح",
+    "BOOKS_SECTION": "الكتب المعارة",
+    "ITEMS": "المواد المعارة",
+    "SERIAL": "التسلسل",
+    "BOOK_APP_NO": "رقم الكتاب",
+    "NO_BOOKS": "لا توجد كتب",
+    "SEARCH_BOOK": "بحث عن كتاب",
+    "OTHERS_SECTION": "مواد اخرى",
+    "OTHER_TITLE": "العنوان",
+    "OTHER_TYPE": "النوع",
+    "OTHER_COUNT": "العدد",
+    "NO_OTHERS": "لا توجد مواد اخرى",
+    "BOOK_REMOVED": "تمت ازالة الكتاب",
+    "OTHER_REMOVED": "تمت ازالة المادة"
   },
   "SUBJECTS": {
     "TITLE": "تصنيف الموضوعات",
@@ -631,7 +702,10 @@
       "CODE": "الرمز",
       "DESCRIPTION": "الوصف",
       "EDIT_TITLE": "تعديل الرمز",
-      "DELETED": "تم حذف الرمز"
+      "DELETED": "تم حذف الرمز",
+      "LEVEL_HINT": "رقم واحد",
+      "CODE_HINT": "حتى 4 ارقام",
+      "CANCEL": "الغاء"
     },
     "FORM": {
       "ADD_ROOT": "إضافة تصنيف رئيسي",
@@ -680,7 +754,8 @@
     "DELETE_WARNING": "حذف هذا الملف سيؤدي أيضاً إلى حذف {{count}} عملية مرتبطة. لا يمكن التراجع عن هذا الإجراء.",
     "DELETE_UNDERSTAND": "أدرك أن جميع العمليات المرتبطة ستُحذف",
     "CONFIRM_DELETE": "تأكيد الحذف",
-    "DELETE_MORE_OPERATIONS": "عمليات أخرى"
+    "DELETE_MORE_OPERATIONS": "عمليات أخرى",
+    "OPERATION_UPDATED_CHART_SYNCED": "تم تعديل العملية وتحديث الجدول"
   },
   "SITES": {
     "TITLE": "إدارة المواقع",
@@ -721,7 +796,12 @@
     "REL": "نوع العلاقة",
     "EDITING": "تعديل",
     "POSTS_HINT": "تفاصيل المنصب الكاملة (الموقع، الولاية، الحالة) تُدار من صفحة المناصب.",
-    "PERIOD_TO": "إلى"
+    "PERIOD_TO": "إلى",
+    "POSITIONS": "الوظائف",
+    "ADD_POSITION": "وظيفة جديدة",
+    "POSITION_NO": "رقم الوظيفة",
+    "POSITION_NAME": "الوظيفة",
+    "RECORD_DATE": "تاريخ التسجيل"
   },
   "DIGITIZATION": {
     "TITLE": "إدارة الرقمنة",
@@ -785,7 +865,41 @@
     "SECTION_CONDITIONS": "الشروط",
     "SECTION_SELECTION": "الاختيار",
     "SECTION_CONFIG": "إعدادات المخرج",
-    "SECTION_CATEGORY": "الفئة"
+    "SECTION_CATEGORY": "الفئة",
+    "VIEWER": {
+      "TAB": "عرض التقارير",
+      "TITLE": "عرض التقارير",
+      "SELECT_TYPE": "اختر نوع التقرير",
+      "DOWNLOAD_PDF": "تنزيل PDF",
+      "PREVIEW": "معاينة"
+    },
+    "EXECUTION": {
+      "TAB": "تنفيذ التقارير",
+      "TITLE": "تنفيذ التقارير",
+      "SELECT_TEMPLATE": "اختر النموذج",
+      "CONDITIONS_INFO": "شروط التقرير",
+      "SUB_COND": "الشرط الفرعي",
+      "MAIN_COND": "الشرط الرئيسي",
+      "BASE_QUERY": "الاستعلام الاساسي",
+      "PARAMETERS": "المعطيات",
+      "PARAM_PLACEHOLDER": "ادخل القيمة",
+      "EXECUTE": "تنفيذ",
+      "RESULTS": "النتائج",
+      "ROWS": "سجل",
+      "EXPORT_CSV": "تصدير CSV",
+      "EXPORT_PDF": "تصدير PDF"
+    },
+    "TEMPLATE": {
+      "FIELD_ORDER_TITLE": "ترتيب الحقول",
+      "FIELD_ORDER_HINT": "رتب الحقول كما ستظهر في التقرير",
+      "FIELD_ORDER_EMPTY": "لم يتم اختيار حقول",
+      "ADD_FIELD": "اضافة حقل",
+      "ADD_FIELD_BTN": "اضافة",
+      "COND_FIELD": "الحقل",
+      "COND_OPERATOR": "العملية",
+      "COND_VALUE": "القيمة",
+      "ADD_CONDITION": "اضافة شرط"
+    }
   },
   "USERS": {
     "TITLE": "إدارة المستخدمين",
@@ -1278,5 +1392,94 @@
     "OK": "موافق",
     "ASK_DELETE_FIELDS": "هل تريد الغاء حقول العرض (ن/ك)",
     "NO_FORM_TYPES": "لا توجد انواع استمارات في الترميز (CODING 38xx من المستوى 2)"
+  },
+  "VALIDATION": {
+    "REQUIRED": "هذا الحقل مطلوب",
+    "MIN_LENGTH_6": "6 أحرف على الأقل"
+  },
+  "NEWS": {
+    "TITLE": "الاخبار",
+    "ADD_NEW": "خبر جديد",
+    "TITLE_SEARCH": "بحث بالعنوان",
+    "DATE_FROM": "من تاريخ",
+    "DATE_TO": "الى تاريخ",
+    "NEWS_NO": "رقم الخبر",
+    "DOC_TYPE": "نوع الوثيقة",
+    "ARABIC_TITLE": "العنوان",
+    "SECOND_TITLE": "العنوان الثاني",
+    "DATE": "التاريخ",
+    "DOCUMENT_DATE": "تاريخ الوثيقة",
+    "NUMBER": "العدد",
+    "PUBLICATION": "المصدر",
+    "DESC_TYPE": "نوع الوصف",
+    "DESC_DATE": "تاريخ الوصف",
+    "DESC_PERSON": "الواصف",
+    "DESC_NUMBER": "رقم الوصف",
+    "APPENDIX": "الملحق",
+    "KEYWORDS": "الكلمات المفتاحية",
+    "NO_KEYWORDS": "لا توجد كلمات مفتاحية",
+    "NEW_KEYWORD": "كلمة جديدة",
+    "ADD_KEYWORD": "اضافة كلمة",
+    "ADVANCED_FILTER": "تصفية متقدمة",
+    "SORT_BY": "ترتيب حسب",
+    "CLEAR_FILTER": "مسح التصفية",
+    "DELETE_ERROR": "تعذر حذف الخبر"
+  },
+  "PICTURES": {
+    "TITLE": "توثيق الصور الفوتوغرافية",
+    "ADD_NEW": "صورة جديدة",
+    "DATE_FROM": "من تاريخ",
+    "DATE_TO": "الى تاريخ",
+    "PIC_NO": "رقم الصورة",
+    "NEGATIVE_NO": "رقم السلبي",
+    "POSITION_NO": "رقم الايجابي",
+    "DOCUMENT": "الموثق",
+    "DOC_DATE": "تاريخ التوثيق",
+    "ENTITY": "مدخل البيانات",
+    "ENTITY_DATE": "تاريخ الادخال",
+    "PERSON": "المصور",
+    "DATE": "تاريخ التصوير",
+    "TITLE_FIELD": "العنوان",
+    "COTE": "المصدر",
+    "GEOGRAPHIC": "مكان الصورة",
+    "TYPE": "نوع التصوير",
+    "FORM": "شكل الصورة",
+    "LENGTH": "الطول",
+    "WIDTH": "العرض",
+    "QUALITY": "الجودة",
+    "SUBJECT": "المضمون",
+    "REMARKS": "الملاحظات",
+    "COPIES": "عدد النسخ",
+    "LBN": "رقم الالبوم",
+    "PAGE": "الصفحة",
+    "LINE": "السطر",
+    "TYPE1": "نوع الصورة",
+    "BRIND": "نوع الوعاء القديم",
+    "CHOICE": "اختيار",
+    "MEDIA": "الملف",
+    "VIEW_MEDIA": "فتح الصورة",
+    "DOWNLOAD": "تنزيل",
+    "OPEN_TAB": "فتح في نافذة جديدة",
+    "PREVIEW_VIDEO": "عرض الفيديو",
+    "MEDIA_NOT_FOUND": "الملف غير موجود",
+    "VIDEO_PREVIEW": "عرض الفيديو",
+    "MEDIA_LOAD_ERROR": "تعذر تحميل الملف",
+    "SECTION_IDENTIFICATION": "التعريف",
+    "SECTION_DOCUMENT": "التوثيق",
+    "SECTION_PERSON_DATE": "المصور والتاريخ",
+    "SECTION_DESCRIPTION": "الوصف",
+    "SECTION_PHYSICAL": "الوصف المادي",
+    "SECTION_SUBJECT_COPY": "المضمون والنسخ"
+  },
+  "PUBLIC_SEARCH": {
+    "TITLE": "البحث",
+    "PLACEHOLDER": "اكتب كلمة البحث",
+    "SEARCH_BTN": "بحث",
+    "NO_RESULTS": "لا توجد نتائج"
+  },
+  "SHARED": {
+    "VIDEO_FULLSCREEN": "ملء الشاشة",
+    "VIDEO_UNSUPPORTED_FORMAT": "صيغة الملف غير مدعومة في المتصفح",
+    "VIDEO_SUPPORTED_FORMATS": "الصيغ المدعومة: MP4, WebM, OGG"
   }
 }
